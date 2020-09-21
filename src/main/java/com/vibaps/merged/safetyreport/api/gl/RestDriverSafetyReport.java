@@ -167,6 +167,11 @@ public class RestDriverSafetyReport {
 					+ geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + userName + "\"}}}";
 
 			String serverurl = uri;
+			
+		//	System.out.println(uri+urlParameters);
+			
+			
+			
 			HttpURLConnection con = (HttpURLConnection) (new URL(serverurl)).openConnection();
 			con.setRequestMethod("POST");
 			con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
@@ -214,8 +219,10 @@ public class RestDriverSafetyReport {
 				if (enttype.equals("Driver")) {
 					combinedReport = extractGeotabDriverData(geotabDriverExceptionSummariesJson, userName,geodatabase);
 				} else {
+					
 					combinedReport = extractGeotabVehicleData(geotabDriverExceptionSummariesJson, userName,geodatabase);
 
+					//System.out.println(combinedReport+"-fdf---");
 				}
 
 				// create a json response
@@ -276,149 +283,8 @@ public class RestDriverSafetyReport {
 				totalsJson.append("],");
 
 				responseJson = totalsJson.toString() + combinedReportResponseJson.toString();
-				// System.out.println(responseJson);
-
-				// you will get OUTPUT like this below
-				// for vehicle: {"totals": [{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" },{
-				// "Rule": "39" },{ "Rule": "0" },{ "Rule": "35" },{ "Rule": "0" },{ "Rule": "0"
-				// },{ "Rule": "0" },{ "Rule": "34" },{ "Rule": "23" },{ "Rule": "6"
-				// }],"information": [{"Vehicle Name": "15 - BLUE Peterbilt","Group": "Prohibit
-				// Idling, 10,001 to 26,000 GVWR","Distance": "606","Behave": [{"Rule":
-				// "2"},{"Rule": "0"},{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "12"},{"Rule": "0"},{"Rule": "1"}]},{"Vehicle Name": "14 -
-				// BAFFIN Peterbilt","Group": "Prohibit Idling, 2 Axle CDL","Distance":
-				// "359","Behave": [{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "4"},{"Rule": "0"},{"Rule":
-				// "0"}]},{"Vehicle Name": "16 - GRAY Peterbilt","Group": "Prohibit Idling,
-				// 10,001 to 26,000 GVWR","Distance": "13","Behave": [{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "2"},{"Rule": "0"}]},{"Vehicle Name": "31 - WHITE
-				// Transit","Group": "Prohibit Idling, Under 10,000 GVWR","Distance":
-				// "51","Behave": [{"Rule": "13"},{"Rule": "0"},{"Rule": "5"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"}]},{"Vehicle Name": "32 - BLUE Ford","Group": "Prohibit Idling, 10,001 to
-				// 26,000 GVWR","Distance": "25","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "2"},{"Rule":
-				// "0"},{"Rule": "1"}]},{"Vehicle Name": "33 - RED Ford","Group": "Prohibit
-				// Idling, 10,001 to 26,000 GVWR","Distance": "265","Behave": [{"Rule":
-				// "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "35 -
-				// PURPLE Peterbilt","Group": "Prohibit Idling, 3 Axle CDL","Distance":
-				// "767","Behave": [{"Rule": "4"},{"Rule": "0"},{"Rule": "5"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "6"},{"Rule": "2"},{"Rule":
-				// "0"}]},{"Vehicle Name": "36 - BLUE International","Group": "Prohibit Idling,
-				// 10,001 to 26,000 GVWR","Distance": "254","Behave": [{"Rule": "1"},{"Rule":
-				// "0"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "37 - GOLD
-				// Peterbilt","Group": "Prohibit Idling, 10,001 to 26,000 GVWR","Distance":
-				// "717","Behave": [{"Rule": "4"},{"Rule": "0"},{"Rule": "7"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"}]},{"Vehicle Name": "40 - WHITE Ford","Group": "Prohibit Idling, 10,001
-				// to 26,000 GVWR","Distance": "69","Behave": [{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "41 - SILVER
-				// Ford","Group": "Prohibit Idling, VEHICLE: CMV (Non-CDL)","Distance":
-				// "147","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "2"}]},{"Vehicle Name": "42 - RED Peterbilt","Group": "Prohibit Idling,
-				// 10,001 to 26,000 GVWR","Distance": "501","Behave": [{"Rule": "1"},{"Rule":
-				// "0"},{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "4"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "43 - BLUE
-				// Freightliner","Group": "Prohibit Idling, VEHICLE: CDL Tractor","Distance":
-				// "1103","Behave": [{"Rule": "11"},{"Rule": "0"},{"Rule": "10"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"}]},{"Vehicle Name": "38 - BLUE Peterbilt","Group": "0","Distance":
-				// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "4"},{"Rule": "4"},{"Rule":
-				// "0"}]},{"Vehicle Name": "34 - GOLD Ford","Group": "0","Distance":
-				// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"}]},{"Vehicle Name": "37 - GOLDPeterbilt","Group": "0","Distance":
-				// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "15"},{"Rule":
-				// "0"}]},{"Vehicle Name": "40 - WHITEFord","Group": "0","Distance":
-				// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "2"}]},{"Vehicle Name": "29 - WHITE Peterbilt","Group": "0","Distance":
-				// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "2"},{"Rule": "0"},{"Rule":
-				// "0"}]}]}
-				// for driver : {"totals": [{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" },{
-				// "Rule": "68" },{ "Rule": "6" },{ "Rule": "61" },{ "Rule": "22" },{ "Rule":
-				// "0" },{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0"
-				// }],"information": [{"Vehicle Name": "Rick Schwenk","Group": "CMV Driver
-				// (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "821","Behave": [{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Troy
-				// Giordano","Group": "VEHICLE: CDL Truck, LICENSE: CDL B, VEHICLE: CMV
-				// (Non-CDL)","Distance": "894","Behave": [{"Rule": "3"},{"Rule": "1"},{"Rule":
-				// "3"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"}]},{"Vehicle Name": "Jay Hoagland","Group": "LICENSE: CDL
-				// A, VEHICLE: CDL Tractor, VEHICLE: CDL Truck, VEHICLE: CMV
-				// (Non-CDL)","Distance": "668","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"}]},{"Vehicle Name": "Kenneth Moore","Group": "VEHICLE: CDL
-				// Truck, VEHICLE: CMV (Non-CDL), VEHICLE: CDL Tractor, LICENSE: CDL
-				// A","Distance": "1931","Behave": [{"Rule": "7"},{"Rule": "4"},{"Rule":
-				// "23"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"}]},{"Vehicle Name": "Richard Fox","Group": "CMV Driver
-				// (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "596","Behave": [{"Rule":
-				// "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Michael
-				// Merwick","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance":
-				// "231","Behave": [{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"}]},{"Vehicle Name": "Carlos Rivera","Group": "CMV Driver (Non-CDL),
-				// VEHICLE: CMV (Non-CDL)","Distance": "874","Behave": [{"Rule": "6"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "6"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Kevin Neidert","Group":
-				// "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "4","Behave":
-				// [{"Rule": "5"},{"Rule": "0"},{"Rule": "2"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle
-				// Name": "Christopher Rounds","Group": "VEHICLE: CMV (Non-CDL), CMV Driver
-				// (Non-CDL)","Distance": "69","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"}]},{"Vehicle Name": "Luann Whitcomb","Group": "CMV Driver
-				// (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "166","Behave": [{"Rule":
-				// "7"},{"Rule": "0"},{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Lorrie
-				// Mabee","Group": "VEHICLE: CMV (Non-CDL), CMV Driver (Non-CDL)","Distance":
-				// "584","Behave": [{"Rule": "8"},{"Rule": "0"},{"Rule": "1"},{"Rule":
-				// "6"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"}]},{"Vehicle Name": "Bob Boutelle","Group": "CMV Driver (Non-CDL),
-				// VEHICLE: CMV (Non-CDL)","Distance": "417","Behave": [{"Rule": "2"},{"Rule":
-				// "0"},{"Rule": "10"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Randall Arthur","Group":
-				// "VEHICLE: CDL Tractor, VEHICLE: CMV (Non-CDL), LICENSE: CDL A, VEHICLE: CDL
-				// Truck","Distance": "781","Behave": [{"Rule": "7"},{"Rule": "0"},{"Rule":
-				// "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"}]},{"Vehicle Name": "Ethan Fellows","Group": "CMV Driver
-				// (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "621","Behave": [{"Rule":
-				// "3"},{"Rule": "0"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Wayne
-				// Haney","Group": "VEHICLE: CMV (Non-CDL), CMV Driver (Non-CDL)","Distance":
-				// "1444","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "3"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"}]},{"Vehicle Name": "Michael Wilson","Group": "VEHICLE: CMV (Non-CDL),
-				// VEHICLE: CDL Truck, VEHICLE: CDL Tractor, LICENSE: CDL A","Distance":
-				// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"}]},{"Vehicle Name": "Kenneth Roberts","Group": "LICENSE: CDL B, VEHICLE:
-				// CDL Truck, VEHICLE: CMV (Non-CDL)","Distance": "999","Behave": [{"Rule":
-				// "3"},{"Rule": "1"},{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Ronald
-				// Harrower","Group": "VEHICLE: CDL Tractor, VEHICLE: CDL Truck, VEHICLE: CMV
-				// (Non-CDL), CMV Driver (Non-CDL), LICENSE: CDL A","Distance": "688","Behave":
-				// [{"Rule": "4"},{"Rule": "0"},{"Rule": "3"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle
-				// Name": "Mary Beth Moss","Group": "CMV Driver (Non-CDL), VEHICLE: CMV
-				// (Non-CDL)","Distance": "79","Behave": [{"Rule": "1"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-				// "0"},{"Rule": "0"}]},{"Vehicle Name": "Non-CDL Driver","Group": "Assets,
-				// Compliance, Mechanics, Office, Operations","Distance": "735","Behave":
-				// [{"Rule": "8"},{"Rule": "0"},{"Rule": "8"},{"Rule": "6"},{"Rule":
-				// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]}]}
-
+				
+//System.out.println(responseJson);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -624,7 +490,7 @@ public class RestDriverSafetyReport {
 			// System.out.println(j + "-----" + gval.get(j));
 			reportColumnHeader.add(gval.get(j));
 		}
-		System.out.println(reportColumnHeader.size() + "-----");
+		//System.out.println(reportColumnHeader.size() + "-----");
 		return reportColumnHeader;
 	}
 
@@ -809,22 +675,39 @@ public class RestDriverSafetyReport {
 				Map<String, Integer> geotabExceptionEvents = new HashMap<String, Integer>();
 				JSONArray geotabExceptionSummariesJA = resultsChild.getJSONArray("exceptionSummaries");
 				for (int k = 0; k < geotabExceptionSummariesJA.length(); k++) {
+					
+					try {
 					int eventCount = geotabExceptionSummariesJA.getJSONObject(k).getInt("eventCount");
 					JSONObject geotabExceptionRuleJO = geotabExceptionSummariesJA.getJSONObject(k)
 							.getJSONObject("exceptionRule");
 					String geotabExceptionName = "G-" + geotabExceptionRuleJO.getString("name");
+				
+				//	System.out.println("-----guna"+geotabExceptionName);
+
 					geotabExceptionEvents.put(geotabExceptionName, geotabExceptionEvents.get(geotabExceptionName)==null?eventCount:geotabExceptionEvents.get(geotabExceptionName)+eventCount);
+					}catch (Exception e) {
+						// TODO: handle exception
+					}
 				}
 				for (int m = 3; m < displayColumns.size(); m++) {
 					if (geotabExceptionEvents.get(displayColumns.get(m)) != null) {
+						System.out.println(displayColumns.get(m)+"----notnull");
+						
 						newReportRow.put(displayColumns.get(m),
 								(geotabExceptionEvents.get(displayColumns.get(m))).toString());
+						System.out.println(displayColumns.get(m)+"----not111111null");
+
 					} else {
+
 						if (newReportRow.get(displayColumns.get(m)) == null) {
+							
 							newReportRow.put(displayColumns.get(m), "0");
 						}
 					}
 				}
+				
+				System.out.println(geotabVehicleName+"----"+newReportRow);
+				
 				combinedReport.put(geotabVehicleName, newReportRow);
 			}
 		} catch (Exception e) {
@@ -877,11 +760,16 @@ public class RestDriverSafetyReport {
 			Map<String, Integer> geotabExceptionEvents = new HashMap<String, Integer>();
 			JSONArray geotabExceptionSummariesJA = resultsChild.getJSONArray("exceptionSummaries");
 			for (int k = 0; k < geotabExceptionSummariesJA.length(); k++) {
+				try
+				{
 				int eventCount = geotabExceptionSummariesJA.getJSONObject(k).getInt("eventCount");
 				JSONObject geotabExceptionRuleJO = geotabExceptionSummariesJA.getJSONObject(k)
 						.getJSONObject("exceptionRule");
 				String geotabExceptionName = "G-" + geotabExceptionRuleJO.getString("name");
 				geotabExceptionEvents.put(geotabExceptionName, geotabExceptionEvents.get(geotabExceptionName)==null?eventCount:geotabExceptionEvents.get(geotabExceptionName)+eventCount);
+				}catch (Exception e) {
+					// TODO: handle exception
+				}
 			}
 			for (int m = 3; m < displayColumns.size(); m++) {
 				if (geotabExceptionEvents.get(displayColumns.get(m)) != null) {

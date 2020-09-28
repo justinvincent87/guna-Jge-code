@@ -2,6 +2,8 @@ package com.vibaps.merged.safetyreport;
 import org.apache.logging.log4j.core.tools.picocli.CommandLine.Parameters;
 import org.apache.tomcat.util.json.JSONParser;
 import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_MessageClasses_Api_GetEvents_V5.GetEventsResponse;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,7 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.dto.LoginResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
+import com.vibaps.merged.safetyreport.entity.gl.Gen_Driver;
 import com.vibaps.merged.safetyreport.services.gl.GL_Report_SER;
 
 import lombok.experimental.var;
@@ -56,6 +59,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -152,11 +156,39 @@ public class BasicCountroller {
 	  
 	  
 	  @RequestMapping(value="/Login",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
-	  public @ResponseBody Object Login(@RequestParam String userid,@RequestParam String password,String endpoint) throws RemoteException 
+	  public @ResponseBody Object Login(@RequestParam String dbname,String endpoint) throws RemoteException 
 	  { 
+		  String lytxUsername="";
+		  String lytxPassword="";
+		  
+		  List<Object[]> list=null;
+			Session session = null;
+
+			
+			Transaction transaction = null;
+			try {
+				session = HibernateUtil.getsession();
+				transaction = session.beginTransaction();
+				list =session.createSQLQuery("SELECT ly_username,ly_password FROM ly_user where dbname=:db").setParameter("db", dbname).list();
+				transaction.commit();
+			} catch (Exception exception) {
+				System.out.println(exception);
+			}
+			session.close();
+			
+			Iterator it = list.iterator();
+			while(it.hasNext()){
+			     Object[] line = (Object[]) it.next();
+			      lytxUsername=line[0].toString();
+				  lytxPassword= line[1].toString();
+			   
+			     
+			}
+ 
+		  
+		  
 		  ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
-		  //LoginResponse value=er.login("BrigiottaEventsAPI","cQc!4FXxR8");
-		  LoginResponse value=er.login(userid,password);
+		  LoginResponse value=er.login(lytxUsername,lytxPassword);
 		  return value;
 	  }
 	  

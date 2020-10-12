@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -31,6 +32,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_MessageClasses_Api_GetEvents_V5.GetEventsResponse;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.hibernate.transform.ResultTransformer;
 import org.hibernate.transform.Transformers;
 import org.json.JSONArray;
@@ -90,12 +92,76 @@ public class GL_Report_DAO {
     static List<Map.Entry<String, Integer>> loadSelectedRuleNames;
 	public static Object view(String geouserid,String db) {
 		Map<String, Object> result = new HashMap<>();
-		Session session = null;
 		List<Gl_RulelistEntity> obj = null;
-		Transaction transaction = null;
+		List<Gl_RulelistEntity> obj1 = null;
+
+		BigInteger countuser = null;
+		
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
+			Session session3 = HibernateUtil.getsession();
+			Transaction	transaction3 = session3.beginTransaction();
+			countuser = (BigInteger) session3.createSQLQuery("SELECT count(*) FROM gen_user where companyid=:userid and db=:db").setParameter("userid", geouserid).setParameter("db", db).uniqueResult();
+			transaction3.commit();
+		
+		} catch (Exception exception) 
+		{
+			System.out.println(exception+"exo-------");
+		}	
+
+
+		if(countuser.intValue() ==0)
+		{
+			try {
+				
+				Session session = HibernateUtil.getsession();
+				Transaction	transaction = session.beginTransaction();
+				BigInteger newUserId = (BigInteger) session.createSQLQuery("call insertuserrecord(:userid,:db)").setParameter("userid", geouserid).setParameter("db", db).uniqueResult();
+				System.out.println("newUserId"+newUserId);
+				transaction.commit();
+				
+			
+				
+				System.out.println("newUserId....."+newUserId);
+
+					
+					if(newUserId.intValue() != 0)
+					{
+						
+						try {
+							Session session1 = HibernateUtil.getsession();
+							Transaction transaction1 = session1.beginTransaction();
+							obj1 = session1.createSQLQuery("SELECT gen_rulelist_id,status,weight FROM gl_selectedvalues where gen_user_id=1 order by gen_rulelist_id").list();
+							transaction1.commit();
+							
+							Iterator it = obj1.iterator();
+							Session session2 = HibernateUtil.getsession();
+							Transaction transaction2 = session2.beginTransaction();
+							while(it.hasNext()){
+							     Object[] line = (Object[]) it.next();
+							     int ob = session2.createSQLQuery("insert into gl_selectedvalues(gen_user_id,gen_rulelist_id,status,weight) values (:userid,:rule,:status,:weight)").setParameter("weight",Integer.parseInt(line[2].toString())).setParameter("status", Integer.parseInt(line[1].toString())).setParameter("rule", Integer.parseInt(line[0].toString())).setParameter("userid",newUserId).executeUpdate();
+							}
+							  transaction2.commit();					
+
+							
+						} catch (Exception exception) {}
+						
+						
+					}
+					
+					
+					
+			} catch (Exception exception) 
+			{
+			System.out.println(exception);	
+			}	
+			
+			
+		}
+		
+		
+		try {
+			Session session = HibernateUtil.getsession();
+			Transaction transaction = session.beginTransaction();
 			obj = session.createSQLQuery("select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id order by value) as value order by value.status desc").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
 			transaction.commit();
 		} catch (Exception exception) {}

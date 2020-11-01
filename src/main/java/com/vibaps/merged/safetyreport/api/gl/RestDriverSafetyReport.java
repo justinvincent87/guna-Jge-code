@@ -13,6 +13,9 @@ import com.vibaps.merged.safetyreport.dao.gl.GL_Report_DAO;
 import com.vibaps.merged.safetyreport.entity.gl.Score;
 import com.vibaps.merged.safetyreport.services.gl.GL_Report_SER;
 
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -50,7 +53,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_MessageClasses_Api_GetEvents_V5.GetEventsResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -60,12 +65,13 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(origins = { "*" }, allowedHeaders = { "*" })
 @RestController
 @RequestMapping({ "/glreport" })
+@Log4j2
+//test
 public class RestDriverSafetyReport {
-	public final GL_Report_SER ser = new GL_Report_SER();
-	public final GL_Report_DAO dao = new GL_Report_DAO();
-	List<Score> topNRecords;
-	List<Score> bottomNRecords;
-
+	
+	@Autowired
+	private GL_Report_SER glReportService;
+	
 	static List<String> displayColumns = null;
 	static String lytxExceptionSummariesJson = "";
 	static Map<Integer, String> lytxBehaviors = null;
@@ -76,35 +82,35 @@ public class RestDriverSafetyReport {
 	private static final int ROW_OFFSET = -1;
 	private static final int FORMULA_START_ROW = 7;
 
-	@RequestMapping(value = { "/insert" }, method = { RequestMethod.GET }, produces = { "application/json" })
-	@ResponseBody
+
+	@GetMapping(value="/insert")
 	public Object insert(@RequestParam ArrayList<String> val, @RequestParam ArrayList<Integer> we,
 			@RequestParam String companyid, @RequestParam String minmiles,@RequestParam String db) {
-		return this.ser.insert(val, we, companyid, minmiles,db);
+		return glReportService.insert(val, we, companyid, minmiles,db);
 	}
 
 	@RequestMapping(value = { "/getbehave" }, method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	public Object view(@RequestParam String geouserid,@RequestParam String db) {
-		return this.ser.view(geouserid,db);
+		return glReportService.view(geouserid,db);
 	}
 
 	@RequestMapping(value = { "/getbehaveui" }, method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	public Object viewui(@RequestParam String geouserid,@RequestParam String db) {
-		return this.ser.viewui(geouserid,db);
+		return glReportService.viewui(geouserid,db);
 	}
 
 	@RequestMapping(value = { "/getbehaveadd" }, method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	public Object viewadd(@RequestParam String geouserid,@RequestParam String db) {
-		return this.ser.viewadd(geouserid,db);
+		return glReportService.viewadd(geouserid,db);
 	}
 
 	@RequestMapping(value = { "/getLybehave" }, method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	public Object getLybehave(@RequestParam String geouserid,@RequestParam String db) {
-		return this.ser.getLybehave(geouserid,db);
+		return glReportService.getLybehave(geouserid,db);
 	}
 
 	@RequestMapping(value = { "/getReport" }, method = { RequestMethod.GET }, produces = { "application/json" })
@@ -115,7 +121,7 @@ public class RestDriverSafetyReport {
 			@RequestParam String filename, @RequestParam String templect, @RequestParam String enttype,@RequestParam String endpoint)
 			throws EncryptedDocumentException, InvalidFormatException, IOException, ParseException {
 
-		return dao.process(sees, sdate, edate, groupid, geosees, geotabgroups, geouname, geodatabase, url, filename,
+		return glReportService.getglreport(sees, sdate, edate, groupid, geosees, geotabgroups, geouname, geodatabase, url, filename,
 				templect, enttype,endpoint);
 
 	}
@@ -129,7 +135,7 @@ public class RestDriverSafetyReport {
 			throws EncryptedDocumentException, InvalidFormatException, IOException {
 		String responseJson = "";
 		List<Integer> totals = new ArrayList<>();
-		Object getgeodropdown = this.ser.getgeodropdown(userName);
+		Object getgeodropdown = glReportService.getgeodropdown(userName);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -287,12 +293,13 @@ public class RestDriverSafetyReport {
 //System.out.println(responseJson);
 			} catch (Exception e) {
 				e.printStackTrace();
+				log.error("error occured",e);
 			}
 		} catch (Exception exception) {
 		}
 
 		try {
-			ser.updateresponce(userName, responseJson,geodatabase);
+			glReportService.updateresponce(userName, responseJson,geodatabase);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -307,7 +314,7 @@ public class RestDriverSafetyReport {
 			@RequestParam String filename, @RequestParam String templect) throws IOException, FileNotFoundException {
 		String responseJson = "";
 		try {
-			responseJson = ser.selectresponce(geouname,geodatabase);
+			responseJson = glReportService.selectresponce(geouname,geodatabase);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}

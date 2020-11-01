@@ -256,6 +256,32 @@ public class GL_Report_DAO {
 	}
 	
 	
+	public static int geoCount(String geouserid,String db) {
+		Session session = null;
+		int obj = 0;
+		Transaction transaction = null;
+		try {
+			session = HibernateUtil.getsession();
+			transaction = session.beginTransaction();
+			obj = ((Integer) session.createSQLQuery("select count(b.id) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).intValue();
+			transaction.commit();
+		} catch (Exception exception) {}
+		return obj;
+	}
+	
+	public static int lyCount(String geouserid,String db) {
+		Session session = null;
+		int obj = 0;
+		Transaction transaction = null;
+		try {
+			session = HibernateUtil.getsession();
+			transaction = session.beginTransaction();
+			obj = ((Integer) session.createSQLQuery("select count(b.id) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='L' and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).intValue();
+			transaction.commit();
+		} catch (Exception exception) {}
+		return obj;
+	}
+	
 	public static int getwe(String geouserid, String rule,String db) {
 		Session session = null;
 		int obj = 0;
@@ -499,6 +525,8 @@ reportRows = new ArrayList<ReportRow>();
 			}
 			
 			//process GEOTAB exceptions response
+			
+			
 			if(reportBy.equalsIgnoreCase("Driver")) {
 				System.out.println("COMBINED REPORT - DRIVER");
 				extractGeotabDriverData(getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype),geouname);
@@ -1002,7 +1030,13 @@ reportRows = new ArrayList<ReportRow>();
 	    		String vehicleName = tripVars[0];
 	    		String driverName[] = tripVars[1].split(" ");  //ASSUMPTION: NO SPACES IN FIRSTNAME AND LASTNAMES.  THE DRIVER NAME WILL HAVE ONLY ONE SPACE BETWEEN FIRST AND LAST NAMES.
 	    		String driverFirstName = driverName[0];
-	    		String driverLastName = driverName[1];
+	    		String driverLastName = "";
+	    		try {
+	    		driverLastName=driverName[1];
+	    		}catch (Exception e) {
+					// TODO: handle exception
+	    			System.out.println(e);
+				}
 	    		LocalDateTime tripStartDate = convertToLocalDateTime(tripVars[2]);
 	    		LocalDateTime tripEndDate = convertToLocalDateTime(tripVars[3]);
 	    		Trip trip = new Trip(vehicleName, driverFirstName, driverLastName, tripStartDate, tripEndDate);

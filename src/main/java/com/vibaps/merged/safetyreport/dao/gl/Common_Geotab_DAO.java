@@ -331,7 +331,7 @@ int result=0;
 	      JsonParser parser = new JsonParser();
 	      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
 	      String GeotabDriverResponse = o.toString(); //Responce
-	      
+
 	      JSONObject geotabEventsJO = new JSONObject(GeotabDriverResponse);
 			JSONArray geotabEventsJOArray = geotabEventsJO.getJSONArray("result");
 			
@@ -393,7 +393,6 @@ int result=0;
 					// TODO: handle exception
 				}
 			}
-			
 			
 			
 	      

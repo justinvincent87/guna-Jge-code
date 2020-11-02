@@ -2,20 +2,26 @@ package com.vibaps.merged.safetyreport.dao.gl;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -25,10 +31,16 @@ import java.util.TimeZone;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFName;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_MessageClasses_Api_GetEvents_V5.GetEventsResponse;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -46,6 +58,7 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.HibernateUtil;
+import com.vibaps.merged.safetyreport.api.gl.RestDriverSafetyReport;
 import com.vibaps.merged.safetyreport.api.trending.RestTrendingReport;
 import com.vibaps.merged.safetyreport.entity.gl.Gen_Device;
 import com.vibaps.merged.safetyreport.entity.gl.Gen_Driver;
@@ -56,6 +69,8 @@ import com.vibaps.merged.safetyreport.entity.gl.Trip;
 import com.vibaps.merged.safetyreport.services.gl.GL_Report_SER;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -68,9 +83,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 
+import lombok.extern.log4j.Log4j2;
+@Log4j2
 public class GL_Report_DAO {
+	
+	@Autowired
+	private GL_Report_SER glReportService;
+	private int ROW_OFFSET = -1;
+	private int FORMULA_START_ROW = 7;
 	static Gl_RulelistEntity enty = new Gl_RulelistEntity();
-	static  GL_Report_SER ser = new GL_Report_SER();
 
 	String title;
 	LocalDateTime startDate;
@@ -392,6 +413,186 @@ while(it.hasNext()){
 
 		return deviceNameList;
 	}
+	
+	public Object getReportGeo(String sdate,String edate,String geosees,
+			ArrayList<String> geotabgroups,String userName,
+			String geodatabase,String url,String filename,
+			String templect,String enttype)
+	{
+		String responseJson = "";
+		List<Integer> totals = new ArrayList<>();
+		Object getgeodropdown = glReportService.getgeodropdown(userName);
+		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
+		String value = "";
+		Map<String, Map<String, String>> combinedReport = new HashMap<>();
+		List<String> displayColumns = null;
+		Map<Integer, String> lytxBehaviors = null;
+		StringBuffer combinedReportResponseJson = new StringBuffer();
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			String sDate = sdate;
+			String eDate = edate;
+			Date ssdate = sdf.parse(sDate);
+			Date eedate = sdf.parse(eDate);
+			String gvalue = "";
+			for (int j = 0; j < getl.size(); j++) {
+				if (j != getl.size() - 1) {
+					gvalue = gvalue + "{\"id\":\"" + (String) getl.get(j) + "\"},";
+				} else {
+					gvalue = gvalue + "{\"id\":\"" + (String) getl.get(j) + "\"}";
+				}
+			}
+			String groupvalue = "";
+			for (int i = 0; i < geotabgroups.size(); i++) {
+				if (i != geotabgroups.size() - 1) {
+					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"},";
+				} else {
+					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"}";
+				}
+			}
+			String uri = "https://" + url + "/apiv1";
+			String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\""
+					+ sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate + "T03:59:59.000Z\",\"entityType\":\"" + enttype
+					+ "\",\"reportArgumentType\":\"RiskManagement\",\"groups\":[" + groupvalue
+					+ "],\"reportSubGroup\":\"None\",\"rules\":[" + gvalue
+					+ "]}}},{\"method\":\"Get\",\"params\":{\"typeName\":\"SystemSettings\"}}],\"credentials\":{\"database\":\""
+					+ geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + userName + "\"}}}";
+
+			String serverurl = uri;
+			
+		//	System.out.println(uri+urlParameters);
+			
+			
+			
+			HttpURLConnection con = (HttpURLConnection) (new URL(serverurl)).openConnection();
+			con.setRequestMethod("POST");
+			con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
+			con.setRequestProperty("Content-Language", "en-US");
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setDoInput(true);
+			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+			wr.writeBytes(urlParameters);
+			wr.flush();
+			wr.close();
+			InputStream is = con.getInputStream();
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+			StringBuilder response = new StringBuilder();
+			String line;
+			while ((line = rd.readLine()) != null) {
+				response.append(line);
+				response.append('\r');
+			}
+			rd.close();
+			JsonParser parser = new JsonParser();
+			JsonObject o = parser.parse(response.toString()).getAsJsonObject();
+
+			String geotabDriverExceptionSummariesJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString()
+					+ "}";
+
+			try {
+
+				// load the header for report data (from the database based on the userName in
+				// actual application)
+				displayColumns = loadReporColumntHeaders(userName,geodatabase);
+
+				// Load Lytx vehicle map with vehicleId and names
+
+				// Map<Long, String> lytxVehicleList = loadLytxVehicleIDNameMap();
+				// lytxBehaviors= loadLytxBehaviors();
+				// String[] lytxBehaviorsArray = new String[lytxBehaviors.size()];
+
+				int bCount = 0;
+
+//	        	//create report object with Geotab VEHICLE data:
+//	    		Map<String, Map<String, String>> combinedReport = extractGeotabVehicleData(geotabVehicleExceptionSummariesJson);
+
+				// create report object with Geotab DRIVER data:
+				if (enttype.equals("Driver")) {
+					combinedReport = extractGeotabDriverData(geotabDriverExceptionSummariesJson, userName,geodatabase);
+				} else {
+					
+					combinedReport = extractGeotabVehicleData(geotabDriverExceptionSummariesJson, userName,geodatabase);
+
+					//System.out.println(combinedReport+"-fdf---");
+				}
+
+				// create a json response
+				totals = new ArrayList<Integer>();
+				for (int q = 0; q < displayColumns.size(); q++) {
+					totals.add(0);
+				}
+				combinedReportResponseJson = new StringBuffer();
+				combinedReportResponseJson.append("\"information\": [");
+				boolean firstRow = true;
+				int rulesRecords = displayColumns.size() - 3;
+				for (Map.Entry<String, Map<String, String>> combinedReportRows : combinedReport.entrySet()) {
+					if (!firstRow) {
+						combinedReportResponseJson.append(",");
+					} else {
+						firstRow = false;
+					}
+					combinedReportResponseJson.append("{");
+					boolean rulesHeadedAdded = false;
+					int headerCount = 0;
+					int rowCount = 0;
+					Map<String, String> rowData = combinedReportRows.getValue();
+					for (Map.Entry<String, String> data : rowData.entrySet()) {
+						if (headerCount++ > 0 && headerCount < displayColumns.size() + 1) {
+							combinedReportResponseJson.append(",");
+						}
+						if (rowCount++ < 3) {
+							rulesHeadedAdded = false;
+							combinedReportResponseJson.append("\"" + data.getKey() + "\": \"" + data.getValue() + "\"");
+						} else {
+							if (!rulesHeadedAdded) {
+								combinedReportResponseJson.append("\"Behave\": [");
+								rulesHeadedAdded = true;
+							}
+							combinedReportResponseJson.append("{");
+							combinedReportResponseJson.append("\"Rule\": \"" + data.getValue() + "\"}");
+							totals.set(rowCount - 1, (totals.get(rowCount - 1) + Integer.parseInt(data.getValue())));
+							if (rowCount == displayColumns.size()) {
+								combinedReportResponseJson.append("]");
+							}
+						}
+
+					}
+					combinedReportResponseJson.append("}");
+				}
+				combinedReportResponseJson.append("]}");
+
+				StringBuffer totalsJson = new StringBuffer();
+				totalsJson.append("{\"totals\": [");
+				int ruleCounter = 0;
+				for (int totalVal : totals) {
+					totalsJson.append("{ \"Rule\": \"" + totalVal + "\" }");
+					ruleCounter++;
+					if (ruleCounter != displayColumns.size()) {
+						totalsJson.append(",");
+					}
+				}
+				totalsJson.append("],");
+
+				responseJson = totalsJson.toString() + combinedReportResponseJson.toString();
+				
+//System.out.println(responseJson);
+			} catch (Exception e) {
+				e.printStackTrace();
+				log.error("error occured",e);
+			}
+		} catch (Exception exception) {
+		}
+
+		try {
+			glReportService.updateresponce(userName, responseJson,geodatabase);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
+		return responseJson;
+		
+	}
 
 	@SuppressWarnings("unchecked")
 	public static List<Gen_Driver> driverName(String geouserid,String db) {
@@ -487,7 +688,7 @@ bottomNRecords=new ArrayList<Score>();
 		String reportResponseJson = createReportReponseJson(geouname);
 		 try
 			{
-				ser.updateresponce(geouname,reportResponseJson,geodatabase);
+				glReportService.updateresponce(geouname,reportResponseJson,geodatabase);
 			}catch (Exception e) {
 				// TODO: handle exception
 			}
@@ -559,7 +760,7 @@ reportRows = new ArrayList<ReportRow>();
 			String reportResponseJson = createReportReponseJson(geouname);
 			 try
 				{
-					ser.updateresponce(geouname,reportResponseJson,geodatabase);
+				 glReportService.updateresponce(geouname,reportResponseJson,geodatabase);
 				}catch (Exception e) {
 					// TODO: handle exception
 				}
@@ -1154,7 +1355,7 @@ reportRows = new ArrayList<ReportRow>();
 		//Guna todo: copy the request here (commented) to get the response below;
 		public String getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 		
-			  Object getgeodropdown = this.ser.getgeodropdown(geouname);
+			  Object getgeodropdown = glReportService.getgeodropdown(geouname);
 			    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		      String sDate = sdate;
@@ -1218,7 +1419,7 @@ reportRows = new ArrayList<ReportRow>();
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
 		public String getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
-			Object getgeodropdown = this.ser.getgeodropdown(geouname);
+			Object getgeodropdown = glReportService.getgeodropdown(geouname);
 		    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			String gvalue = "";
 			for (int j = 0; j < getl.size(); j++) {
@@ -1524,4 +1725,367 @@ reportRows = new ArrayList<ReportRow>();
 	        }
 			return reportRows;   
 	    }
+	    
+		public static List<String> loadReporColumntHeadersTrending(String userName,String db) {
+			List<String> reportColumnHeader = new ArrayList<>();
+			reportColumnHeader.add("VehicleName");
+			reportColumnHeader.add("Group");
+			reportColumnHeader.add("Distance");
+			GL_Report_DAO da = new GL_Report_DAO();
+			ArrayList<String> gval = new ArrayList();
+			gval = da.getallbehave(userName,db);
+			for (int j = 0; j < gval.size(); j++) {
+				// System.out.println(j + "-----" + gval.get(j));
+				reportColumnHeader.add(gval.get(j));
+			}
+			//System.out.println(reportColumnHeader.size() + "-----");
+			return reportColumnHeader;
+		}
+	    
+		private static Map<String, Map<String, String>> extractGeotabDriverData(String geotabDriverExceptionSummariesJson,
+				String userName,String db) {
+
+			List<String> displayColumns = loadReporColumntHeadersTrending(userName,db);
+
+			// create report object:
+			Map<String, Map<String, String>> combinedReport = new LinkedHashMap<String, Map<String, String>>();
+			// GEOTAB Events processing
+			JSONObject geotabEventsJO = new JSONObject(geotabDriverExceptionSummariesJson);
+			JSONArray geotabEventsJOArray = geotabEventsJO.getJSONArray("result");
+			for (int i = 0; i < geotabEventsJOArray.length(); i++) {
+				JSONObject resultsChild = geotabEventsJOArray.getJSONObject(i);
+				JSONObject itemJO = resultsChild.getJSONObject("item");
+				// driverName
+				String geotabVehicleName = itemJO.getString("firstName") + " " + itemJO.getString("lastName");
+				Map<String, String> newReportRow = new LinkedHashMap<String, String>();// getNewReportRow();
+
+				newReportRow.put(displayColumns.get(0), geotabVehicleName);
+				// group
+				JSONArray geotabDriverGroups = itemJO.getJSONArray("driverGroups");
+				String group = null;
+				for (int j = 0; j < geotabDriverGroups.length(); j++) {
+					if (group == null) {
+						group = geotabDriverGroups.getJSONObject(j).getString("name");
+					} else {
+						group = group + ", " + geotabDriverGroups.getJSONObject(j).getString("name");
+						;
+					}
+				}
+				newReportRow.put(displayColumns.get(1), group);
+				// Distance
+				Object geotabVehicleTotalDistance = resultsChild.get("totalDistance");
+
+				long tDistance = ((Double) geotabVehicleTotalDistance).longValue();
+
+				newReportRow.put(displayColumns.get(2), Long.toString(tDistance));
+
+				// Geotab exceptions from exceptionSummaries
+				Map<String, Integer> geotabExceptionEvents = new HashMap<String, Integer>();
+				JSONArray geotabExceptionSummariesJA = resultsChild.getJSONArray("exceptionSummaries");
+				for (int k = 0; k < geotabExceptionSummariesJA.length(); k++) {
+					try
+					{
+					int eventCount = geotabExceptionSummariesJA.getJSONObject(k).getInt("eventCount");
+					JSONObject geotabExceptionRuleJO = geotabExceptionSummariesJA.getJSONObject(k)
+							.getJSONObject("exceptionRule");
+					String geotabExceptionName = "G-" + geotabExceptionRuleJO.getString("name");
+					geotabExceptionEvents.put(geotabExceptionName, geotabExceptionEvents.get(geotabExceptionName)==null?eventCount:geotabExceptionEvents.get(geotabExceptionName)+eventCount);
+					}catch (Exception e) {
+						// TODO: handle exception
+					}
+				}
+				for (int m = 3; m < displayColumns.size(); m++) {
+					if (geotabExceptionEvents.get(displayColumns.get(m)) != null) {
+						newReportRow.put(displayColumns.get(m),
+								(geotabExceptionEvents.get(displayColumns.get(m))).toString());
+					} else {
+						if (newReportRow.get(displayColumns.get(m)) == null) {
+							newReportRow.put(displayColumns.get(m), "0");
+						}
+					}
+				}
+				combinedReport.put(geotabVehicleName, newReportRow);
+			}
+			return combinedReport;
+		}
+		
+		private static Map<String, Map<String, String>> extractGeotabVehicleData(String geotabVehicleExceptionSummariesJson,
+				String userName,String db) {
+			Map<String, Map<String, String>> combinedReport = new LinkedHashMap<String, Map<String, String>>();
+
+			try {
+
+				List<String> displayColumns = loadReporColumntHeadersTrending(userName,db);
+
+				// create report object:
+				// GEOTAB Events processing
+				JSONObject geotabEventsJO = new JSONObject(geotabVehicleExceptionSummariesJson);
+				JSONArray geotabEventsJOArray = geotabEventsJO.getJSONArray("result");
+				for (int i = 0; i < geotabEventsJOArray.length(); i++) {
+					JSONObject resultsChild = geotabEventsJOArray.getJSONObject(i);
+					JSONObject itemJO = resultsChild.getJSONObject("item");
+
+					// vehicleName
+					String geotabVehicleName = itemJO.getString("name");
+					Map<String, String> newReportRow = new LinkedHashMap<String, String>();// getNewReportRow();
+					newReportRow.put(displayColumns.get(0), geotabVehicleName);
+					// group
+					JSONArray geotabVehicleGroups = itemJO.getJSONArray("groups");
+					String group = null;
+					for (int j = 0; j < geotabVehicleGroups.length(); j++) {
+						if (group == null) {
+							try {
+								group = geotabVehicleGroups.getJSONObject(j).getString("name");
+							} catch (Exception e) {
+								// TODO: handle exception
+							}
+						} else {
+
+							try {
+								String newGroup = geotabVehicleGroups.getJSONObject(j).getString("name");
+								if ("Prohibit Idling".equalsIgnoreCase(newGroup)) {
+									group = newGroup + ", " + group;
+								} else {
+									group = group + ", " + newGroup;
+								}
+							} catch (Exception e) {
+								// TODO: handle exception
+							}
+						}
+					}
+					newReportRow.put(displayColumns.get(1), group);
+					// Distance
+					Object geotabVehicleTotalDistance = resultsChild.get("totalDistance");
+
+					long tDistance = ((Double) geotabVehicleTotalDistance).longValue();
+
+					newReportRow.put(displayColumns.get(2), Long.toString(tDistance));
+
+					// Geotab exceptions from exceptionSummaries
+					Map<String, Integer> geotabExceptionEvents = new HashMap<String, Integer>();
+					JSONArray geotabExceptionSummariesJA = resultsChild.getJSONArray("exceptionSummaries");
+					for (int k = 0; k < geotabExceptionSummariesJA.length(); k++) {
+						
+						try {
+						int eventCount = geotabExceptionSummariesJA.getJSONObject(k).getInt("eventCount");
+						JSONObject geotabExceptionRuleJO = geotabExceptionSummariesJA.getJSONObject(k)
+								.getJSONObject("exceptionRule");
+						String geotabExceptionName = "G-" + geotabExceptionRuleJO.getString("name");
+					
+					//	System.out.println("-----guna"+geotabExceptionName);
+
+						geotabExceptionEvents.put(geotabExceptionName, geotabExceptionEvents.get(geotabExceptionName)==null?eventCount:geotabExceptionEvents.get(geotabExceptionName)+eventCount);
+						}catch (Exception e) {
+							// TODO: handle exception
+						}
+					}
+					for (int m = 3; m < displayColumns.size(); m++) {
+						if (geotabExceptionEvents.get(displayColumns.get(m)) != null) {
+							System.out.println(displayColumns.get(m)+"----notnull");
+							
+							newReportRow.put(displayColumns.get(m),
+									(geotabExceptionEvents.get(displayColumns.get(m))).toString());
+							System.out.println(displayColumns.get(m)+"----not111111null");
+
+						} else {
+
+							if (newReportRow.get(displayColumns.get(m)) == null) {
+								
+								newReportRow.put(displayColumns.get(m), "0");
+							}
+						}
+					}
+					
+					System.out.println(geotabVehicleName+"----"+newReportRow);
+					
+					combinedReport.put(geotabVehicleName, newReportRow);
+				}
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+			return combinedReport;
+		}
+		
+		public String createExcelReport(String sdate,String edate,String geouname,String geodatabase,String url,
+				String filename,String templect) throws EncryptedDocumentException, IOException
+		{
+			String responseJson = "";
+			try {
+				responseJson = glReportService.selectresponce(geouname,geodatabase);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+
+			List<String> displayColumns = loadReporColumntHeaders(geouname,geodatabase);
+
+			File source = new File(
+					"/usr/local/apache-tomcat-8.5.51/webapps/GL_Driver_Safety_Report_Template_" + templect + ".xlsx");
+			File dest = new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx");
+			try {
+				copyFileUsingStream(source, dest);
+			} catch (IOException e3) {
+				e3.printStackTrace();
+			}
+			Workbook workbook = WorkbookFactory
+					.create(new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx"));
+			Sheet sheet = workbook.getSheetAt(0);
+			DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+			Calendar calobj = Calendar.getInstance();
+			for (int j3 = 0; j3 < 8; j3++) {
+				String name = "";
+				String val = "";
+				switch (j3) {
+				case 0:
+					name = "CompanyName";
+					val = geodatabase;
+					break;
+				case 1:
+					name = "RunDate";
+					val = df.format(calobj.getTime());
+					break;
+				case 2:
+					name = "FromDate";
+					val = sdate;
+					break;
+				case 3:
+					name = "ToDate";
+					val = edate;
+					break;
+				}
+				sheet.createRow(j3);
+				Row row = sheet.getRow(j3);
+				Cell cell = row.getCell(0);
+				if (cell == null)
+					cell = row.createCell(0);
+				cell.setCellValue(name);
+				cell = row.createCell(1);
+				cell.setCellValue(val);
+			}
+			sheet.createRow(4);
+			Row row2 = sheet.getRow(4);
+			for (int h = 0; h < displayColumns.size(); h++) {
+				Cell cell2 = row2.createCell(h);
+				if (h == 0) {
+					cell2.setCellValue("Weight");
+				} else if (h == 1 || h == 2) {
+					cell2.setCellValue("");
+				} else {
+					int D = 0;
+					D = GL_Report_DAO.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(),geodatabase);
+					cell2.setCellValue(D);
+				}
+			}
+			sheet.createRow(5);
+			Row row3 = sheet.getRow(5);
+			for (int j4 = 0; j4 < displayColumns.size(); j4++) {
+				Cell cell3 = row3.getCell(j4);
+				if (cell3 == null)
+					cell3 = row3.createCell(j4);
+				cell3.setCellValue(((String) displayColumns.get(j4)).toString());
+			}
+			JSONObject excelvd = new JSONObject(responseJson);
+			JSONArray info = excelvd.getJSONArray("information");
+			int s = 0;
+			for (s = 0; s < info.length(); s++) {
+				sheet.createRow(s + 6);
+				Row row4 = sheet.getRow(s + 6);
+				Cell cell4 = row4.getCell(0);
+				if (cell4 == null)
+					cell4 = row4.createCell(0);
+				cell4.setCellValue(info.getJSONObject(s).getString("VehicleName"));
+				cell4 = row4.createCell(1);
+				cell4.setCellValue(info.getJSONObject(s).getString("Group"));
+				cell4 = row4.createCell(2);
+				cell4.setCellValue(Integer.parseInt(info.getJSONObject(s).getString("Distance")));
+				JSONArray behave = info.getJSONObject(s).getJSONArray("Behave");
+				for (int h2 = 0; h2 < behave.length(); h2++) {
+					cell4 = row4.createCell(h2 + 3);
+					cell4.setCellValue(Integer.parseInt(behave.getJSONObject(h2).getString("Rule")));
+				}
+			}
+			Sheet report = workbook.getSheetAt(1);
+			Row rows = report.getRow(5);
+			Cell cells = rows.getCell(2);
+			float min = 0.0F;
+			try {
+				min = GL_Report_DAO.getminmiles(geouname,geodatabase);
+			} catch (Exception exception) {
+			}
+			cells.setCellValue(min);
+			int statrpoint = s + 7;
+
+			String[] formulas = { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)", "Data!E@", "Data!F@",
+					"Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@", "Data!N@",
+					"IFERROR((E#*E$6)/($C#/100),0)", "IFERROR((F#*F$6)/($C#/100),0)", "IFERROR((G#*G$6)/($C#/100),0)",
+					"IFERROR((H#*H$6)/($C#/100),0)", "IFERROR((I#*I$6)/($C#/100),0)", "IFERROR((J#*J$6)/($C#/100),0)",
+					"IFERROR((K#*K$6)/($C#/100),0)", "IFERROR((L#*L$6)/($C#/100),0)", "IFERROR((M#*M$6)/($C#/100),0)",
+					"IFERROR((N#*N$6)/($C#/100),0)", "AVERAGE(OFFSET($O#,0,0,1,$Y$5))" };
+			// String[] formulas =
+			// {"Data!A@","Data!B@","Data!C@","IF(C#>$C$6,TRUE,FALSE)","Data!E@","Data!F@","Data!G@","Data!H@","Data!I@","Data!J@","Data!K@","Data!L@","Data!M@","Data!N@","IFERROR((E#*E$6)/($C8/100),0)","IFERROR((F#*F$6)/($C8/100),0)","IFERROR((G#*G$6)/($C8/100),0)","IFERROR((H#*H$6)/($C8/100),0)","IFERROR((I#*I$6)/($C8/100),0)","IFERROR((J#*J$6)/($C8/100),0)","IFERROR((K#*K$6)/($C8/100),0)","IFERROR((L#*L$6)/($C8/100),0)","IFERROR((M#*M$6)/($C8/100),0)","IFERROR((N#*N$6)/($C8/100),0)","AVERAGE(OFFSET($O#,0,0,1,$Y$5))"};
+			// String[] formulas =
+			// {"Data!A@","Data!B@","Data!C@","IF(C#>$C$6,TRUE,FALSE)","Data!E@","Data!F@","Data!G@","Data!H@","Data!I@","Data!J@","Data!K@","Data!L@","Data!M@","Data!N@","Data!O@","Data!P@","Data!Q@","Data!R@","Data!S@","Data!T@","Data!U@","Data!V@","Data!W@","Data!X@","IFERROR((E#*E$6)/($C8/100),0)","IFERROR((F#*F$6)/($C8/100),0)","IFERROR((G#*G$6)/($C8/100),0)","IFERROR((H#*H$6)/($C8/100),0)","IFERROR((I#*I$6)/($C8/100),0)","IFERROR((J#*J$6)/($C8/100),0)","IFERROR((K#*K$6)/($C8/100),0)","IFERROR((L#*L$6)/($C8/100),0)","IFERROR((M#*M$6)/($C8/100),0)","IFERROR((N#*N$6)/($C8/100),0)","IFERROR((O#*O$6)/($C8/100),0)","IFERROR((P#*P$6)/($C8/100),0)","IFERROR((Q#*Q$6)/($C8/100),0)","IFERROR((R#*R$6)/($C8/100),0)","IFERROR((S#*S$6)/($C8/100),0)","IFERROR((T#*T$6)/($C8/100),0)","IFERROR((U#*U$6)/($C8/100),0)","IFERROR((V#*V$6)/($C8/100),0)","IFERROR((W#*W$6)/($C8/100),0)","IFERROR((X#*X$6)/($C8/100),0)","AVERAGE(OFFSET($Y#,0,0,1,$AS$5))"};
+			updateFormulaForReport(report, FORMULA_START_ROW, s, ROW_OFFSET, formulas);
+//				
+
+			/*
+			 * for (int i = statrpoint; i < Integer.parseInt(templect); i++) { try { Row row
+			 * = report.getRow(i); report.removeRow(row); } catch (Exception exception) {} }
+			 */
+
+			String newAllDataNamedRange = "Report!$A$7:$Y$" + statrpoint;
+			XSSFWorkbook glDSRWorkbook = (XSSFWorkbook) workbook;
+			XSSFSheet reportSheet = glDSRWorkbook.getSheet("Report");
+			XSSFName allDataNamedRange = glDSRWorkbook.getName("AllData");
+			allDataNamedRange.setRefersToFormula(newAllDataNamedRange);
+
+			/*
+			 * try { dao.calculateTopBottomNRecords(geouname, responseJson,workbook); }catch
+			 * (Exception e) { // TODO: handle exception }
+			 */
+
+			  
+			 
+
+			try (FileOutputStream outputStream = new FileOutputStream(
+					"/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/" + filename + ".xlsx")) {
+				XSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
+				workbook.write(outputStream);
+			}
+			workbook.close();
+
+			return "{\"url\":\"" + url + geodatabase + "/report/excel/" + filename + ".xlsx\"}";
+		}
+		public static void copyFileUsingStream(File source, File dest) throws IOException {
+			InputStream is = null;
+			OutputStream os = null;
+			try {
+				is = new FileInputStream(source);
+				os = new FileOutputStream(dest);
+				byte[] buffer = new byte[1024];
+				int length;
+				while ((length = is.read(buffer)) > 0)
+					os.write(buffer, 0, length);
+			} finally {
+				is.close();
+				os.close();
+			}
+		}
+		
+		private static void updateFormulaForReport(Sheet sheet, int startRow, int numberOfRows, int rowOffset,
+				String[] formulaList) {
+
+			for (int i = startRow; i < startRow + numberOfRows; i++) {
+
+				Row curRow = sheet.createRow(i);
+				for (int col = 0; col < formulaList.length; col++) {
+					Cell newCell = curRow.createCell(col);
+					String formula = formulaList[col];
+					formula = formula.replace("@", Integer.toString(i));
+					formula = formula.replace("#", Integer.toString(i + 1));
+					newCell.setCellFormula(formula);
+				}
+			}
+		}
+		
+
 }

@@ -5,6 +5,8 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
+import org.apache.poi.EncryptedDocumentException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -12,7 +14,8 @@ import com.vibaps.merged.safetyreport.dao.gl.GL_Report_DAO;
 import com.vibaps.merged.safetyreport.entity.gl.Gl_RulelistEntity;
 public class GL_Report_SER {
 
-	public final GL_Report_DAO dao=new GL_Report_DAO();
+	@Autowired
+	private GL_Report_DAO glReportDao;
 	
 	public Object insert(ArrayList<String> val, ArrayList<Integer> we, String companyid, String minmiles,String db) {
 		ArrayList<Gl_RulelistEntity> v = new ArrayList<>();
@@ -22,46 +25,65 @@ public class GL_Report_SER {
 			ent.setWeight(((Integer)we.get(j)).intValue());
 			v.add(ent);
 		} 
-		return this.dao.insert(v, companyid, minmiles,db);
+		return glReportDao.insert(v, companyid, minmiles,db);
 	}
 	public Object view(String geouserid,String db) {
 		// TODO Auto-generated method stub
-		return dao.view(geouserid,db);
+		return glReportDao.view(geouserid,db);
 	}
 	public Object viewadd(String geouserid,String db) {
 		// TODO Auto-generated method stub
-		return dao.viewadd(geouserid,db);
+		return glReportDao.viewadd(geouserid,db);
 	}
 	public Object getgeodropdown(String geouserid) {
 		// TODO Auto-generated method stub
-		return dao.getgeodropdown(geouserid);
+		return glReportDao.getgeodropdown(geouserid);
 	}
 
 	public Object getLybehave(String geouserid,String db) {
 		// TODO Auto-generated method stub
-		return dao.getLybehave(geouserid,db);
+		return glReportDao.getLybehave(geouserid,db);
 	}
 
 	public Object viewui(String geouserid,String db) {
 		// TODO Auto-generated method stub
-		return dao.getallbehaveui(geouserid,db);
+		return glReportDao.getallbehaveui(geouserid,db);
 	}
 	public Object updateresponce(String geouname, String responseJson,String db) {
 		// TODO Auto-generated method stub
 		
-		return dao.updateresponce(geouname,responseJson,db);
+		return glReportDao.updateresponce(geouname,responseJson,db);
 	}
 	public String selectresponce(String geouname,String db) {
 		// TODO Auto-generated method stub
-		return dao.selectresponce(geouname,db);
+		return glReportDao.selectresponce(geouname,db);
 	}
-	public Object getglreport(String sees,String sdate,String edate,
+	public Object process(String sees,String sdate,String edate,
 		String groupid,String geosees,ArrayList<String> geotabgroups,
 		String geouname,String geodatabase,String url,
 		String filename,String templect,String enttype,String endpoint) throws MalformedURLException, ParseException, IOException
 	{
-		return dao.process(sees, sdate, edate, groupid, geosees, geotabgroups, geouname, geodatabase, url, filename,
+		return glReportDao.process(sees, sdate, edate, groupid, geosees, geotabgroups, geouname, geodatabase, url, filename,
 				templect, enttype,endpoint);
 	}
+	
+	public Object getReportGeo(String sdate,String edate,String geosees,
+		ArrayList<String> geotabgroups,String userName,
+		String geodatabase,String url,String filename,
+		String templect,String enttype)
+	{
+		return glReportDao.getReportGeo(sdate,edate,geosees,geotabgroups,userName,geodatabase,url,filename,templect,enttype);
+	}
+	
+	public String createExcelReport(String sdate,String edate,String geouname,String geodatabase,String url,
+		String filename,String templect) throws EncryptedDocumentException, IOException
+	{
+		return glReportDao.createExcelReport(sdate,edate,geouname,geodatabase,url,filename,templect);
+	}
+	
+
+	
+	
+	
 
 }

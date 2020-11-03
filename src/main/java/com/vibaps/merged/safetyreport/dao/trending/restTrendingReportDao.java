@@ -56,8 +56,7 @@ import com.vibaps.merged.safetyreport.entity.gl.Trip;
 import com.vibaps.merged.safetyreport.services.gl.GL_Report_SER;
 
 public class restTrendingReportDao {
-	@Autowired
-	private GL_Report_SER glReportService;
+	
 	@Autowired
 	private GL_Report_DAO glReportdao;
 
@@ -90,7 +89,7 @@ public class restTrendingReportDao {
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
 		String getVehicleResponseJson = "";
 		List<Integer> totals = new ArrayList<>();
-		Object getgeodropdown = glReportService.getgeodropdown(userName);
+		Object getgeodropdown = glReportdao.getgeodropdown(userName);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -359,7 +358,7 @@ public class restTrendingReportDao {
 		}
 
 		try {
-			glReportService.updateresponce(userName, responseJson, geodatabase);
+			glReportdao.updateresponce(userName, responseJson, geodatabase);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -907,7 +906,7 @@ public class restTrendingReportDao {
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
 		String getVehicleResponseJson = "";
 		List<Integer> totals = new ArrayList<>();
-		Object getgeodropdown = glReportService.getgeodropdown(userName);
+		Object getgeodropdown = glReportdao.getgeodropdown(userName);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -1080,7 +1079,7 @@ public class restTrendingReportDao {
 		}
 
 		try {
-			glReportService.updateresponce(userName, responseJson, geodatabase);
+			glReportdao.updateresponce(userName, responseJson, geodatabase);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -1095,7 +1094,7 @@ public class restTrendingReportDao {
 	{
 		String responseJson = "";
 		try {
-			responseJson = glReportService.selectresponce(geouname, geodatabase);
+			responseJson = glReportdao.selectresponce(geouname, geodatabase);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}

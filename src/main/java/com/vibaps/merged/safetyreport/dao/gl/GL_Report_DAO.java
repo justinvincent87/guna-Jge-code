@@ -87,8 +87,8 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class GL_Report_DAO {
 	
-	@Autowired
-	private GL_Report_SER glReportService;
+	
+	private GL_Report_DAO glReportDao;
 	private int ROW_OFFSET = -1;
 	private int FORMULA_START_ROW = 7;
 	static Gl_RulelistEntity enty = new Gl_RulelistEntity();
@@ -421,7 +421,7 @@ while(it.hasNext()){
 	{
 		String responseJson = "";
 		List<Integer> totals = new ArrayList<>();
-		Object getgeodropdown = glReportService.getgeodropdown(userName);
+		Object getgeodropdown = glReportDao.getgeodropdown(userName);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -585,7 +585,7 @@ while(it.hasNext()){
 		}
 
 		try {
-			glReportService.updateresponce(userName, responseJson,geodatabase);
+			glReportDao.updateresponce(userName, responseJson,geodatabase);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -688,7 +688,7 @@ bottomNRecords=new ArrayList<Score>();
 		String reportResponseJson = createReportReponseJson(geouname);
 		 try
 			{
-				glReportService.updateresponce(geouname,reportResponseJson,geodatabase);
+			 glReportDao.updateresponce(geouname,reportResponseJson,geodatabase);
 			}catch (Exception e) {
 				// TODO: handle exception
 			}
@@ -760,7 +760,7 @@ reportRows = new ArrayList<ReportRow>();
 			String reportResponseJson = createReportReponseJson(geouname);
 			 try
 				{
-				 glReportService.updateresponce(geouname,reportResponseJson,geodatabase);
+				 glReportDao.updateresponce(geouname,reportResponseJson,geodatabase);
 				}catch (Exception e) {
 					// TODO: handle exception
 				}
@@ -1355,7 +1355,7 @@ reportRows = new ArrayList<ReportRow>();
 		//Guna todo: copy the request here (commented) to get the response below;
 		public String getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 		
-			  Object getgeodropdown = glReportService.getgeodropdown(geouname);
+			  Object getgeodropdown = glReportDao.getgeodropdown(geouname);
 			    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		      String sDate = sdate;
@@ -1419,7 +1419,7 @@ reportRows = new ArrayList<ReportRow>();
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
 		public String getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
-			Object getgeodropdown = glReportService.getgeodropdown(geouname);
+			Object getgeodropdown = glReportDao.getgeodropdown(geouname);
 		    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			String gvalue = "";
 			for (int j = 0; j < getl.size(); j++) {
@@ -1911,7 +1911,7 @@ reportRows = new ArrayList<ReportRow>();
 		{
 			String responseJson = "";
 			try {
-				responseJson = glReportService.selectresponce(geouname,geodatabase);
+				responseJson = glReportDao.selectresponce(geouname,geodatabase);
 			} catch (Exception e) {
 				// TODO: handle exception
 			}

@@ -44,6 +44,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -73,7 +74,7 @@ public class RestTrendingReport {
 	@Autowired
 	private restTrendingReportService restTrendingReportService;
 
-	@GetMapping(value ="/getTrendingReport")
+	@PostMapping(value ="/getTrendingReport")
 	public Object getReportGeo(@RequestParam String groupid, @RequestParam String sdate, @RequestParam String edate,
 			@RequestParam String sees, @RequestParam String geosees, @RequestParam ArrayList<String> geotabgroups,
 			@RequestParam String userName, @RequestParam String geodatabase, @RequestParam String url,
@@ -84,7 +85,7 @@ public class RestTrendingReport {
 		
 	}
 
-	@GetMapping(value ="/getTrendingReportNonLytx")
+	@PostMapping(value ="/getTrendingReportNonLytx")
 	public Object getReportGeoLytx(@RequestParam String sdate, @RequestParam String edate, @RequestParam String geosees,
 			@RequestParam ArrayList<String> geotabgroups, @RequestParam String userName,
 			@RequestParam String geodatabase, @RequestParam String url, @RequestParam String enttype, String period)
@@ -94,7 +95,7 @@ public class RestTrendingReport {
 				geodatabase,url,enttype,period);	
 	}
 	
-	@GetMapping(value ="/createExcelTrendingReport")
+	@PostMapping(value ="/createExcelTrendingReport")
 	private String createExcelReport(@RequestParam String sdate, @RequestParam String edate,
 			@RequestParam String geouname, @RequestParam String geodatabase, @RequestParam String url,
 			@RequestParam String filename, @RequestParam String templect, @RequestParam String entityType)

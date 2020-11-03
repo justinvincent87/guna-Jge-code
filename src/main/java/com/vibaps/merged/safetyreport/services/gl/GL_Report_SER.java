@@ -11,25 +11,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.vibaps.merged.safetyreport.dao.gl.GL_Report_DAO;
+import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.entity.gl.Gl_RulelistEntity;
+@Service
 public class GL_Report_SER {
 
 	@Autowired
 	private GL_Report_DAO glReportDao;
 	
-	public Object insert(ArrayList<String> val, ArrayList<Integer> we, String companyid, String minmiles,String db) {
+	public Object insert(ReportParams reportParams) {
 		ArrayList<Gl_RulelistEntity> v = new ArrayList<>();
-		for (int j = 0; j < val.size(); j++) {
+		for (int j = 0; j < reportParams.getVal().size(); j++) {
 			Gl_RulelistEntity ent = new Gl_RulelistEntity();
-			ent.setRulevalue(val.get(j));
-			ent.setWeight(((Integer)we.get(j)).intValue());
+			ent.setRulevalue(reportParams.getVal().get(j));
+			ent.setWeight(((Integer)reportParams.getWe().get(j)).intValue());
 			v.add(ent);
 		} 
-		return glReportDao.insert(v, companyid, minmiles,db);
+		return glReportDao.insert(v, reportParams.getCompanyid(), reportParams.getMinmiles(),reportParams.getDb());
 	}
-	public Object view(String geouserid,String db) {
+	
+	
+	public Object view(ReportParams reportParams) {
 		// TODO Auto-generated method stub
-		return glReportDao.view(geouserid,db);
+		return glReportDao.view(reportParams.getGeouserid(),reportParams.getDb());
 	}
 	public Object viewadd(String geouserid,String db) {
 		// TODO Auto-generated method stub

@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.poi.EncryptedDocumentException;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.vibaps.merged.safetyreport.dao.trending.*;
-
+import com.vibaps.merged.safetyreport.dao.trending.restTrendingReportDao;
+@Service
 public class restTrendingReportService {
 	private restTrendingReportDao restTrendingReportDao;
 	

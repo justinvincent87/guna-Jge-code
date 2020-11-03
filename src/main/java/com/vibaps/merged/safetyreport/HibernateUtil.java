@@ -29,9 +29,14 @@ public class HibernateUtil {
             //Configuration properties
             Map<String, Object> settings = new HashMap<String, Object>();
             settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
-            settings.put(Environment.URL, "jdbc:mysql://vibaps.com:3306/vibapsdb?autoReconnect=true&useSSL=false");
-            settings.put(Environment.USER, "vibaps");
-            settings.put(Environment.PASS, "vibaps");
+            //settings.put(Environment.URL, "jdbc:mysql://vibaps.com:3306/vibapsdb?autoReconnect=true&useSSL=false");
+           // settings.put(Environment.USER, "vibaps");
+           //settings.put(Environment.PASS, "vibaps");
+            
+            settings.put(Environment.URL, "jdbc:mysql://localhost:3306/vibapsdb?autoReconnect=true&useSSL=false");
+  
+          settings.put(Environment.USER, "goldedu");
+          settings.put(Environment.PASS, "goldedu");
             settings.put(Environment.HBM2DDL_AUTO, "validate");
             settings.put(Environment.SHOW_SQL, true);
             

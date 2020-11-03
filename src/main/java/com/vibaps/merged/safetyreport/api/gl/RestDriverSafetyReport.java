@@ -10,11 +10,12 @@ import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 @CrossOrigin(origins = { "*" }, allowedHeaders = { "*" })
 @RestController
 @RequestMapping({ "/glreport" })
@@ -22,32 +23,32 @@ public class RestDriverSafetyReport {
 	
 	@Autowired
 	private GL_Report_SER glReportService;
-	@GetMapping(value="/insert")
-	public Object insert(@RequestParam ArrayList<String> val, @RequestParam ArrayList<Integer> we,
-			@RequestParam String companyid, @RequestParam String minmiles,@RequestParam String db) {
-		return glReportService.insert(val, we, companyid, minmiles,db);
+	
+	@PostMapping(value="/insert")
+	public Object insert(@RequestBody ReportParams reportParams) {
+		return glReportService.insert(reportParams);
 	}
 
-	@GetMapping(value ="/getbehave" )
-	public Object view(@RequestParam String geouserid,@RequestParam String db) {
-		return glReportService.view(geouserid,db);
+	@PostMapping(value ="/getbehave" )
+	public Object view(@RequestBody ReportParams reportParams) {
+		return glReportService.view(reportParams);
 	}
 
-	@GetMapping(value ="/getbehaveui")
+	@PostMapping(value ="/getbehaveui")
 	public Object viewui(@RequestParam String geouserid,@RequestParam String db) {
 		return glReportService.viewui(geouserid,db);
 	}
 
-	@GetMapping(value ="/getbehaveadd")
+	@PostMapping(value ="/getbehaveadd")
 	public Object viewadd(@RequestParam String geouserid,@RequestParam String db) {
 		return glReportService.viewadd(geouserid,db);
 	}
 
-	@GetMapping(value="/getLybehave")
+	@PostMapping(value="/getLybehave")
 	public Object getLybehave(@RequestParam String geouserid,@RequestParam String db) {
 		return glReportService.getLybehave(geouserid,db);
 	}
-	@GetMapping(value ="/getReport")
+	@PostMapping(value ="/getReport")
 	public Object getReport(@RequestParam String sees, @RequestParam String sdate, @RequestParam String edate,
 			@RequestParam String groupid, @RequestParam String geosees, @RequestParam ArrayList<String> geotabgroups,
 			@RequestParam String geouname, @RequestParam String geodatabase, @RequestParam String url,
@@ -58,7 +59,7 @@ public class RestDriverSafetyReport {
 				templect, enttype,endpoint);
 
 	}
-	@GetMapping(value="/getReportGeo")
+	@PostMapping(value="/getReportGeo")
 	public Object getReportGeo(@RequestParam String sdate, @RequestParam String edate, @RequestParam String geosees,
 			@RequestParam ArrayList<String> geotabgroups, @RequestParam String userName,
 			@RequestParam String geodatabase, @RequestParam String url, @RequestParam String filename,
@@ -67,7 +68,7 @@ public class RestDriverSafetyReport {
 		return glReportService.getReportGeo(sdate,edate,geosees,geotabgroups,userName,geodatabase,url,filename,templect,enttype);
 	}
 
-	@GetMapping(value ="/createExcelReport",produces = { "application/string" })
+	@PostMapping(value ="/createExcelReport",produces = { "application/string" })
 	private String createExcelReport(@RequestParam String sdate, @RequestParam String edate,
 			@RequestParam String geouname, @RequestParam String geodatabase, @RequestParam String url,
 			@RequestParam String filename, @RequestParam String templect) throws IOException, FileNotFoundException {

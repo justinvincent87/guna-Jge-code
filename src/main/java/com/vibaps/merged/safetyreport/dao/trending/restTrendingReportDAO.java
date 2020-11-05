@@ -39,6 +39,7 @@ import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.gson.JsonObject;
@@ -50,15 +51,14 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.api.gl.RestDriverSafetyReport;
-import com.vibaps.merged.safetyreport.dao.gl.Common_Geotab_DAO;
-import com.vibaps.merged.safetyreport.dao.gl.GL_Report_DAO;
+import com.vibaps.merged.safetyreport.dao.gl.commonGeotabDAO;
+import com.vibaps.merged.safetyreport.dao.gl.glReportDAO;
 import com.vibaps.merged.safetyreport.entity.gl.Trip;
-import com.vibaps.merged.safetyreport.services.gl.GL_Report_SER;
-
-public class restTrendingReportDao {
+@Repository
+public class restTrendingReportDAO {
 	
 	@Autowired
-	private GL_Report_DAO glReportdao;
+	private glReportDAO glReportdao;
 
 	private Map<Long, String> lytxVehicleList;
 	private static Map<String, List<Trip>> vehicleTrips;
@@ -411,7 +411,7 @@ public class restTrendingReportDao {
 		// THE FOLLOWING METHOD CALL 'loadSampleTrips()' SHOULD BE REPLACED WITH ACTUAL
 		// CALL AND VALUE RETURNED AS STRING ARRAY.
 
-		ArrayList<String> tripsData = Common_Geotab_DAO.getTrip(geouname, geodatabase, geosees, url, fromDate, toDate);
+		ArrayList<String> tripsData = commonGeotabDAO.getTrip(geouname, geodatabase, geosees, url, fromDate, toDate);
 
 		for (String tripData : tripsData) {
 			String[] tripVars = tripData.split("\\|");
@@ -444,7 +444,7 @@ public class restTrendingReportDao {
 		reportColumnHeader.add("EndDate");
 		// TODO: Remaining columns to be populated from database selected columns. using
 		// static for now.
-		GL_Report_DAO da = new GL_Report_DAO();
+		glReportDAO da = new glReportDAO();
 		ArrayList<String> gval = new ArrayList();
 		gval = da.getallbehave(userName, db);
 		for (int j = 0; j < gval.size(); j++) {
@@ -1180,7 +1180,7 @@ public class restTrendingReportDao {
 				cell2.setCellValue("");
 			} else {
 				int D = 0;
-				D = GL_Report_DAO.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(), geodatabase);
+				D = glReportDAO.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(), geodatabase);
 				cell2.setCellValue(D);
 			}
 		}
@@ -1226,7 +1226,7 @@ public class restTrendingReportDao {
 		Cell cells = rows.getCell(2);
 		float min = 0.0F;
 		try {
-			min = GL_Report_DAO.getminmiles(geouname, geodatabase);
+			min = glReportDAO.getminmiles(geouname, geodatabase);
 
 			System.out.println("min-value" + min);
 		} catch (Exception exception) {

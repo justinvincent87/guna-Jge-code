@@ -9,12 +9,13 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 
-@Entity
-@Table(name="gen_user")
-public class Gen_UserEntity {
-	public static final String FNN="Gen_User";
-	public Gen_UserEntity(){}
+import lombok.NoArgsConstructor;
 
+@Entity
+@NoArgsConstructor
+@Table(name="gen_user")
+public class genUserEntity {
+	public static final String FNN="Gen_User";
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
@@ -25,7 +26,7 @@ public class Gen_UserEntity {
 	private String companyid="";
 	
 	
-	public Gen_UserEntity(int id, String companyid) {
+	public genUserEntity(int id, String companyid) {
 		super();
 		this.id = id;
 		this.companyid = companyid;

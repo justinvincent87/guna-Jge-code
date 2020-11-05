@@ -60,16 +60,17 @@ import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.HibernateUtil;
 import com.vibaps.merged.safetyreport.api.gl.RestDriverSafetyReport;
 import com.vibaps.merged.safetyreport.api.trending.RestTrendingReport;
-import com.vibaps.merged.safetyreport.entity.gl.Gen_Device;
-import com.vibaps.merged.safetyreport.entity.gl.Gen_Driver;
-import com.vibaps.merged.safetyreport.entity.gl.Gl_RulelistEntity;
+import com.vibaps.merged.safetyreport.entity.gl.genDevice;
+import com.vibaps.merged.safetyreport.entity.gl.genDriver;
+import com.vibaps.merged.safetyreport.entity.gl.glRulelistEntity;
 import com.vibaps.merged.safetyreport.entity.gl.ReportRow;
 import com.vibaps.merged.safetyreport.entity.gl.Score;
 import com.vibaps.merged.safetyreport.entity.gl.Trip;
-import com.vibaps.merged.safetyreport.services.gl.GL_Report_SER;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -85,13 +86,14 @@ import java.util.TimeZone;
 
 import lombok.extern.log4j.Log4j2;
 @Log4j2
-public class GL_Report_DAO {
+@Repository
+public class glReportDAO {
 	
+	private glRulelistEntity enty;
+
 	
-	private GL_Report_DAO glReportDao;
 	private int ROW_OFFSET = -1;
 	private int FORMULA_START_ROW = 7;
-	static Gl_RulelistEntity enty = new Gl_RulelistEntity();
 
 	String title;
 	LocalDateTime startDate;
@@ -113,8 +115,8 @@ public class GL_Report_DAO {
     static List<Map.Entry<String, Integer>> loadSelectedRuleNames;
 	public static Object view(String geouserid,String db) {
 		Map<String, Object> result = new HashMap<>();
-		List<Gl_RulelistEntity> obj = null;
-		List<Gl_RulelistEntity> obj1 = null;
+		List<glRulelistEntity> obj = null;
+		List<glRulelistEntity> obj1 = null;
 
 		BigInteger countuser = null;
 		
@@ -192,7 +194,7 @@ public class GL_Report_DAO {
 	public static Object viewadd(String geouserid,String db) {
 		Map<String, Object> result = new HashMap<>();
 		Session session = null;
-		List<Gl_RulelistEntity> obj = null;
+		List<glRulelistEntity> obj = null;
 		Transaction transaction = null;
 		try {
 			session = HibernateUtil.getsession();
@@ -206,7 +208,7 @@ public class GL_Report_DAO {
 	public Object getgeodropdown(String geouserid) {
 		Map<String, Object> result = new HashMap<>();
 		Session session = null;
-		List<Gl_RulelistEntity> obj = null;
+		List<glRulelistEntity> obj = null;
 		Transaction transaction = null;
 		try {
 			session = HibernateUtil.getsession();
@@ -220,7 +222,7 @@ public class GL_Report_DAO {
 	public Object getLybehave(String geouserid,String db) {
 		Map<String, Object> result = new HashMap<>();
 		Session session = null;
-		List<Gl_RulelistEntity> obj = null;
+		List<glRulelistEntity> obj = null;
 		Transaction transaction = null;
 		try {
 			session = HibernateUtil.getsession();
@@ -358,7 +360,7 @@ public class GL_Report_DAO {
 		return i;
 	}
 	
-	public Object insert(ArrayList<Gl_RulelistEntity> v, String companyid, String minmiles,String db) {
+	public Object insert(ArrayList<glRulelistEntity> v, String companyid, String minmiles,String db) {
 		Map<String, String> result = new HashMap<>();
 		Session session = null;
 		int i = 0;
@@ -375,7 +377,7 @@ public class GL_Report_DAO {
 				for (int d = 0; d < v.size(); d++) {
 					session = HibernateUtil.getsession();
 					transaction = session.beginTransaction();
-					j = session.createSQLQuery("update gl_rulelist a,gl_selectedvalues b,gen_user c set b.status=1,b.weight=:we where  c.companyid=:companyid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.rulevalue=:rval").setParameter("we", Integer.valueOf(((Gl_RulelistEntity)v.get(d)).getWeight())).setParameter("companyid", companyid).setParameter("db", db).setParameter("rval", ((Gl_RulelistEntity)v.get(d)).getRulevalue()).executeUpdate();
+					j = session.createSQLQuery("update gl_rulelist a,gl_selectedvalues b,gen_user c set b.status=1,b.weight=:we where  c.companyid=:companyid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.rulevalue=:rval").setParameter("we", Integer.valueOf(((glRulelistEntity)v.get(d)).getWeight())).setParameter("companyid", companyid).setParameter("db", db).setParameter("rval", ((glRulelistEntity)v.get(d)).getRulevalue()).executeUpdate();
 					transaction.commit();
 					result.put("result", "Rules list saved");
 				} 
@@ -384,8 +386,8 @@ public class GL_Report_DAO {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static List<Gen_Device> deviceName(String geouserid,String db) {
-		List<Gen_Device> deviceNameList=new ArrayList<Gen_Device>();
+	public static List<genDevice> deviceName(String geouserid,String db) {
+		List<genDevice> deviceNameList=new ArrayList<genDevice>();
 		
 		List<Object[]> list=null;
 		
@@ -404,7 +406,7 @@ public class GL_Report_DAO {
 Iterator it = list.iterator();
 while(it.hasNext()){
      Object[] line = (Object[]) it.next();
-     Gen_Device eq = new Gen_Device();
+     genDevice eq = new genDevice();
      eq.setDevice_id(line[0].toString());
      eq.setDevice_name(line[1].toString());
 
@@ -421,7 +423,7 @@ while(it.hasNext()){
 	{
 		String responseJson = "";
 		List<Integer> totals = new ArrayList<>();
-		Object getgeodropdown = glReportDao.getgeodropdown(userName);
+		Object getgeodropdown = getgeodropdown(userName);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -585,7 +587,7 @@ while(it.hasNext()){
 		}
 
 		try {
-			glReportDao.updateresponce(userName, responseJson,geodatabase);
+			updateresponce(userName, responseJson,geodatabase);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -595,11 +597,11 @@ while(it.hasNext()){
 	}
 
 	@SuppressWarnings("unchecked")
-	public static List<Gen_Driver> driverName(String geouserid,String db) {
+	public static List<genDriver> driverName(String geouserid,String db) {
 		
 		Session session = null;
 		Map<String,String> obj = new LinkedHashMap<String, String>();
-		List<Gen_Driver> driverNameList=new ArrayList<Gen_Driver>();
+		List<genDriver> driverNameList=new ArrayList<genDriver>();
 		List<Object[]> list=null;
 
 		
@@ -617,7 +619,7 @@ while(it.hasNext()){
 		Iterator it = list.iterator();
 		while(it.hasNext()){
 		     Object[] line = (Object[]) it.next();
-		     Gen_Driver eq = new Gen_Driver();
+		     genDriver eq = new genDriver();
 		     eq.setDriver_id(line[0].toString());
 		     eq.setDriver_name(line[1].toString());
 		     driverNameList.add(eq);
@@ -688,7 +690,7 @@ bottomNRecords=new ArrayList<Score>();
 		String reportResponseJson = createReportReponseJson(geouname);
 		 try
 			{
-			 glReportDao.updateresponce(geouname,reportResponseJson,geodatabase);
+			 updateresponce(geouname,reportResponseJson,geodatabase);
 			}catch (Exception e) {
 				// TODO: handle exception
 			}
@@ -760,7 +762,7 @@ reportRows = new ArrayList<ReportRow>();
 			String reportResponseJson = createReportReponseJson(geouname);
 			 try
 				{
-				 glReportDao.updateresponce(geouname,reportResponseJson,geodatabase);
+				 updateresponce(geouname,reportResponseJson,geodatabase);
 				}catch (Exception e) {
 					// TODO: handle exception
 				}
@@ -1222,7 +1224,7 @@ reportRows = new ArrayList<ReportRow>();
 	    		}
 	    		*/
 	    	//THE FOLLOWING METHOD CALL 'loadSampleTrips()' SHOULD BE REPLACED WITH ACTUAL CALL AND VALUE RETURNED AS STRING ARRAY.
-	    		ArrayList<String> tripsData = Common_Geotab_DAO.getTrip(geouserid, databaseName, geosess, url, sdate, edate);
+	    		ArrayList<String> tripsData = commonGeotabDAO.getTrip(geouserid, databaseName, geosess, url, sdate, edate);
 	    	// END METHOD CALL 'loadSampleTrips()'
 	    		
 	    	Map<String, List<Trip>> vehicleTrips = new HashMap<String, List<Trip>>();
@@ -1355,7 +1357,7 @@ reportRows = new ArrayList<ReportRow>();
 		//Guna todo: copy the request here (commented) to get the response below;
 		public String getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 		
-			  Object getgeodropdown = glReportDao.getgeodropdown(geouname);
+			  Object getgeodropdown = getgeodropdown(geouname);
 			    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		      String sDate = sdate;
@@ -1419,7 +1421,7 @@ reportRows = new ArrayList<ReportRow>();
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
 		public String getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
-			Object getgeodropdown = glReportDao.getgeodropdown(geouname);
+			Object getgeodropdown = getgeodropdown(geouname);
 		    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			String gvalue = "";
 			for (int j = 0; j < getl.size(); j++) {
@@ -1731,7 +1733,7 @@ reportRows = new ArrayList<ReportRow>();
 			reportColumnHeader.add("VehicleName");
 			reportColumnHeader.add("Group");
 			reportColumnHeader.add("Distance");
-			GL_Report_DAO da = new GL_Report_DAO();
+			glReportDAO da = new glReportDAO();
 			ArrayList<String> gval = new ArrayList();
 			gval = da.getallbehave(userName,db);
 			for (int j = 0; j < gval.size(); j++) {
@@ -1911,7 +1913,7 @@ reportRows = new ArrayList<ReportRow>();
 		{
 			String responseJson = "";
 			try {
-				responseJson = glReportDao.selectresponce(geouname,geodatabase);
+				responseJson = selectresponce(geouname,geodatabase);
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
@@ -1971,7 +1973,7 @@ reportRows = new ArrayList<ReportRow>();
 					cell2.setCellValue("");
 				} else {
 					int D = 0;
-					D = GL_Report_DAO.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(),geodatabase);
+					D = getwe(geouname, ((String) displayColumns.get(h)).toString().trim(),geodatabase);
 					cell2.setCellValue(D);
 				}
 			}
@@ -2008,7 +2010,7 @@ reportRows = new ArrayList<ReportRow>();
 			Cell cells = rows.getCell(2);
 			float min = 0.0F;
 			try {
-				min = GL_Report_DAO.getminmiles(geouname,geodatabase);
+				min = getminmiles(geouname,geodatabase);
 			} catch (Exception exception) {
 			}
 			cells.setCellValue(min);

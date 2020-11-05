@@ -1,7 +1,7 @@
 package com.vibaps.merged.safetyreport.api.gl;
 
 
-import com.vibaps.merged.safetyreport.services.gl.GL_Report_SER;
+import com.vibaps.merged.safetyreport.services.gl.restDriverSafetyReportService;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
@@ -22,7 +22,7 @@ import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 public class RestDriverSafetyReport {
 	
 	@Autowired
-	private GL_Report_SER glReportService;
+	private restDriverSafetyReportService glReportService;
 	
 	@PostMapping(value="/insert")
 	public Object insert(@RequestBody ReportParams reportParams) {
@@ -35,45 +35,36 @@ public class RestDriverSafetyReport {
 	}
 
 	@PostMapping(value ="/getbehaveui")
-	public Object viewui(@RequestParam String geouserid,@RequestParam String db) {
-		return glReportService.viewui(geouserid,db);
+	public Object viewui(@RequestBody ReportParams reportParams) {
+		return glReportService.viewui(reportParams);
 	}
 
 	@PostMapping(value ="/getbehaveadd")
-	public Object viewadd(@RequestParam String geouserid,@RequestParam String db) {
-		return glReportService.viewadd(geouserid,db);
+	public Object viewadd(@RequestBody ReportParams reportParams) {
+		return glReportService.viewadd(reportParams);
 	}
 
 	@PostMapping(value="/getLybehave")
-	public Object getLybehave(@RequestParam String geouserid,@RequestParam String db) {
-		return glReportService.getLybehave(geouserid,db);
+	public Object getLybehave(@RequestBody ReportParams reportParams) {
+		return glReportService.getLybehave(reportParams);
 	}
 	@PostMapping(value ="/getReport")
-	public Object getReport(@RequestParam String sees, @RequestParam String sdate, @RequestParam String edate,
-			@RequestParam String groupid, @RequestParam String geosees, @RequestParam ArrayList<String> geotabgroups,
-			@RequestParam String geouname, @RequestParam String geodatabase, @RequestParam String url,
-			@RequestParam String filename, @RequestParam String templect, @RequestParam String enttype,@RequestParam String endpoint)
+	public Object getReport(@RequestBody ReportParams reportParams)
 			throws EncryptedDocumentException, InvalidFormatException, IOException, ParseException {
 
-		return glReportService.process(sees, sdate, edate, groupid, geosees, geotabgroups, geouname, geodatabase, url, filename,
-				templect, enttype,endpoint);
+		return glReportService.process(reportParams);
 
 	}
 	@PostMapping(value="/getReportGeo")
-	public Object getReportGeo(@RequestParam String sdate, @RequestParam String edate, @RequestParam String geosees,
-			@RequestParam ArrayList<String> geotabgroups, @RequestParam String userName,
-			@RequestParam String geodatabase, @RequestParam String url, @RequestParam String filename,
-			@RequestParam String templect, @RequestParam String enttype)
+	public Object getReportGeo(@RequestBody ReportParams reportParams)
 			throws EncryptedDocumentException, InvalidFormatException, IOException {
-		return glReportService.getReportGeo(sdate,edate,geosees,geotabgroups,userName,geodatabase,url,filename,templect,enttype);
+		return glReportService.getReportGeo(reportParams);
 	}
 
 	@PostMapping(value ="/createExcelReport",produces = { "application/string" })
-	private String createExcelReport(@RequestParam String sdate, @RequestParam String edate,
-			@RequestParam String geouname, @RequestParam String geodatabase, @RequestParam String url,
-			@RequestParam String filename, @RequestParam String templect) throws IOException, FileNotFoundException {
+	private String createExcelReport(@RequestBody ReportParams reportParams) throws IOException, FileNotFoundException {
 	
-		return glReportService.createExcelReport(sdate,edate,geouname,geodatabase,url,filename,templect);
+		return glReportService.createExcelReport(reportParams);
 
 	}
 

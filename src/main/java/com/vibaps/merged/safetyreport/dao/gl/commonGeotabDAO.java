@@ -21,16 +21,17 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.stereotype.Repository;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.vibaps.merged.safetyreport.HibernateUtil;
 import com.vibaps.merged.safetyreport.api.gl.RestDriverSafetyReport;
-import com.vibaps.merged.safetyreport.entity.gl.Gen_Device;
-import com.vibaps.merged.safetyreport.entity.gl.Gen_Driver;
+import com.vibaps.merged.safetyreport.entity.gl.genDevice;
+import com.vibaps.merged.safetyreport.entity.gl.genDriver;
 
-
-public class Common_Geotab_DAO  {
+@Repository
+public class commonGeotabDAO  {
 
 @Transactional	
 public Object insertDevice(String geouserid,String databaseName,String geosess,String url) throws IOException {
@@ -233,12 +234,12 @@ int result=0;
 			Map<String,String> deviceName=new LinkedHashMap<String,String>();
 			Map<String,String> driverName=new LinkedHashMap<String,String>();
 			
-			List<Gen_Device> deviceNameList=new ArrayList<Gen_Device>();
-			List<Gen_Driver> driverNameList=new ArrayList<Gen_Driver> ();
+			List<genDevice> deviceNameList=new ArrayList<genDevice>();
+			List<genDriver> driverNameList=new ArrayList<genDriver> ();
 			
 			try
 			{
-				driverNameList=GL_Report_DAO.driverName(geouserid,databaseName);
+				driverNameList=glReportDAO.driverName(geouserid,databaseName);
 				
 				for(int i=0;i<driverNameList.size();i++)
 				{
@@ -251,7 +252,7 @@ int result=0;
 			
 			try
 			{
-				deviceNameList=GL_Report_DAO.deviceName(geouserid,databaseName);
+				deviceNameList=glReportDAO.deviceName(geouserid,databaseName);
 				for(int i=0;i<deviceNameList.size();i++)
 				{
 					deviceName.put(deviceNameList.get(i).getDevice_id(),deviceNameList.get(i).getDevice_name());
@@ -341,12 +342,12 @@ int result=0;
 			Map<String,String> deviceName=new LinkedHashMap<String,String>();
 			Map<String,String> driverName=new LinkedHashMap<String,String>();
 			
-			List<Gen_Device> deviceNameList=new ArrayList<Gen_Device>();
-			List<Gen_Driver> driverNameList=new ArrayList<Gen_Driver> ();
+			List<genDevice> deviceNameList=new ArrayList<genDevice>();
+			List<genDriver> driverNameList=new ArrayList<genDriver> ();
 			
 			try
 			{
-				driverNameList=GL_Report_DAO.driverName(geouserid,databaseName);
+				driverNameList=glReportDAO.driverName(geouserid,databaseName);
 				
 				for(int i=0;i<driverNameList.size();i++)
 				{
@@ -359,7 +360,7 @@ int result=0;
 			
 			try
 			{
-				deviceNameList=GL_Report_DAO.deviceName(geouserid,databaseName);
+				deviceNameList=glReportDAO.deviceName(geouserid,databaseName);
 				for(int i=0;i<deviceNameList.size();i++)
 				{
 					deviceName.put(deviceNameList.get(i).getDevice_id(),deviceNameList.get(i).getDevice_name());

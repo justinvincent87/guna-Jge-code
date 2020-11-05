@@ -14,15 +14,17 @@ import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
 @Getter
 @Entity
 @Setter
+@NoArgsConstructor
 @Table(name="gl_rulelist")
 @SecondaryTable(name = "gl_selectedvalues")
-public class Gl_RulelistEntity {
+public class glRulelistEntity {
 	public static final String FNN="Gl_rulelist";
 	
 	
@@ -43,7 +45,7 @@ public class Gl_RulelistEntity {
 	 @Column(name = "status", table = "gl_selectedvalues")
 	  private int status=0;
 
-	public Gl_RulelistEntity(int id, String rulename, String rulevalue, String rulecompany,int status,int weight) {
+	public glRulelistEntity(int id, String rulename, String rulevalue, String rulecompany,int status,int weight) {
 		super();
 		this.id = id;
 		this.rulename = rulename;
@@ -53,24 +55,22 @@ public class Gl_RulelistEntity {
 		this.weight=weight;
 	}
 	
-	public Gl_RulelistEntity(String rulename,int weight) {
+	public glRulelistEntity(String rulename,int weight) {
 	
 		this.rulename = rulename;
 		
 		this.weight=weight;
 	}
 
-	public Gl_RulelistEntity(String rulevalue) {
+	public glRulelistEntity(String rulevalue) {
 		super();
 		this.rulevalue = rulevalue;
 	}
 	
 	
-	public Gl_RulelistEntity() {
-	
-	}
 
-	public Gl_RulelistEntity(int weight) {
+
+	public glRulelistEntity(int weight) {
 		super();
 		this.weight = weight;
 	}

@@ -7,10 +7,10 @@ import org.apache.poi.EncryptedDocumentException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.vibaps.merged.safetyreport.dao.trending.restTrendingReportDao;
+import com.vibaps.merged.safetyreport.dao.trending.restTrendingReportDAO;
 @Service
 public class restTrendingReportService {
-	private restTrendingReportDao restTrendingReportDao;
+	private restTrendingReportDAO restTrendingReportDao;
 	
 	public Object getReportGeo(String groupid,String sdate,String edate,
 			String sees,String geosees,ArrayList<String> geotabgroups,

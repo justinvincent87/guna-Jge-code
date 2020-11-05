@@ -31,8 +31,7 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.dto.LoginResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
-import com.vibaps.merged.safetyreport.entity.gl.Gen_Driver;
-import com.vibaps.merged.safetyreport.services.gl.GL_Report_SER;
+import com.vibaps.merged.safetyreport.services.gl.restDriverSafetyReportService;
 
 import lombok.experimental.var;
 import net.sf.json.JSONObject;
@@ -271,7 +270,7 @@ public class BasicCountroller {
 	  @RequestMapping(value="/GetGeotabBehaveDropDown",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
 	  public @ResponseBody Object GetGeotabBehaveDropDown(@RequestParam String geouserid) throws RemoteException 
 	  { 
-		  GL_Report_SER rep=new GL_Report_SER();
+		  restDriverSafetyReportService rep=new restDriverSafetyReportService();
 		  return rep.getgeodropdown(geouserid);
 	  }
 	  

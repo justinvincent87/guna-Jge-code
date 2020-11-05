@@ -12,14 +12,16 @@ import org.springframework.cache.annotation.CacheConfig;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 @Getter
 @Entity
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 
 @Table(name="gen_driver")
-public class Gen_Driver {
+public class genDriver {
 
 	@Id
 	@GeneratedValue(generator = "id")
@@ -31,10 +33,5 @@ public class Gen_Driver {
 	@Column(name = "driver_id")
 	private String driver_id="";
 	@Column(name = "driver_name")
-	private String driver_name="";
-	public Gen_Driver() {
-		// TODO Auto-generated constructor stub
-	}
-	
-	
+	private String driver_name="";	
 }

@@ -3,6 +3,7 @@ package com.vibaps.merged.safetyreport.api.trending;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import org.apache.poi.EncryptedDocumentException;
@@ -16,21 +17,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
-import com.vibaps.merged.safetyreport.services.trending.restTrendingReportService;
+import com.vibaps.merged.safetyreport.services.trending.RestTrendingReportService;
 
 @CrossOrigin(origins = { "*" }, allowedHeaders = { "*" })
 @RestController
 @RequestMapping({ "/trendingreport" })
 public class RestTrendingReport {
 	@Autowired
-	private restTrendingReportService restTrendingReportService;
+	private RestTrendingReportService restTrendingReportService;
 
 	@PostMapping(value ="/getTrendingReport")
 	public Object getReportGeo(@RequestParam String groupid, @RequestParam String sdate, @RequestParam String edate,
 			@RequestParam String sees, @RequestParam String geosees, @RequestParam ArrayList<String> geotabgroups,
 			@RequestParam String userName, @RequestParam String geodatabase, @RequestParam String url,
 			@RequestParam String enttype, @RequestParam String period, @RequestParam String endpoint)
-			throws EncryptedDocumentException, InvalidFormatException, IOException {
+			throws EncryptedDocumentException, InvalidFormatException, IOException, ParseException {
 		return restTrendingReportService.getReportGeo(groupid,sdate,edate,sees,geosees,geotabgroups,userName,geodatabase,url,enttype,period,endpoint);
 
 		

@@ -7,6 +7,7 @@ import org.hibernate.Transaction;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -31,7 +32,7 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.dto.LoginResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
-import com.vibaps.merged.safetyreport.services.gl.restDriverSafetyReportService;
+import com.vibaps.merged.safetyreport.services.gl.RestDriverSafetyReportService;
 
 import lombok.experimental.var;
 import net.sf.json.JSONObject;
@@ -78,6 +79,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RestController
 @RequestMapping("Lytx/Api")
 public class BasicCountroller {
+	
+	@Autowired
+	 private RestDriverSafetyReportService glReportService;
+
 	@RequestMapping(value="/getKey",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
 	  public java.lang.String get(HttpServletRequest request) throws RemoteException 
 	  { 
@@ -270,8 +275,7 @@ public class BasicCountroller {
 	  @RequestMapping(value="/GetGeotabBehaveDropDown",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
 	  public @ResponseBody Object GetGeotabBehaveDropDown(@RequestParam String geouserid) throws RemoteException 
 	  { 
-		  restDriverSafetyReportService rep=new restDriverSafetyReportService();
-		  return rep.getgeodropdown(geouserid);
+		  return glReportService.getgeodropdown(geouserid);
 	  }
 	  
 	  @RequestMapping(value="/GetEventsByLastUpdateDateforReport",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 

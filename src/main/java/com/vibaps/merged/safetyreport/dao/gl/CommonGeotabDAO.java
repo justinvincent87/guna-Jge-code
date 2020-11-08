@@ -21,17 +21,20 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.vibaps.merged.safetyreport.HibernateUtil;
 import com.vibaps.merged.safetyreport.api.gl.RestDriverSafetyReport;
-import com.vibaps.merged.safetyreport.entity.gl.genDevice;
-import com.vibaps.merged.safetyreport.entity.gl.genDriver;
+import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
+import com.vibaps.merged.safetyreport.entity.gl.GenDriver;
 
 @Repository
-public class commonGeotabDAO  {
+public class CommonGeotabDAO  {
+	@Autowired
+	private static GlReportDAO glReportDAO;
 
 @Transactional	
 public Object insertDevice(String geouserid,String databaseName,String geosess,String url) throws IOException {
@@ -234,8 +237,8 @@ int result=0;
 			Map<String,String> deviceName=new LinkedHashMap<String,String>();
 			Map<String,String> driverName=new LinkedHashMap<String,String>();
 			
-			List<genDevice> deviceNameList=new ArrayList<genDevice>();
-			List<genDriver> driverNameList=new ArrayList<genDriver> ();
+			List<GenDevice> deviceNameList=new ArrayList<GenDevice>();
+			List<GenDriver> driverNameList=new ArrayList<GenDriver> ();
 			
 			try
 			{
@@ -342,8 +345,8 @@ int result=0;
 			Map<String,String> deviceName=new LinkedHashMap<String,String>();
 			Map<String,String> driverName=new LinkedHashMap<String,String>();
 			
-			List<genDevice> deviceNameList=new ArrayList<genDevice>();
-			List<genDriver> driverNameList=new ArrayList<genDriver> ();
+			List<GenDevice> deviceNameList=new ArrayList<GenDevice>();
+			List<GenDriver> driverNameList=new ArrayList<GenDriver> ();
 			
 			try
 			{

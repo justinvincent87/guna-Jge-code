@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
-import com.vibaps.merged.safetyreport.services.gl.commonGeotabService;
+import com.vibaps.merged.safetyreport.services.gl.CommonGeotabService;
 
 @CrossOrigin(origins = { "*" }, allowedHeaders = { "*" })
 @RestController
 @RequestMapping({ "/geotab_common_call" })
-public class commonGeotabAPI {
+public class CommonGeotabAPI {
 @Autowired
-private commonGeotabService commonGeotabService;
+private CommonGeotabService commonGeotabService;
 
 
 @PostMapping(value ="/insertDriver")

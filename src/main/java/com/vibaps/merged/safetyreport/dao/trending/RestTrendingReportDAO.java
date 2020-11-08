@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,7 +41,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -50,16 +50,16 @@ import com.lytx.dto.GetEventsByLastUpdateDateRequest;
 import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
-import com.vibaps.merged.safetyreport.api.gl.RestDriverSafetyReport;
-import com.vibaps.merged.safetyreport.dao.gl.commonGeotabDAO;
-import com.vibaps.merged.safetyreport.dao.gl.glReportDAO;
+import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
+import com.vibaps.merged.safetyreport.dao.gl.GlReportDAO;
 import com.vibaps.merged.safetyreport.entity.gl.Trip;
 @Repository
-public class restTrendingReportDAO {
+public class RestTrendingReportDAO {
 	
 	@Autowired
-	private glReportDAO glReportdao;
-
+	private GlReportDAO glReportdao;
+	@Autowired
+	private static CommonGeotabDAO commonGeotabDAO;
 	private Map<Long, String> lytxVehicleList;
 	private static Map<String, List<Trip>> vehicleTrips;
 	private int ROW_OFFSET = -1;
@@ -72,118 +72,43 @@ public class restTrendingReportDAO {
     private static Map<Integer, String> lytxBehaviors;
 
 
-
-
-
-
-
 	
-	
-	
-	public Object getReportGeo(String groupid,String sdate,String edate,
-			String sees,String geosees,ArrayList<String> geotabgroups,
-		String userName,String geodatabase,String url,
-		String enttype,String period,String endpoint)
+	public Object getReportGeo(String groupId,String startDate,String endDate,
+			String lytxSessionId,String geotabSessionId,ArrayList<String> geotabGroups,
+		String userName,String geotabDatabase,String url,
+		String enttype,String period,String endPoint) throws RemoteException, ParseException
 	{
 		String responseJson = "";
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
 		String getVehicleResponseJson = "";
-		List<Integer> totals = new ArrayList<>();
 		Object getgeodropdown = glReportdao.getgeodropdown(userName);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
 		List<String> displayColumns = null;
 		Map<Integer, String> lytxBehaviors = null;
-		StringBuffer combinedReportResponseJson = new StringBuffer();
+		
+		
+		 getVehicleResponseJson=lytexVechileResponce(startDate, endDate, groupId, lytxSessionId, endPoint);
+		
 		try {
 			String lytxBehaviorsJson = "";
-			Date ssdate = null;
-			Date eedate = null;
-			if (!groupid.equalsIgnoreCase("0")) {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-				String sDate = sdate;
-				String eDate = edate;
-				ssdate = sdf.parse(sDate);
-				eedate = sdf.parse(eDate);
+			String sdate="";
 
-				ISubmissionServiceV5Proxy er = new ISubmissionServiceV5Proxy(endpoint);
-				ExistingSessionRequest re = new ExistingSessionRequest();
-				re.setSessionId(sees);
-				GetBehaviorsResponse getb = new GetBehaviorsResponse();
-				getb = er.getBehaviors(re);
-
-				JSONObject jsonObject = new JSONObject(getb);
-				lytxBehaviorsJson = toStringValue(jsonObject);
-				ISubmissionServiceV5Proxy pr = new ISubmissionServiceV5Proxy(endpoint);
-				GetVehiclesResponse lr = new GetVehiclesResponse();
-				GetVehiclesRequest getVehiclesRequest = new GetVehiclesRequest();
-				getVehiclesRequest.setIncludeSubgroups(Boolean.valueOf(true));
-				getVehiclesRequest.setSessionId(sees);
-				lr = pr.getVehicles(getVehiclesRequest);
-
-				JSONObject jsonObject2 = new JSONObject(lr);
-				getVehicleResponseJson = toStringValue(jsonObject2);
-			}
-			String gvalue = "";
-			for (int j = 0; j < getl.size(); j++) {
-				if (j != getl.size() - 1) {
-					gvalue = gvalue + "{\"id\":\"" + (String) getl.get(j) + "\"},";
-				} else {
-					gvalue = gvalue + "{\"id\":\"" + (String) getl.get(j) + "\"}";
-				}
-			}
-			String groupvalue = "";
-			for (int i = 0; i < geotabgroups.size(); i++) {
-				if (i != geotabgroups.size() - 1) {
-					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"},";
-				} else {
-					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"}";
-				}
-			}
-			String uri = "https://" + url + "/apiv1";
-			String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\""
-					+ sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate + "T03:59:59.000Z\",\"entityType\":\"" + enttype
-					+ "\",\"reportArgumentType\":\"RiskManagement\",\"groups\":[" + groupvalue
-					+ "],\"reportSubGroup\":\"" + period + "\",\"rules\":[" + gvalue
-					+ "]}}},{\"method\":\"Get\",\"params\":{\"typeName\":\"SystemSettings\"}}],\"credentials\":{\"database\":\""
-					+ geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + userName + "\"}}}";
-
-			String serverurl = uri;
-			HttpURLConnection con = (HttpURLConnection) (new URL(serverurl)).openConnection();
-			con.setRequestMethod("POST");
-			con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
-			con.setRequestProperty("Content-Language", "en-US");
-			con.setDoOutput(true);
-			con.setUseCaches(false);
-			con.setDoInput(true);
-			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-			wr.writeBytes(urlParameters);
-			wr.flush();
-			wr.close();
-			InputStream is = con.getInputStream();
-			BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-			StringBuilder response = new StringBuilder();
-			String line;
-			while ((line = rd.readLine()) != null) {
-				response.append(line);
-				response.append('\r');
-			}
-			rd.close();
-			JsonParser parser = new JsonParser();
-			JsonObject o = parser.parse(response.toString()).getAsJsonObject();
-			String geotabDriverExceptionSummariesJson = o.toString();
+	
 			// geotabDriverExceptionSummariesJson = "{\"result\":" +
 			// o.getAsJsonArray("result").get(0).toString() + "}";
 
 			// System.out.println(geotabDriverExceptionSummariesJson);
 
-			String startDateStr = sdate + "T01:00:00";
-			String endDateStr = edate + "T59:59:59";
+			
+			String geotabDriverExceptionSummariesJson=geotabTrendingResponce(getl, geotabGroups, endDate, startDate, url, geotabDatabase, geotabSessionId, enttype, userName, period);
+			String startDateStr = startDate + "T01:00:00";
+			String endDateStr = endDate + "T59:59:59";
 
 			try {
 
-				if (!groupid.equalsIgnoreCase("0")) {
+				if (!groupId.equalsIgnoreCase("0")) {
 					int EXCEPTIONS_START_COLUMN = 3;
 
 					// Load Lytx vehicle map with vehicleId and names
@@ -196,8 +121,7 @@ public class restTrendingReportDAO {
 						// Load Trips data to get driver data from Vehicles;
 
 						try {
-							vehicleTrips = loadVehicleTripsMap(enttype, userName, geodatabase, geosees, url,
-									startDateStr, endDateStr);
+							vehicleTrips = loadVehicleTripsMap(enttype, userName, geotabDatabase,geotabSessionId, url,startDateStr, endDateStr);
 						} catch (Exception e) {
 							// TODO: handle exception
 						}
@@ -213,14 +137,14 @@ public class restTrendingReportDAO {
 				if (trending) {
 					// load the header for report data (from the database based on the userName in
 					// actual application)
-					displayColumns = loadTrendingReporColumntHeaders(userName, geodatabase);
+					displayColumns = loadTrendingReporColumntHeaders(userName, geotabDatabase);
 
 					if (enttype.equals("Driver")) {
 						combinedReport = extractGeotabDriverTrendingData(geotabDriverExceptionSummariesJson, userName,
-								geodatabase);
+								geotabDatabase);
 					} else {
 						combinedReport = extractGeotabVehicleTrendingData(geotabDriverExceptionSummariesJson, userName,
-								geodatabase);
+								geotabDatabase);
 
 					}
 
@@ -236,17 +160,23 @@ public class restTrendingReportDAO {
 						combinedReport = extractGeotabVehicleData(geotabVehicleExceptionSummariesJson);
 					}
 				}
-				Date newStartDate = ssdate;
+				
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+				Date newStartDate = sdf.parse(startDate);
+				
+				Date ssdate = sdf.parse(startDate);
+				Date eedate = sdf.parse(endDate);
 				// Create a Map of lytx vehicleIds to exception map
 				int s = 0;
-				if (!groupid.equalsIgnoreCase("0")) {
+				if (!groupId.equalsIgnoreCase("0")) {
 					do {
 
 						System.out.println("check---" + s++);
 
 						try {
 
-							lytxExceptionSummariesJson = sendLytxRequest(groupid, sdate, edate, sees, endpoint);
+							lytxExceptionSummariesJson = sendLytxRequest(groupId, startDate, endDate, geotabSessionId, endPoint);
 
 							JSONObject lytxEventsJO = new JSONObject(lytxExceptionSummariesJson);
 							JSONArray lytxEventsArray = lytxEventsJO.getJSONArray("events");
@@ -293,62 +223,9 @@ public class restTrendingReportDAO {
 					updatedCombinedReportWithLytxExceptions(combinedReport, lytxVehicleEventsRecord);
 				}
 				// create a json response
-				for (int q = 0; q < displayColumns.size(); q++) {
-					totals.add(0);
-				}
-				combinedReportResponseJson = new StringBuffer();
-				combinedReportResponseJson.append("\"information\": [");
-				boolean firstRow = true;
-				int rulesRecords = displayColumns.size() - 3;
-				for (Map.Entry<String, Map<String, String>> combinedReportRows : combinedReport.entrySet()) {
-					if (!firstRow) {
-						combinedReportResponseJson.append(",");
-					} else {
-						firstRow = false;
-					}
-					combinedReportResponseJson.append("{");
-					boolean rulesHeadedAdded = false;
-					int headerCount = 0;
-					int rowCount = 0;
-					Map<String, String> rowData = combinedReportRows.getValue();
-					for (Map.Entry<String, String> data : rowData.entrySet()) {
-						if (headerCount++ > 0 && headerCount < displayColumns.size() + 1) {
-							combinedReportResponseJson.append(",");
-						}
-						if (rowCount++ < EXCEPTIONS_START_COLUMN) {
-							rulesHeadedAdded = false;
-							combinedReportResponseJson.append("\"" + data.getKey() + "\": \"" + data.getValue() + "\"");
-						} else {
-							if (!rulesHeadedAdded) {
-								combinedReportResponseJson.append("\"Behave\": [");
-								rulesHeadedAdded = true;
-							}
-							combinedReportResponseJson.append("{");
-							combinedReportResponseJson.append("\"Rule\": \"" + data.getValue() + "\"}");
-							totals.set(rowCount - 1, (totals.get(rowCount - 1) + Integer.parseInt(data.getValue())));
-							if (rowCount == displayColumns.size()) {
-								combinedReportResponseJson.append("]");
-							}
-						}
-
-					}
-					combinedReportResponseJson.append("}");
-				}
-				combinedReportResponseJson.append("]}");
-
-				StringBuffer totalsJson = new StringBuffer();
-				totalsJson.append("{\"totals\": [");
-				int ruleCounter = 0;
-				for (int totalVal : totals) {
-					totalsJson.append("{ \"Rule\": \"" + totalVal + "\" }");
-					ruleCounter++;
-					if (ruleCounter != displayColumns.size()) {
-						totalsJson.append(",");
-					}
-				}
-				totalsJson.append("],");
-
-				responseJson = totalsJson.toString() + combinedReportResponseJson.toString();
+				
+				responseJson=createTrendingResponce(combinedReport,displayColumns);
+				
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -358,12 +235,169 @@ public class restTrendingReportDAO {
 		}
 
 		try {
-			glReportdao.updateresponce(userName, responseJson, geodatabase);
+			glReportdao.updateresponce(userName, responseJson, geotabDatabase);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
 
 		return responseJson; 
+	}
+	
+	public static String createTrendingResponce(Map<String, Map<String, String>> combinedReport,List<String> displayColumns)
+	{
+		String responseJson = "";
+		List<Integer> totals = new ArrayList<>();
+		StringBuffer combinedReportResponseJson = new StringBuffer();
+
+
+		for (int q = 0; q < displayColumns.size(); q++) {
+			totals.add(0);
+		}
+		combinedReportResponseJson = new StringBuffer();
+		combinedReportResponseJson.append("\"information\": [");
+		boolean firstRow = true;
+		int rulesRecords = displayColumns.size() - 3;
+		for (Map.Entry<String, Map<String, String>> combinedReportRows : combinedReport.entrySet()) {
+			if (!firstRow) {
+				combinedReportResponseJson.append(",");
+			} else {
+				firstRow = false;
+			}
+			combinedReportResponseJson.append("{");
+			boolean rulesHeadedAdded = false;
+			int headerCount = 0;
+			int rowCount = 0;
+			Map<String, String> rowData = combinedReportRows.getValue();
+			for (Map.Entry<String, String> data : rowData.entrySet()) {
+				if (headerCount++ > 0 && headerCount < displayColumns.size() + 1) {
+					combinedReportResponseJson.append(",");
+				}
+				if (rowCount++ < EXCEPTIONS_START_COLUMN) {
+					rulesHeadedAdded = false;
+					combinedReportResponseJson.append("\"" + data.getKey() + "\": \"" + data.getValue() + "\"");
+				} else {
+					if (!rulesHeadedAdded) {
+						combinedReportResponseJson.append("\"Behave\": [");
+						rulesHeadedAdded = true;
+					}
+					combinedReportResponseJson.append("{");
+					combinedReportResponseJson.append("\"Rule\": \"" + data.getValue() + "\"}");
+					totals.set(rowCount - 1, (totals.get(rowCount - 1) + Integer.parseInt(data.getValue())));
+					if (rowCount == displayColumns.size()) {
+						combinedReportResponseJson.append("]");
+					}
+				}
+
+			}
+			combinedReportResponseJson.append("}");
+		}
+		combinedReportResponseJson.append("]}");
+
+		StringBuffer totalsJson = new StringBuffer();
+		totalsJson.append("{\"totals\": [");
+		int ruleCounter = 0;
+		for (int totalVal : totals) {
+			totalsJson.append("{ \"Rule\": \"" + totalVal + "\" }");
+			ruleCounter++;
+			if (ruleCounter != displayColumns.size()) {
+				totalsJson.append(",");
+			}
+		}
+		totalsJson.append("],");
+
+		responseJson = totalsJson.toString() + combinedReportResponseJson.toString();
+		
+		return responseJson;
+	}
+	
+	
+	public static String geotabTrendingResponce(ArrayList<String> getl,ArrayList<String> geotabGroups,String endDate,String startDate,String url,String geotabDatabase,String geotabSessionId,String enttype,String userName,String period) throws MalformedURLException, IOException
+	{
+		String gvalue = "";
+		for (int j = 0; j < getl.size(); j++) {
+			if (j != getl.size() - 1) {
+				gvalue = gvalue + "{\"id\":\"" + (String) getl.get(j) + "\"},";
+			} else {
+				gvalue = gvalue + "{\"id\":\"" + (String) getl.get(j) + "\"}";
+			}
+		}
+		String groupvalue = "";
+		for (int i = 0; i < geotabGroups.size(); i++) {
+			if (i != geotabGroups.size() - 1) {
+				groupvalue = groupvalue + "{\"id\":\"" + (String) geotabGroups.get(i) + "\"},";
+			} else {
+				groupvalue = groupvalue + "{\"id\":\"" + (String) geotabGroups.get(i) + "\"}";
+			}
+		}
+		String uri = "https://" + url + "/apiv1";
+		String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\""
+				+ startDate + "T01:00:00.000Z\",\"toUtc\":\"" + endDate + "T03:59:59.000Z\",\"entityType\":\"" + enttype
+				+ "\",\"reportArgumentType\":\"RiskManagement\",\"groups\":[" + groupvalue
+				+ "],\"reportSubGroup\":\"" + period + "\",\"rules\":[" + gvalue
+				+ "]}}},{\"method\":\"Get\",\"params\":{\"typeName\":\"SystemSettings\"}}],\"credentials\":{\"database\":\""
+				+ geotabDatabase + "\",\"sessionId\":\"" + geotabSessionId + "\",\"userName\":\"" + userName + "\"}}}";
+
+		String serverurl = uri;
+		HttpURLConnection con = (HttpURLConnection) (new URL(serverurl)).openConnection();
+		con.setRequestMethod("POST");
+		con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
+		con.setRequestProperty("Content-Language", "en-US");
+		con.setDoOutput(true);
+		con.setUseCaches(false);
+		con.setDoInput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+		InputStream is = con.getInputStream();
+		BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+		StringBuilder response = new StringBuilder();
+		String line;
+		while ((line = rd.readLine()) != null) {
+			response.append(line);
+			response.append('\r');
+		}
+		rd.close();
+		JsonParser parser = new JsonParser();
+		JsonObject o = parser.parse(response.toString()).getAsJsonObject();
+		String geotabDriverExceptionSummariesJson = o.toString();
+		
+		return geotabDriverExceptionSummariesJson;
+	}
+	
+	public static String lytexVechileResponce(String startDate,String endDate,String groupId,String lytxSessionId,String endPoint) throws ParseException, RemoteException
+	{
+		String lytxBehaviorsJson="";
+		String getVehicleResponseJson="";
+		Date ssdate = null;
+		Date eedate = null;
+		if (!groupId.equalsIgnoreCase("0")) {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			String sDate = startDate;
+			String eDate = endDate;
+			ssdate = sdf.parse(sDate);
+			eedate = sdf.parse(eDate);
+
+			ISubmissionServiceV5Proxy er = new ISubmissionServiceV5Proxy(endPoint);
+			ExistingSessionRequest re = new ExistingSessionRequest();
+			re.setSessionId(lytxSessionId);
+			GetBehaviorsResponse getb = new GetBehaviorsResponse();
+			getb = er.getBehaviors(re);
+
+			JSONObject jsonObject = new JSONObject(getb);
+			lytxBehaviorsJson = toStringValue(jsonObject);
+			ISubmissionServiceV5Proxy pr = new ISubmissionServiceV5Proxy(endPoint);
+			GetVehiclesResponse lr = new GetVehiclesResponse();
+			GetVehiclesRequest getVehiclesRequest = new GetVehiclesRequest();
+			getVehiclesRequest.setIncludeSubgroups(Boolean.valueOf(true));
+			getVehiclesRequest.setSessionId(lytxSessionId);
+			lr = pr.getVehicles(getVehiclesRequest);
+
+			JSONObject jsonObject2 = new JSONObject(lr);
+			getVehicleResponseJson = toStringValue(jsonObject2);
+		}
+		
+		return getVehicleResponseJson;
 	}
 	
 	public static String toStringValue(Object object) {
@@ -444,7 +478,7 @@ public class restTrendingReportDAO {
 		reportColumnHeader.add("EndDate");
 		// TODO: Remaining columns to be populated from database selected columns. using
 		// static for now.
-		glReportDAO da = new glReportDAO();
+		GlReportDAO da = new GlReportDAO();
 		ArrayList<String> gval = new ArrayList();
 		gval = da.getallbehave(userName, db);
 		for (int j = 0; j < gval.size(); j++) {
@@ -1180,7 +1214,7 @@ public class restTrendingReportDAO {
 				cell2.setCellValue("");
 			} else {
 				int D = 0;
-				D = glReportDAO.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(), geodatabase);
+				D = GlReportDAO.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(), geodatabase);
 				cell2.setCellValue(D);
 			}
 		}
@@ -1226,7 +1260,7 @@ public class restTrendingReportDAO {
 		Cell cells = rows.getCell(2);
 		float min = 0.0F;
 		try {
-			min = glReportDAO.getminmiles(geouname, geodatabase);
+			min = GlReportDAO.getminmiles(geouname, geodatabase);
 
 			System.out.println("min-value" + min);
 		} catch (Exception exception) {

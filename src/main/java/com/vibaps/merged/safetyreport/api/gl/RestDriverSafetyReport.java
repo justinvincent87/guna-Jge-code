@@ -1,7 +1,7 @@
 package com.vibaps.merged.safetyreport.api.gl;
 
 
-import com.vibaps.merged.safetyreport.services.gl.restDriverSafetyReportService;
+import com.vibaps.merged.safetyreport.services.gl.RestDriverSafetyReportService;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
@@ -22,7 +22,7 @@ import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 public class RestDriverSafetyReport {
 	
 	@Autowired
-	private restDriverSafetyReportService glReportService;
+	private RestDriverSafetyReportService glReportService;
 	
 	@PostMapping(value="/insert")
 	public Object insert(@RequestBody ReportParams reportParams) {

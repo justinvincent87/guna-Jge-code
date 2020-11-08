@@ -1,39 +1,35 @@
 package com.vibaps.merged.safetyreport.entity.gl;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.sql.*;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
 import org.hibernate.annotations.GenericGenerator;
 
+import lombok.NoArgsConstructor;
 
-@Getter
 @Entity
-@Setter
 @NoArgsConstructor
-@Table(name = "gl_minmiles")
-public class glMinmiles {
-	public static final String FNN = "Gl_Minmiles";
+@Table(name="gen_user")
+public class GenUserEntity {
+	public static final String FNN="Gen_User";
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	private int id = 0;
-	@Column(name = "gen_user_id")
-	private int gen_user_id = 0;
-	@Column(name = "minmiles")
-	private float minmiles = 0.0F;
+	private int id=0;
 	
-
-	public glMinmiles(int id, int gen_user_id, float minmiles) {
+	@Column(name = "companyid")
+	private String companyid="";
+	
+	
+	public GenUserEntity(int id, String companyid) {
+		super();
 		this.id = id;
-		this.gen_user_id = gen_user_id;
-		this.minmiles = minmiles;
+		this.companyid = companyid;
 	}
 	
 	

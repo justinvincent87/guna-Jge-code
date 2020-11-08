@@ -7,13 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.vibaps.merged.safetyreport.dao.gl.commonGeotabDAO;
+import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 @Service
-public class commonGeotabService {
+public class CommonGeotabService {
 	
      @Autowired
-	private commonGeotabDAO dao;
+	private CommonGeotabDAO dao;
 
 	public Object insertDriver(ReportParams reportParams) throws IOException {
 		// TODO Auto-generated method stub

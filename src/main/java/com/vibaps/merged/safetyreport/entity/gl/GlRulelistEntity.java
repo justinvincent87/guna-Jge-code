@@ -24,8 +24,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Table(name="gl_rulelist")
 @SecondaryTable(name = "gl_selectedvalues")
-public class glRulelistEntity {
-	public static final String FNN="Gl_rulelist";
+public class GlRulelistEntity {
+	
 	
 	
 	@Id
@@ -45,7 +45,7 @@ public class glRulelistEntity {
 	 @Column(name = "status", table = "gl_selectedvalues")
 	  private int status=0;
 
-	public glRulelistEntity(int id, String rulename, String rulevalue, String rulecompany,int status,int weight) {
+	public GlRulelistEntity(int id, String rulename, String rulevalue, String rulecompany,int status,int weight) {
 		super();
 		this.id = id;
 		this.rulename = rulename;
@@ -55,14 +55,14 @@ public class glRulelistEntity {
 		this.weight=weight;
 	}
 	
-	public glRulelistEntity(String rulename,int weight) {
+	public GlRulelistEntity(String rulename,int weight) {
 	
 		this.rulename = rulename;
 		
 		this.weight=weight;
 	}
 
-	public glRulelistEntity(String rulevalue) {
+	public GlRulelistEntity(String rulevalue) {
 		super();
 		this.rulevalue = rulevalue;
 	}
@@ -70,7 +70,7 @@ public class glRulelistEntity {
 	
 
 
-	public glRulelistEntity(int weight) {
+	public GlRulelistEntity(int weight) {
 		super();
 		this.weight = weight;
 	}

@@ -4,11 +4,9 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.SecondaryTable;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.cache.annotation.CacheConfig;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +17,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
 @Table(name="gen_driver")
 public class GenDriver {
 
@@ -27,11 +24,14 @@ public class GenDriver {
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	private int id=0;
+	private Integer id;
+	
 	@Column(name = "ref_gen_user_id")
-	private int ref_gen_user_id;
+	private Integer refGenUserId;
+	
 	@Column(name = "driver_id")
-	private String driver_id="";
+	private String driverId;
+	
 	@Column(name = "driver_name")
-	private String driver_name="";	
+	private String driverName;	
 }

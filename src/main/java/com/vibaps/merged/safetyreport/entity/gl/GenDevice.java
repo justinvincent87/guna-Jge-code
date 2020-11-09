@@ -1,17 +1,13 @@
 package com.vibaps.merged.safetyreport.entity.gl;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.SecondaryTable;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,20 +16,21 @@ import lombok.Setter;
 @Entity
 @Setter
 @NoArgsConstructor
-@Table(name="gen_device")
-public class GenDevice implements Serializable {
+@Table(name = "gen_device")
+public class GenDevice {
+
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	private int id=0;
+	private Integer id;
+
 	@Column(name = "ref_gen_user_id")
-	private int ref_gen_user_id;
+	private int refGenUserId;
+
 	@Column(name = "device_id")
-	private String device_id="";
+	private String deviceId;
+
 	@Column(name = "device_name")
-	private String device_name="";
-	
-	
-	
+	private String deviceName;
 }

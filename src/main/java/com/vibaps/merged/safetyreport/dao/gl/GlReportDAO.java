@@ -390,8 +390,8 @@ Iterator it = list.iterator();
 while(it.hasNext()){
      Object[] line = (Object[]) it.next();
      GenDevice eq = new GenDevice();
-     eq.setDevice_id(line[0].toString());
-     eq.setDevice_name(line[1].toString());
+     eq.setDeviceId(line[0].toString());
+     eq.setDeviceName(line[1].toString());
 
      deviceNameList.add(eq);
 }
@@ -623,8 +623,8 @@ while(it.hasNext()){
 		while(it.hasNext()){
 		     Object[] line = (Object[]) it.next();
 		     GenDriver eq = new GenDriver();
-		     eq.setDriver_id(line[0].toString());
-		     eq.setDriver_name(line[1].toString());
+		     eq.setDriverId(line[0].toString());
+		     eq.setDriverName(line[1].toString());
 		     driverNameList.add(eq);
 		}
 		

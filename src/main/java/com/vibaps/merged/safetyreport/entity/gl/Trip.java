@@ -11,43 +11,44 @@ import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-@Data
+import lombok.Setter;
+
+@Getter
 @Entity
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "tl_tripRecord")
 public class Trip {
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	private int id;
+	private Integer id;
+
 	@Column(name = "vehicleName")
-	String vehicleName;
+	private String vehicleName;
+
 	@Column(name = "driverFirstName")
-	String driverFirstName;
+	private String driverFirstName;
+
 	@Column(name = "driverLastName")
-	String driverLastName;
+	private String driverLastName;
+
 	@Column(name = "tripStartTime")
-	LocalDateTime tripStartTime;
+	private LocalDateTime tripStartTime;
+
 	@Column(name = "tripEndTime")
-	LocalDateTime tripEndTime;
+	private LocalDateTime tripEndTime;
 
-	public Trip(String vehicleName, String driverFirstName, String driverLastName, LocalDateTime tripStartTime, LocalDateTime tripEndTime) {
-		this.vehicleName = vehicleName;
-		this.driverFirstName = driverFirstName;
-		this.driverLastName = driverLastName;
-		this.tripStartTime = tripStartTime;
-		this.tripEndTime = tripEndTime;
+	public Trip(String vehicleName, String driverFirstName, String driverLastName, LocalDateTime tripStartTime,
+	        LocalDateTime tripEndTime) {
+		this.vehicleName		= vehicleName;
+		this.driverFirstName	= driverFirstName;
+		this.driverLastName		= driverLastName;
+		this.tripStartTime		= tripStartTime;
+		this.tripEndTime		= tripEndTime;
 	}
-	
-	public Trip() {
-		
-	}
-
-
-	
-
-	
-	
 }

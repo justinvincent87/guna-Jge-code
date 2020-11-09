@@ -246,7 +246,7 @@ int result=0;
 				
 				for(int i=0;i<driverNameList.size();i++)
 				{
-					driverName.put(driverNameList.get(i).getDriver_id(),driverNameList.get(i).getDriver_name());
+					driverName.put(driverNameList.get(i).getDriverId(),driverNameList.get(i).getDriverName());
 				}
 			}catch (Exception e) {
 				// TODO: handle exception
@@ -258,7 +258,7 @@ int result=0;
 				deviceNameList=glReportDAO.deviceName(geouserid,databaseName);
 				for(int i=0;i<deviceNameList.size();i++)
 				{
-					deviceName.put(deviceNameList.get(i).getDevice_id(),deviceNameList.get(i).getDevice_name());
+					deviceName.put(deviceNameList.get(i).getDeviceId(),deviceNameList.get(i).getDeviceName());
 				}
 			}catch (Exception e) {
 				// TODO: handle exception
@@ -354,7 +354,7 @@ int result=0;
 				
 				for(int i=0;i<driverNameList.size();i++)
 				{
-					driverName.put(driverNameList.get(i).getDriver_id(),driverNameList.get(i).getDriver_name());
+					driverName.put(driverNameList.get(i).getDriverId(),driverNameList.get(i).getDriverName());
 				}
 			}catch (Exception e) {
 				// TODO: handle exception
@@ -366,7 +366,7 @@ int result=0;
 				deviceNameList=glReportDAO.deviceName(geouserid,databaseName);
 				for(int i=0;i<deviceNameList.size();i++)
 				{
-					deviceName.put(deviceNameList.get(i).getDevice_id(),deviceNameList.get(i).getDevice_name());
+					deviceName.put(deviceNameList.get(i).getDeviceId(),deviceNameList.get(i).getDeviceName());
 				}
 			}catch (Exception e) {
 				// TODO: handle exception

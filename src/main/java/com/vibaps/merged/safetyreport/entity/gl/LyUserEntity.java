@@ -1,5 +1,4 @@
 package com.vibaps.merged.safetyreport.entity.gl;
-import java.sql.*;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,34 +8,31 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.sql.*;
-
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
-
 
 @Getter
 @Entity
 @Setter
-@Table(name="ly_user")
-
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "ly_user")
 public class LyUserEntity {
-	public static final String FNN="Ly_User";
-	
+
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	private int id=0;
+	private Integer	id;
 	
 	@Column(name = "dbname")
-	private String dbname="";
+	private String	dbName;
+	
 	@Column(name = "ly_username")
-	private String ly_username="";
+	private String	lytxUsername;
+	
 	@Column(name = "ly_password")
-	private String ly_password="";
+	private String	lytxPassword;
 }

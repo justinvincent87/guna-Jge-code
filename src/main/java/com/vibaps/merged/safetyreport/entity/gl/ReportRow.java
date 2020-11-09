@@ -1,6 +1,7 @@
 package com.vibaps.merged.safetyreport.entity.gl;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,37 +11,34 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-@Data
-@Entity
+
 @Getter
+@Entity
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "rl_reportrow")
-public class ReportRow{
+public class ReportRow {
+	
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	 long id;
+	private Long					id;
+	
 	@Column(name = "name")
-	String name; //Vehicle or driverName
+	private String					name;
+	
 	@Column(name = "group")
-	String group;
+	private String					group;
+	
 	@Column(name = "distance")
-	long distance;
+	private Long					distance;
+	
 	@Column(name = "selectedRules")
-	LinkedHashMap<String, Integer> selectedRules=new LinkedHashMap<String, Integer>();
-	 public ReportRow() {
-
-	 }
-	
-	
-	/*
-	 * @OneToOne(mappedBy = "rl_reportrow",cascade = CascadeType.ALL) Score score;
-	 */
-	
-
-	
+	private Map<String, Integer>	selectedRules	= new LinkedHashMap<>();
 }

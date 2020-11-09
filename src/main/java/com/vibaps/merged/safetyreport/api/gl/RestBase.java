@@ -1,4 +1,4 @@
-package com.vibaps.merged.safetyreport;
+package com.vibaps.merged.safetyreport.api.gl;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -42,12 +42,15 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.dto.LoginResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
+import com.vibaps.merged.safetyreport.Cookies;
+import com.vibaps.merged.safetyreport.HibernateUtil;
+import com.vibaps.merged.safetyreport.TypeUtils;
 import com.vibaps.merged.safetyreport.services.gl.RestDriverSafetyReportService;
 
 @CrossOrigin(origins = "*",allowedHeaders = "*")
 @RestController
 @RequestMapping("Lytx/Api")
-public class BasicCountroller {
+public class RestBase {
 	
 	@Autowired
 	 private RestDriverSafetyReportService glReportService;

@@ -7,187 +7,179 @@
 
 package com.lytx.dto;
 
-public class GetGroupsByIdRequest  implements java.io.Serializable {
-    private java.lang.Long groupId;
+public class GetGroupsByIdRequest implements java.io.Serializable {
 
-    private java.lang.Boolean includeSubgroups;
+	private static final long serialVersionUID = 1L;
 
-    private java.lang.String sessionId;
+	private java.lang.Long groupId;
 
-    public GetGroupsByIdRequest() {
-    }
+	private java.lang.Boolean includeSubgroups;
 
-    public GetGroupsByIdRequest(
-           java.lang.Long groupId,
-           java.lang.Boolean includeSubgroups,
-           java.lang.String sessionId) {
-           this.groupId = groupId;
-           this.includeSubgroups = includeSubgroups;
-           this.sessionId = sessionId;
-    }
+	private java.lang.String sessionId;
 
+	public GetGroupsByIdRequest() {
+	}
 
-    /**
-     * Gets the groupId value for this GetGroupsByIdRequest.
-     * 
-     * @return groupId
-     */
-    public java.lang.Long getGroupId() {
-        return groupId;
-    }
+	public GetGroupsByIdRequest(java.lang.Long groupId, java.lang.Boolean includeSubgroups,
+	        java.lang.String sessionId) {
+		this.groupId			= groupId;
+		this.includeSubgroups	= includeSubgroups;
+		this.sessionId			= sessionId;
+	}
 
+	/**
+	 * Gets the groupId value for this GetGroupsByIdRequest.
+	 * 
+	 * @return groupId
+	 */
+	public java.lang.Long getGroupId() {
+		return groupId;
+	}
 
-    /**
-     * Sets the groupId value for this GetGroupsByIdRequest.
-     * 
-     * @param groupId
-     */
-    public void setGroupId(java.lang.Long groupId) {
-        this.groupId = groupId;
-    }
+	/**
+	 * Sets the groupId value for this GetGroupsByIdRequest.
+	 * 
+	 * @param groupId
+	 */
+	public void setGroupId(java.lang.Long groupId) {
+		this.groupId = groupId;
+	}
 
+	/**
+	 * Gets the includeSubgroups value for this GetGroupsByIdRequest.
+	 * 
+	 * @return includeSubgroups
+	 */
+	public java.lang.Boolean getIncludeSubgroups() {
+		return includeSubgroups;
+	}
 
-    /**
-     * Gets the includeSubgroups value for this GetGroupsByIdRequest.
-     * 
-     * @return includeSubgroups
-     */
-    public java.lang.Boolean getIncludeSubgroups() {
-        return includeSubgroups;
-    }
+	/**
+	 * Sets the includeSubgroups value for this GetGroupsByIdRequest.
+	 * 
+	 * @param includeSubgroups
+	 */
+	public void setIncludeSubgroups(java.lang.Boolean includeSubgroups) {
+		this.includeSubgroups = includeSubgroups;
+	}
 
+	/**
+	 * Gets the sessionId value for this GetGroupsByIdRequest.
+	 * 
+	 * @return sessionId
+	 */
+	public java.lang.String getSessionId() {
+		return sessionId;
+	}
 
-    /**
-     * Sets the includeSubgroups value for this GetGroupsByIdRequest.
-     * 
-     * @param includeSubgroups
-     */
-    public void setIncludeSubgroups(java.lang.Boolean includeSubgroups) {
-        this.includeSubgroups = includeSubgroups;
-    }
+	/**
+	 * Sets the sessionId value for this GetGroupsByIdRequest.
+	 * 
+	 * @param sessionId
+	 */
+	public void setSessionId(java.lang.String sessionId) {
+		this.sessionId = sessionId;
+	}
 
+	private java.lang.Object __equalsCalc = null;
 
-    /**
-     * Gets the sessionId value for this GetGroupsByIdRequest.
-     * 
-     * @return sessionId
-     */
-    public java.lang.String getSessionId() {
-        return sessionId;
-    }
+	@SuppressWarnings("unused")
+	public synchronized boolean equals(java.lang.Object obj) {
+		if (!(obj instanceof GetGroupsByIdRequest))
+			return false;
+		GetGroupsByIdRequest other = (GetGroupsByIdRequest) obj;
+		if (obj == null)
+			return false;
+		if (this == obj)
+			return true;
+		if (__equalsCalc != null) {
+			return (__equalsCalc == obj);
+		}
+		__equalsCalc = obj;
+		boolean _equals;
+		_equals			= true
+		        && ((this.groupId == null && other.getGroupId() == null)
+		                || (this.groupId != null && this.groupId.equals(other.getGroupId())))
+		        && ((this.includeSubgroups == null && other.getIncludeSubgroups() == null)
+		                || (this.includeSubgroups != null && this.includeSubgroups.equals(other.getIncludeSubgroups())))
+		        && ((this.sessionId == null && other.getSessionId() == null)
+		                || (this.sessionId != null && this.sessionId.equals(other.getSessionId())));
+		__equalsCalc	= null;
+		return _equals;
+	}
 
+	private boolean __hashCodeCalc = false;
 
-    /**
-     * Sets the sessionId value for this GetGroupsByIdRequest.
-     * 
-     * @param sessionId
-     */
-    public void setSessionId(java.lang.String sessionId) {
-        this.sessionId = sessionId;
-    }
+	public synchronized int hashCode() {
+		if (__hashCodeCalc) {
+			return 0;
+		}
+		__hashCodeCalc = true;
+		int _hashCode = 1;
+		if (getGroupId() != null) {
+			_hashCode += getGroupId().hashCode();
+		}
+		if (getIncludeSubgroups() != null) {
+			_hashCode += getIncludeSubgroups().hashCode();
+		}
+		if (getSessionId() != null) {
+			_hashCode += getSessionId().hashCode();
+		}
+		__hashCodeCalc = false;
+		return _hashCode;
+	}
 
-    private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
-        if (!(obj instanceof GetGroupsByIdRequest)) return false;
-        GetGroupsByIdRequest other = (GetGroupsByIdRequest) obj;
-        if (obj == null) return false;
-        if (this == obj) return true;
-        if (__equalsCalc != null) {
-            return (__equalsCalc == obj);
-        }
-        __equalsCalc = obj;
-        boolean _equals;
-        _equals = true && 
-            ((this.groupId==null && other.getGroupId()==null) || 
-             (this.groupId!=null &&
-              this.groupId.equals(other.getGroupId()))) &&
-            ((this.includeSubgroups==null && other.getIncludeSubgroups()==null) || 
-             (this.includeSubgroups!=null &&
-              this.includeSubgroups.equals(other.getIncludeSubgroups()))) &&
-            ((this.sessionId==null && other.getSessionId()==null) || 
-             (this.sessionId!=null &&
-              this.sessionId.equals(other.getSessionId())));
-        __equalsCalc = null;
-        return _equals;
-    }
+	// Type metadata
+	private static org.apache.axis.description.TypeDesc typeDesc = new org.apache.axis.description.TypeDesc(
+	        GetGroupsByIdRequest.class, true);
 
-    private boolean __hashCodeCalc = false;
-    public synchronized int hashCode() {
-        if (__hashCodeCalc) {
-            return 0;
-        }
-        __hashCodeCalc = true;
-        int _hashCode = 1;
-        if (getGroupId() != null) {
-            _hashCode += getGroupId().hashCode();
-        }
-        if (getIncludeSubgroups() != null) {
-            _hashCode += getIncludeSubgroups().hashCode();
-        }
-        if (getSessionId() != null) {
-            _hashCode += getSessionId().hashCode();
-        }
-        __hashCodeCalc = false;
-        return _hashCode;
-    }
+	static {
+		typeDesc.setXmlType(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "GetGroupsByIdRequest"));
+		org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+		elemField.setFieldName("groupId");
+		elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "GroupId"));
+		elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "long"));
+		elemField.setMinOccurs(0);
+		elemField.setNillable(true);
+		typeDesc.addFieldDesc(elemField);
+		elemField = new org.apache.axis.description.ElementDesc();
+		elemField.setFieldName("includeSubgroups");
+		elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "IncludeSubgroups"));
+		elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
+		elemField.setMinOccurs(0);
+		elemField.setNillable(false);
+		typeDesc.addFieldDesc(elemField);
+		elemField = new org.apache.axis.description.ElementDesc();
+		elemField.setFieldName("sessionId");
+		elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "SessionId"));
+		elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+		elemField.setNillable(true);
+		typeDesc.addFieldDesc(elemField);
+	}
 
-    // Type metadata
-    private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(GetGroupsByIdRequest.class, true);
+	/**
+	 * Return type metadata object
+	 */
+	public static org.apache.axis.description.TypeDesc getTypeDesc() {
+		return typeDesc;
+	}
 
-    static {
-        typeDesc.setXmlType(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "GetGroupsByIdRequest"));
-        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("groupId");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "GroupId"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "long"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(true);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("includeSubgroups");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "IncludeSubgroups"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(false);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("sessionId");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "SessionId"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setNillable(true);
-        typeDesc.addFieldDesc(elemField);
-    }
+	/**
+	 * Get Custom Serializer
+	 */
+	@SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Serializer getSerializer(java.lang.String mechType,
+	        java.lang.Class _javaType, javax.xml.namespace.QName _xmlType) {
+		return new org.apache.axis.encoding.ser.BeanSerializer(_javaType, _xmlType, typeDesc);
+	}
 
-    /**
-     * Return type metadata object
-     */
-    public static org.apache.axis.description.TypeDesc getTypeDesc() {
-        return typeDesc;
-    }
-
-    /**
-     * Get Custom Serializer
-     */
-    public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanSerializer(
-            _javaType, _xmlType, typeDesc);
-    }
-
-    /**
-     * Get Custom Deserializer
-     */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanDeserializer(
-            _javaType, _xmlType, typeDesc);
-    }
+	/**
+	 * Get Custom Deserializer
+	 */
+	@SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Deserializer getDeserializer(java.lang.String mechType,
+	        java.lang.Class _javaType, javax.xml.namespace.QName _xmlType) {
+		return new org.apache.axis.encoding.ser.BeanDeserializer(_javaType, _xmlType, typeDesc);
+	}
 
 }

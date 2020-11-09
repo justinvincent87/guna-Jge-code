@@ -1,21 +1,14 @@
 package com.vibaps.merged.safetyreport.entity.gl;
 
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
-import javax.jws.Oneway;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Data;
 import lombok.Getter;

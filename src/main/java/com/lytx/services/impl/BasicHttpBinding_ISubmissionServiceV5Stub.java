@@ -7,12 +7,10 @@
 
 package com.lytx.services.impl;
 
-import java.rmi.RemoteException;
-
-import com.lytx.dto.LoginResponse;
-
+@SuppressWarnings({"rawtypes", "unchecked", "unused"})
 public class BasicHttpBinding_ISubmissionServiceV5Stub extends org.apache.axis.client.Stub implements com.lytx.services.ISubmissionServiceV5 {
-    private java.util.Vector cachedSerClasses = new java.util.Vector();
+	
+	private java.util.Vector cachedSerClasses = new java.util.Vector();
     private java.util.Vector cachedSerQNames = new java.util.Vector();
     private java.util.Vector cachedSerFactories = new java.util.Vector();
     private java.util.Vector cachedDeserFactories = new java.util.Vector();

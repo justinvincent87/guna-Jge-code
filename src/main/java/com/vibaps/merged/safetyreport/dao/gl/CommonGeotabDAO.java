@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,12 +31,13 @@ import com.vibaps.merged.safetyreport.HibernateUtil;
 import com.vibaps.merged.safetyreport.api.gl.RestDriverSafetyReport;
 import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
 import com.vibaps.merged.safetyreport.entity.gl.GenDriver;
+import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
+import com.vibaps.merged.safetyreport.repo.gl.UserReportFilterRepository;
 
 @Repository
 public class CommonGeotabDAO  {
 	@Autowired
 	private static GlReportDAO glReportDAO;
-
 @Transactional	
 public Object insertDevice(String geouserid,String databaseName,String geosess,String url) throws IOException {
 		// TODO Auto-generated method stub

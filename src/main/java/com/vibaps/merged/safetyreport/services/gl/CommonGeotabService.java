@@ -31,6 +31,8 @@ public class CommonGeotabService {
 		// TODO Auto-generated method stub
 		return dao.getTripRecords(reportParams.getGeotabUserName(),reportParams.getGeotabDatabase(),reportParams.getGeotabSessionId(),reportParams.getUrl(),reportParams.getStartDate(),reportParams.getEndDate());
 	}
+	
+
 
 
 

@@ -66,14 +66,15 @@ import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
 import com.vibaps.merged.safetyreport.entity.gl.ReportRow;
 import com.vibaps.merged.safetyreport.entity.gl.Score;
 import com.vibaps.merged.safetyreport.entity.gl.Trip;
+import com.vibaps.merged.safetyreport.repo.gl.UserReportFilterRepository;
 
 import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Repository
 public class GlReportDAO {
 	
-	
-
+@Autowired	
+private UserReportFilterRepository userReportFilterRepository;
 	
 	private int ROW_OFFSET = -1;
 	private int FORMULA_START_ROW = 7;
@@ -96,82 +97,77 @@ public class GlReportDAO {
     static List<Score> bottomNRecords;
     static Integer N_TOP_BOTTOM_RECORDS = 10;
     static List<Map.Entry<String, Integer>> loadSelectedRuleNames;
-	public static Object view(String geouserid,String db) {
+    
+	public Object view(String companyid,String db) {
 		Map<String, Object> result = new HashMap<>();
 		List<GlRulelistEntity> obj = null;
 		List<GlRulelistEntity> obj1 = null;
 
-		BigInteger countuser = null;
+		Integer countuser = null;
 		
 		try {
-			Session session3 = HibernateUtil.getsession();
-			Transaction	transaction3 = session3.beginTransaction();
-			countuser = (BigInteger) session3.createSQLQuery("SELECT count(*) FROM gen_user where companyid=:userid and db=:db").setParameter("userid", geouserid).setParameter("db", db).uniqueResult();
-			transaction3.commit();
+
+			countuser=userReportFilterRepository.userCount(companyid, db);
 		
-		} catch (Exception exception) 
+		} catch (Exception e) 
 		{
-			System.out.println(exception+"exo-------");
+			log.error("error occured : userReportFilterRepository->userCount",e);
 		}	
 
 
-		if(countuser.intValue() ==0)
-		{
+		
+		if(countuser.intValue() ==0) { 
 			try {
-				
-				Session session = HibernateUtil.getsession();
-				Transaction	transaction = session.beginTransaction();
-				BigInteger newUserId = (BigInteger) session.createSQLQuery("call insertuserrecord(:userid,:db)").setParameter("userid", geouserid).setParameter("db", db).uniqueResult();
-				System.out.println("newUserId"+newUserId);
-				transaction.commit();
-				
-			
-				
-				System.out.println("newUserId....."+newUserId);
 
-					
-					if(newUserId.intValue() != 0)
-					{
-						
-						try {
-							Session session1 = HibernateUtil.getsession();
-							Transaction transaction1 = session1.beginTransaction();
-							obj1 = session1.createSQLQuery("SELECT gen_rulelist_id,status,weight FROM gl_selectedvalues where gen_user_id=1 order by gen_rulelist_id").list();
-							transaction1.commit();
-							
-							Iterator it = obj1.iterator();
-							Session session2 = HibernateUtil.getsession();
-							Transaction transaction2 = session2.beginTransaction();
-							while(it.hasNext()){
-							     Object[] line = (Object[]) it.next();
-							     int ob = session2.createSQLQuery("insert into gl_selectedvalues(gen_user_id,gen_rulelist_id,status,weight) values (:userid,:rule,:status,:weight)").setParameter("weight",Integer.parseInt(line[2].toString())).setParameter("status", Integer.parseInt(line[1].toString())).setParameter("rule", Integer.parseInt(line[0].toString())).setParameter("userid",newUserId).executeUpdate();
-							}
-							  transaction2.commit();					
+		 BigInteger newUserId = userReportFilterRepository.userCreation(companyid, db);
 
-							
-						} catch (Exception exception) {}
-						
-						
-					}
-					
-					
-					
-			} catch (Exception exception) 
-			{
-			System.out.println(exception);	
-			}	
-			
-			
-		}
+		  
+		  
+		  if(newUserId.intValue() != 0) {
+		  
+		  try { 
+			  
+			  obj1=userReportFilterRepository.getRuleList();
+		  
+		  Iterator it = obj1.iterator(); 
+		  while(it.hasNext())
+		  {
+		  Object[] line = (Object[]) it.next(); 
+		  userReportFilterRepository.insertUserRuleList(newUserId, Integer.parseInt(line[0].toString()), Integer.parseInt(line[1].toString()), Integer.parseInt(line[2].toString()));
+
+		  }		  
+		  } catch (Exception e) {
+				log.error("error occured : userReportFilterRepository->insertUserRuleList",e);
+
+		  }
+
+		  
+		  }
+		  
+		  
+		  
+		  } catch (Exception e) { 
+			  
+				log.error("error occured :userReportFilterRepository->userCreation",e);
+
+			  
+		  }
+		  
+		 
+		  }
+		
+		 
 		
 		
-		try {
-			Session session = HibernateUtil.getsession();
-			Transaction transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id order by value) as value order by value.status desc").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
-			transaction.commit();
-		} catch (Exception exception) {}
-		return obj;
+		/*
+		 * try { Session session = HibernateUtil.getsession(); Transaction transaction =
+		 * session.beginTransaction(); obj = session.
+		 * createSQLQuery("select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id order by value) as value order by value.status desc"
+		 * ).setParameter("userid", geouserid).setParameter("db",
+		 * db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP)
+		 * .list(); transaction.commit(); } catch (Exception exception) {}
+		 */
+		return countuser;
 	}
 	
 	public static Object viewadd(String geouserid,String db) {

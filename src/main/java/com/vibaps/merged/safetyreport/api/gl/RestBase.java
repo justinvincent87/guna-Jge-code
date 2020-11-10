@@ -180,10 +180,10 @@ public class RestBase {
 	  
 	  
 	  @RequestMapping(value="/GeotabCall",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
-	  public @ResponseBody String GeotabCall(@RequestParam String fdate,String tdate,@RequestParam String geouserid) throws IOException, ParseException 
+	  public @ResponseBody String GeotabCall(@RequestParam String fdate,String tdate,@RequestParam String geouserid,@RequestParam String geotabDatabase) throws IOException, ParseException 
 	  { 
 		  String gvalue="";
-		  Object getgeodropdown=GetGeotabBehaveDropDown(geouserid);
+		  Object getgeodropdown=glReportService.getgeodropdown(geouserid,geotabDatabase);
 		  
 		  ArrayList getl=(ArrayList) getgeodropdown;
 		  
@@ -245,9 +245,9 @@ public class RestBase {
 			 
 	  }
 	  @RequestMapping(value="/GetGeotabBehaveDropDown",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
-	  public @ResponseBody Object GetGeotabBehaveDropDown(@RequestParam String geouserid) throws RemoteException 
+	  public @ResponseBody Object GetGeotabBehaveDropDown(@RequestParam String geotabUserid,@RequestParam String geotabDatabase) throws RemoteException 
 	  { 
-		  return glReportService.getgeodropdown(geouserid);
+		  return glReportService.getgeodropdown(geotabUserid,geotabDatabase);
 	  }
 	  
 	  @RequestMapping(value="/GetEventsByLastUpdateDateforReport",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 

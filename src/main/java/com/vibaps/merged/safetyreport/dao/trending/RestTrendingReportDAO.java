@@ -81,7 +81,7 @@ public class RestTrendingReportDAO {
 		String responseJson = "";
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
 		String getVehicleResponseJson = "";
-		Object getgeodropdown = glReportdao.getgeodropdown(userName);
+		Object getgeodropdown = glReportdao.getgeodropdown(userName,geotabDatabase);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -479,7 +479,7 @@ public class RestTrendingReportDAO {
 		// TODO: Remaining columns to be populated from database selected columns. using
 		// static for now.
 		GlReportDAO da = new GlReportDAO();
-		ArrayList<String> gval = new ArrayList();
+		List<String> gval = new ArrayList();
 		gval = da.getallbehave(userName, db);
 		for (int j = 0; j < gval.size(); j++) {
 			// System.out.println(j + "-----" + gval.get(j));
@@ -940,7 +940,7 @@ public class RestTrendingReportDAO {
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
 		String getVehicleResponseJson = "";
 		List<Integer> totals = new ArrayList<>();
-		Object getgeodropdown = glReportdao.getgeodropdown(userName);
+		Object getgeodropdown = glReportdao.getgeodropdown(userName,geodatabase);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -1214,7 +1214,7 @@ public class RestTrendingReportDAO {
 				cell2.setCellValue("");
 			} else {
 				int D = 0;
-				D = GlReportDAO.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(), geodatabase);
+				D = glReportdao.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(), geodatabase);
 				cell2.setCellValue(D);
 			}
 		}
@@ -1260,7 +1260,7 @@ public class RestTrendingReportDAO {
 		Cell cells = rows.getCell(2);
 		float min = 0.0F;
 		try {
-			min = GlReportDAO.getminmiles(geouname, geodatabase);
+			min = glReportdao.getminmiles(geouname, geodatabase);
 
 			System.out.println("min-value" + min);
 		} catch (Exception exception) {

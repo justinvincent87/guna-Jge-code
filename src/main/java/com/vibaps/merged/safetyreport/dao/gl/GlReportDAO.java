@@ -75,6 +75,8 @@ public class GlReportDAO {
 	
 @Autowired	
 private UserReportFilterRepository userReportFilterRepository;
+
+
 	
 	private int ROW_OFFSET = -1;
 	private int FORMULA_START_ROW = 7;
@@ -170,216 +172,153 @@ private UserReportFilterRepository userReportFilterRepository;
 		return countuser;
 	}
 	
-	public static Object viewadd(String geouserid,String db) {
-		Map<String, Object> result = new HashMap<>();
-		Session session = null;
+	public  Object viewadd(String geotabUserid,String db) {
+	
 		List<GlRulelistEntity> obj = null;
-		Transaction transaction = null;
+
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id order by value) as value order by value.value").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
-			transaction.commit();
+			obj = userReportFilterRepository.viewadd(geotabUserid, db);
 		} catch (Exception exception) {}
 		return obj;
 	}
 	
-	public Object getgeodropdown(String geouserid) {
-		Map<String, Object> result = new HashMap<>();
-		Session session = null;
+	public Object getgeodropdown(String geotabUserid,String db) {
+
 		List<GlRulelistEntity> obj = null;
-		Transaction transaction = null;
+
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.rulecompany='G'").setParameter("userid", geouserid).list();
-			transaction.commit();
+
+			obj = userReportFilterRepository.getgeodropdown(geotabUserid,db);
 		} catch (Exception exception) {}
 		return obj;
 	}
 	
 	public Object getLybehave(String geouserid,String db) {
-		Map<String, Object> result = new HashMap<>();
-		Session session = null;
+		
 		List<GlRulelistEntity> obj = null;
-		Transaction transaction = null;
+		
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.rulecompany='L'").setParameter("userid", geouserid).setParameter("db", db).list();
-			transaction.commit();
+		obj = userReportFilterRepository.getLybehave(geouserid, db);
 		} catch (Exception exception) {}
 		return obj;
 	}
 	
-	public ArrayList getallbehave(String geouserid,String db) {
-		Session session = null;
-		ArrayList obj = new ArrayList();
-		Transaction transaction = null;
+	public List getallbehave(String geotabUserid,String db) {
+	
+		List obj = new ArrayList();
+		
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = (ArrayList)session.createSQLQuery("select CONCAT(a.rulecompany,'-',a.rulename) as value from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 order by value").setParameter("db", db).setParameter("userid", geouserid).list();
-			transaction.commit();
+		
+			obj = userReportFilterRepository.getallbehave(geotabUserid, db);
+			
 		} catch (Exception exception) {}
 		return obj;
 	}
 	
-	public ArrayList getallbehaveui(String geouserid,String db) {
-		Session session = null;
-		ArrayList obj = new ArrayList();
-		Transaction transaction = null;
+	public List getallbehaveui(String geotabUserid,String db) {
+		
+		List obj = new ArrayList();
+		
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = (ArrayList)session.createSQLQuery("select CONCAT(a.rulecompany,'-',a.rulename) as value,b.weight from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 order by value").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
-			transaction.commit();
+			obj = userReportFilterRepository.getallbehave(geotabUserid, db);
 		} catch (Exception exception) {}
 		return obj;
 	}
 	
 	//For Report
-	@SuppressWarnings("unchecked")
-	public static List<Object[]> getallBehaveFromDB(String geouserid,String db) {
-		Session session = null;
+	public  List<Object[]> getallBehaveFromDB(String geotabUserid,String db) {
 		List<Object[]> obj = null;
-		Transaction transaction = null;
-		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select concat(b.rulecompany,'-',b.rulename) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).list();
-			transaction.commit();
-		} catch (Exception exception) {}
 		
-	
-		
-		
-		return obj;
-	}
-	
-	
-	public static int geoCount(String geouserid,String db) {
-		Session session = null;
-		int obj = 0;
-		Transaction transaction = null;
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = ((Integer) session.createSQLQuery("select count(b.id) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).intValue();
-			transaction.commit();
+			
+			obj = userReportFilterRepository.getallBehaveFromDB(geotabUserid, db);
 		} catch (Exception exception) {}
 		return obj;
 	}
 	
-	public static int lyCount(String geouserid,String db) {
-		Session session = null;
+	
+	public int geoCount(String geotabUserid,String db) {
 		int obj = 0;
-		Transaction transaction = null;
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = ((Integer) session.createSQLQuery("select count(b.id) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='L' and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).intValue();
-			transaction.commit();
+			obj = userReportFilterRepository.geoCount(geotabUserid, db);
+			}
+		catch (Exception exception) {}
+		return obj;
+	}
+	
+	public int lyCount(String geotabUserid,String db) {
+		int obj = 0;
+		try {
+			obj = userReportFilterRepository.lyCount(geotabUserid, db);
+
 		} catch (Exception exception) {}
 		return obj;
 	}
 	
-	public static int getwe(String geouserid, String rule,String db) {
-		Session session = null;
+	public  int getwe(String geotabUserid, String rule,String db) {
 		int obj = 0;
-		Transaction transaction = null;
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = ((Integer)session.createSQLQuery("select a.weight from gl_selectedvalues a,gen_user b,gl_rulelist c where a.gen_user_id=b.id and b.companyid=:userid and b.db=:db and a.gen_rulelist_id=c.id and concat(c.rulecompany,'-',c.rulename)=:rule").setParameter("userid", geouserid).setParameter("db", db).setParameter("rule", rule).uniqueResult()).intValue();
-			transaction.commit();
+			obj = userReportFilterRepository.getWeight(geotabUserid, db, rule);
 		} catch (Exception exception) {}
 		return obj;
 	}
 	
-	public static float getminmiles(String geouserid,String db) {
-		Session session = null;
+	public float getminmiles(String geotabUserid,String db) {
 		float obj = 0.0F;
-		Transaction transaction = null;
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = ((Float)session.createSQLQuery("select a.minmiles from gl_minmiles a,gen_user b where b.companyid=:userid and b.db=:db and a.gen_user_id=b.id").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).floatValue();
-			transaction.commit();
+			obj=userReportFilterRepository.getminmiles(geotabUserid, db);
 		} catch (Exception exception) {}
 		return obj;
 	}
-	public Object updateresponce(String geouname, String responseJson,String db) {
-		// TODO Auto-generated method stub
-		System.out.println(responseJson.length());
-		Session session = null;
-		int i = 0;
-		Transaction transaction = null;
+	public Object updateresponce(String geotabUserId, String responseJson,String db) {
+	
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			i = session.createSQLQuery("update gl_responce a,gen_user b set a.responce_json=:responce where b.companyid=:userid and b.db=:db and b.id=a.gen_user_id").setParameter("responce",responseJson).setParameter("db",db).setParameter("userid",geouname).executeUpdate();
-			transaction.commit();
+			userReportFilterRepository.updateresponce(geotabUserId, db, responseJson);
+			
 		} catch (Exception exception) {}
-		return i;
+		return "Data Inserted";
 	}
-	public String selectresponce(String geouname,String db) {
+	public String selectresponce(String geotabuUserId,String db) {
 		// TODO Auto-generated method stub
-		
-		
-		Session session = null;
 		String i = "";
-		Transaction transaction = null;
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			i = (String) session.createSQLQuery("select a.responce_json from gl_responce a,gen_user b where b.companyid=:userid and b.db=:db and b.id=a.gen_user_id").setParameter("userid",geouname).setParameter("db",db).uniqueResult();
-			transaction.commit();
+			i = userReportFilterRepository.selectresponce(geotabuUserId, db);
 		} catch (Exception exception) {}
 		return i;
 	}
 	
 	public Object insert(ArrayList<GlRulelistEntity> v, String companyid, String minmiles,String db) {
 		Map<String, String> result = new HashMap<>();
-		Session session = null;
+		
 		int i = 0;
-		Transaction transaction = null;
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			i = session.createSQLQuery("update gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d set b.status=0,d.minmiles=:minmiles  where  c.companyid=:companyid and c.db=:db  and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and d.gen_user_id=c.id").setParameter("companyid", companyid).setParameter("db", db).setParameter("minmiles", Float.valueOf(Float.parseFloat(minmiles))).executeUpdate();
-			transaction.commit();
+			i=userReportFilterRepository.getRuleListInsert(companyid, db, Float.valueOf(Float.parseFloat(minmiles)));
+			
 		} catch (Exception exception) {}
 		int j = 0;
 		if (i > 0)
 			try {
 				for (int d = 0; d < v.size(); d++) {
-					session = HibernateUtil.getsession();
-					transaction = session.beginTransaction();
-					j = session.createSQLQuery("update gl_rulelist a,gl_selectedvalues b,gen_user c set b.status=1,b.weight=:we where  c.companyid=:companyid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.rulevalue=:rval").setParameter("we", Integer.valueOf(((GlRulelistEntity)v.get(d)).getWeight())).setParameter("companyid", companyid).setParameter("db", db).setParameter("rval", ((GlRulelistEntity)v.get(d)).getRulevalue()).executeUpdate();
-					transaction.commit();
+				
+					userReportFilterRepository.updateRuleListValue(companyid, db, Integer.valueOf(((GlRulelistEntity)v.get(d)).getWeight()), ((GlRulelistEntity)v.get(d)).getRulevalue());
 					result.put("result", "Rules list saved");
 				} 
 			} catch (Exception exception) {} 
 		return result;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static List<GenDevice> deviceName(String geouserid,String db) {
+	public List<GenDevice> deviceName(String geotabUserId,String db) {
 		List<GenDevice> deviceNameList=new ArrayList<GenDevice>();
 		
-		List<Object[]> list=null;
+		List<GenDevice> list=null;
 		
 		Session session = null;
 		Map<String,String> obj = new LinkedHashMap<String, String>();;
 		Transaction transaction = null;
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			list =session.createSQLQuery("SELECT a.device_id,a.device_name FROM gen_device a,gen_user b where a.ref_gen_user_id=b.id and b.companyid=:userid and b.db=:db").setParameter("userid", geouserid).setParameter("db", db).list();
-			transaction.commit();
-		} catch (Exception exception) {}
-		session.close();
+			
+			list =userReportFilterRepository.deviceInfo(geotabUserId, db);
+			} catch (Exception exception) {}
 		
 
 Iterator it = list.iterator();
@@ -401,7 +340,7 @@ while(it.hasNext()){
 			String templect,String enttype)
 	{
 		String responseJson="";
-		Object getgeodropdown = getgeodropdown(userName);
+		Object getgeodropdown = getgeodropdown(userName,geodatabase);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -1304,12 +1243,9 @@ reportRows = new ArrayList<ReportRow>();
 		/**
 		 * @param reportColumnHeader
 		 */
-		private static List<Map.Entry<String, Integer>> loadSelectedRuleNames(String userName,String db) {
-			//String[] selectedRuleNmesArray= {"G-Hard Acceleration","G-Harsh Braking", "G-Harsh Cornering", "G-Seatbelt", "G-[01 - WARNING] Speeding 10 MPH Over Posted Speed Limit", "G-[02 - VIOLATION] Speeding 20 MPH Over Posted Speed Limit", "L-Food or Drink", "L-Driver Smoking", "L-Handheld Device"};
-	    	
-	    	//String[][] selectedRulesData= {{"G-Hard Acceleration", "2"},{"G-Harsh Braking", "3"}, {"G-Harsh Cornering", "3"}, {"G-Seatbelt", "3"}, {"G-[01 - WARNING] Speeding 10 MPH Over Posted Speed Limit", "3"}, {"G-[02 - VIOLATION] Speeding 20 MPH Over Posted Speed Limit", "3"}, {"L-Food or Drink", "3"}, {"L-Driver Smoking", "3"}, {"L-Handheld Device", "3"}};
-			 selectedRules = new LinkedHashMap<String, Integer>();
-	    	
+		private  List<Map.Entry<String, Integer>> loadSelectedRuleNames(String userName,String db) {
+			
+			selectedRules = new LinkedHashMap<String, Integer>();
 	    	
 			List<Object[]> obj=getallBehaveFromDB(userName,db);
 			for(Object[] objs : obj){
@@ -1356,7 +1292,7 @@ reportRows = new ArrayList<ReportRow>();
 		//Guna todo: copy the request here (commented) to get the response below;
 		public String getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 		
-			  Object getgeodropdown = getgeodropdown(geouname);
+			  Object getgeodropdown = getgeodropdown(geouname,geodatabase);
 			    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		      String sDate = sdate;
@@ -1420,7 +1356,7 @@ reportRows = new ArrayList<ReportRow>();
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
 		public String getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
-			Object getgeodropdown = getgeodropdown(geouname);
+			Object getgeodropdown = getgeodropdown(geouname,geodatabase);
 		    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			String gvalue = "";
 			for (int j = 0; j < getl.size(); j++) {
@@ -1565,7 +1501,7 @@ reportRows = new ArrayList<ReportRow>();
 		 * returns the list of top n number of vehicles or drivers whose score is the least.
 		 * param: top number of records needed.
 		 */
-		public static void calculateTopBottomNRecords(String userName,String responce,Workbook workbook,String db) {
+		public  void calculateTopBottomNRecords(String userName,String responce,Workbook workbook,String db) {
 			reportRows = new ArrayList<ReportRow>();
 
 			loadReportRowsFromJson(responce,userName,db);
@@ -1706,7 +1642,7 @@ reportRows = new ArrayList<ReportRow>();
 	}
 
 	
-	    public static List<ReportRow> loadReportRowsFromJson(String reportDataJson,String userName,String db) {
+	    public  List<ReportRow> loadReportRowsFromJson(String reportDataJson,String userName,String db) {
 	    	List<Map.Entry<String, Integer>> ruleList = new ArrayList<Map.Entry<String, Integer>>(loadSelectedRuleNames(userName,db));
 	        JSONObject reportDataJO = new JSONObject(reportDataJson);
 	        JSONArray reportDataArray = reportDataJO.getJSONArray("information");
@@ -1733,7 +1669,7 @@ reportRows = new ArrayList<ReportRow>();
 			reportColumnHeader.add("Group");
 			reportColumnHeader.add("Distance");
 			GlReportDAO da = new GlReportDAO();
-			ArrayList<String> gval = new ArrayList();
+			List<String> gval = new ArrayList();
 			gval = da.getallbehave(userName,db);
 			for (int j = 0; j < gval.size(); j++) {
 				// System.out.println(j + "-----" + gval.get(j));

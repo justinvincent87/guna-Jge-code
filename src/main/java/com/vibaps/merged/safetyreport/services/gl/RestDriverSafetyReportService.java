@@ -41,9 +41,9 @@ public class RestDriverSafetyReportService {
 		// TODO Auto-generated method stub
 		return glReportDao.viewadd(reportParams.getGeotabUserName(),reportParams.getGeotabDatabase());
 	}
-	public Object getgeodropdown(String geouserid) {
+	public Object getgeodropdown(String geouserid,String geotabDatabase) {
 		// TODO Auto-generated method stub
-		return glReportDao.getgeodropdown(geouserid);
+		return glReportDao.getgeodropdown(geouserid,geotabDatabase);
 	}
 
 	public Object getLybehave(@RequestBody ReportParams reportParams) {

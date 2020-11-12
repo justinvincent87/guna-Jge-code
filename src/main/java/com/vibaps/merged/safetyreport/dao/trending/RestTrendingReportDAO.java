@@ -59,17 +59,17 @@ public class RestTrendingReportDAO {
 	@Autowired
 	private GlReportDAO glReportdao;
 	@Autowired
-	private static CommonGeotabDAO commonGeotabDAO;
+	private CommonGeotabDAO commonGeotabDAO;
 	private Map<Long, String> lytxVehicleList;
-	private static Map<String, List<Trip>> vehicleTrips;
+	private Map<String, List<Trip>> vehicleTrips;
 	private int ROW_OFFSET = -1;
 	private int FORMULA_START_ROW = 7;
-	private static int EXCEPTIONS_START_COLUMN = 3;
+	private int EXCEPTIONS_START_COLUMN = 3;
 	private String geotabVehicleExceptionSummariesJson;
 	private String lytxExceptionSummariesJson;
-	private static List<String> displayColumns;
-	private static Map<Integer, String[]> periods = new LinkedHashMap<Integer, String[]>();
-    private static Map<Integer, String> lytxBehaviors;
+	private List<String> displayColumns;
+	private Map<Integer, String[]> periods = new LinkedHashMap<Integer, String[]>();
+    private Map<Integer, String> lytxBehaviors;
 
 
 	
@@ -243,7 +243,7 @@ public class RestTrendingReportDAO {
 		return responseJson; 
 	}
 	
-	public static String createTrendingResponce(Map<String, Map<String, String>> combinedReport,List<String> displayColumns)
+	public String createTrendingResponce(Map<String, Map<String, String>> combinedReport,List<String> displayColumns)
 	{
 		String responseJson = "";
 		List<Integer> totals = new ArrayList<>();
@@ -311,7 +311,7 @@ public class RestTrendingReportDAO {
 	}
 	
 	
-	public static String geotabTrendingResponce(ArrayList<String> getl,ArrayList<String> geotabGroups,String endDate,String startDate,String url,String geotabDatabase,String geotabSessionId,String enttype,String userName,String period) throws MalformedURLException, IOException
+	public String geotabTrendingResponce(ArrayList<String> getl,ArrayList<String> geotabGroups,String endDate,String startDate,String url,String geotabDatabase,String geotabSessionId,String enttype,String userName,String period) throws MalformedURLException, IOException
 	{
 		String gvalue = "";
 		for (int j = 0; j < getl.size(); j++) {
@@ -365,7 +365,7 @@ public class RestTrendingReportDAO {
 		return geotabDriverExceptionSummariesJson;
 	}
 	
-	public static String lytexVechileResponce(String startDate,String endDate,String groupId,String lytxSessionId,String endPoint) throws ParseException, RemoteException
+	public String lytexVechileResponce(String startDate,String endDate,String groupId,String lytxSessionId,String endPoint) throws ParseException, RemoteException
 	{
 		String lytxBehaviorsJson="";
 		String getVehicleResponseJson="";
@@ -400,7 +400,7 @@ public class RestTrendingReportDAO {
 		return getVehicleResponseJson;
 	}
 	
-	public static String toStringValue(Object object) {
+	public String toStringValue(Object object) {
 		String value = "";
 		if (object != null)
 			if (object instanceof String) {
@@ -414,7 +414,7 @@ public class RestTrendingReportDAO {
 		return value;
 	}
 	
-	public static Map<Long, String> loadLytxVehicleIDNameMap(String getVehicleResponseJson) {
+	public Map<Long, String> loadLytxVehicleIDNameMap(String getVehicleResponseJson) {
 		Map<Long, String> lytxVehicleList = new HashMap<Long, String>();
 		JSONObject lytxVehiclesJO = new JSONObject(getVehicleResponseJson);
 		JSONArray lytxVehiclesArray = lytxVehiclesJO.getJSONArray("vehicles");
@@ -426,7 +426,7 @@ public class RestTrendingReportDAO {
 		return lytxVehicleList;
 	}
 	
-	public static Map<Integer, String> loadLytxBehaviors(String lytxBehaviorsJson) {
+	public Map<Integer, String> loadLytxBehaviors(String lytxBehaviorsJson) {
 		Map<Integer, String> lBehaviors = new HashMap<Integer, String>();
 		JSONObject lytxBehaviorsJO = new JSONObject(lytxBehaviorsJson);
 		JSONArray lytxBehaviorsArray = lytxBehaviorsJO.getJSONArray("behaviors");
@@ -440,7 +440,7 @@ public class RestTrendingReportDAO {
 		return lBehaviors;
 	}
 	
-	public static Map<String, List<Trip>> loadVehicleTripsMap(String entity, String geouname, String geodatabase,
+	public Map<String, List<Trip>> loadVehicleTripsMap(String entity, String geouname, String geodatabase,
 			String geosees, String url, String fromDate, String toDate) throws MalformedURLException, IOException {
 		// THE FOLLOWING METHOD CALL 'loadSampleTrips()' SHOULD BE REPLACED WITH ACTUAL
 		// CALL AND VALUE RETURNED AS STRING ARRAY.
@@ -468,7 +468,7 @@ public class RestTrendingReportDAO {
 		return vehicleTrips;
 	}
 	
-	public static List<String> loadTrendingReporColumntHeaders(String userName, String db) {
+	public List<String> loadTrendingReporColumntHeaders(String userName, String db) {
 		List<String> reportColumnHeader = new ArrayList<String>();
 		reportColumnHeader.add("VehicleName");
 		reportColumnHeader.add("Group");
@@ -477,7 +477,6 @@ public class RestTrendingReportDAO {
 		reportColumnHeader.add("StartDate");
 		reportColumnHeader.add("EndDate");
 		// TODO: Remaining columns to be populated from database selected columns. using
-		// static for now.
 		GlReportDAO da = new GlReportDAO();
 		List<String> gval = new ArrayList();
 		gval = da.getallbehave(userName, db);
@@ -488,7 +487,7 @@ public class RestTrendingReportDAO {
 		return reportColumnHeader;
 	}
 	
-	private static Map<String, Map<String, String>> extractGeotabDriverTrendingData(
+	private Map<String, Map<String, String>> extractGeotabDriverTrendingData(
 			String geotabDriverTrendingReportResponseJson, String userName, String db) {
 		displayColumns = loadTrendingReporColumntHeaders(userName, db);
 
@@ -574,7 +573,7 @@ public class RestTrendingReportDAO {
 		return combinedReport;
 	}
 	
-	private static Map<String, Map<String, String>> extractGeotabVehicleTrendingData(
+	private Map<String, Map<String, String>> extractGeotabVehicleTrendingData(
 			String geotabTrendingReportResponseJson, String userName, String db) {
 
 		// System.out.println(geotabTrendingReportResponseJson);
@@ -661,7 +660,7 @@ public class RestTrendingReportDAO {
 		return combinedReport;
 	}
 	
-	private static Map<String, Map<String, String>> extractGeotabDriverData(String geotabDriverExceptionSummariesJson) {
+	private Map<String, Map<String, String>> extractGeotabDriverData(String geotabDriverExceptionSummariesJson) {
 
 		// create report object:
 		Map<String, Map<String, String>> combinedReport = new LinkedHashMap<String, Map<String, String>>();
@@ -719,7 +718,7 @@ public class RestTrendingReportDAO {
 		return combinedReport;
 	}
 	
-	private static Map<String, Map<String, String>> extractGeotabVehicleData(
+	private Map<String, Map<String, String>> extractGeotabVehicleData(
 			String geotabVehicleExceptionSummariesJson) {
 
 		System.out.println("test" + geotabVehicleExceptionSummariesJson);
@@ -816,7 +815,7 @@ public class RestTrendingReportDAO {
 	}
 
 
-	private static Map<String, Map<String, Integer>> extractExceptionDataFromLytxResponse(
+	private Map<String, Map<String, Integer>> extractExceptionDataFromLytxResponse(
 			JSONArray lytxExceptionSummariesJson, Map<Long, String> lytxVehicleList, boolean trending, Date startDate,
 			Date endDate, String lytxBehaviorsJson) {
 
@@ -867,13 +866,13 @@ public class RestTrendingReportDAO {
 		return lytxVehicleEventsRecord;
 	}
 
-	private static Date getDateFromMilliSeconds(String ms) {
+	private Date getDateFromMilliSeconds(String ms) {
 		Date stdate = new Date(Long.parseLong(ms.substring(33, ms.indexOf(','))));
 
 		return stdate;
 	}
 	
-	private static void updatedCombinedReportWithLytxExceptions(Map<String, Map<String, String>> combinedReport,
+	private void updatedCombinedReportWithLytxExceptions(Map<String, Map<String, String>> combinedReport,
 			Map<String, Map<String, Integer>> lytxVehicleEventsRecord) {
 		// for every vehicle in lytxVehicleEventsRecord
 		for (Map.Entry<String, Map<String, Integer>> lytxVehiclesEventsMapEntry : lytxVehicleEventsRecord.entrySet()) {
@@ -893,7 +892,7 @@ public class RestTrendingReportDAO {
 		}
 	}
 	
-	public static LocalDateTime convertToLocalDateTime(String strDate) {
+	public LocalDateTime convertToLocalDateTime(String strDate) {
 		LocalDateTime ldt = null;
 		if (strDate != null) {
 			if (strDate.contains("java")) {
@@ -905,7 +904,7 @@ public class RestTrendingReportDAO {
 		}
 		return ldt;
 	}
-	private static Date getDate(String dateStr) {
+	private Date getDate(String dateStr) {
 		dateStr = dateStr.substring(0, dateStr.indexOf('.'));
 		TimeZone timeZone = TimeZone.getTimeZone("UTC");
 		Calendar calendar = Calendar.getInstance(timeZone);
@@ -919,7 +918,7 @@ public class RestTrendingReportDAO {
 		}
 		return date;
 	}
-	public static Integer getPeriodNumberForDate(Date date) {
+	public Integer getPeriodNumberForDate(Date date) {
 		for (Map.Entry<Integer, String[]> entry : periods.entrySet()) {
 			Integer key = entry.getKey();
 			String[] value = entry.getValue();
@@ -1315,7 +1314,7 @@ public class RestTrendingReportDAO {
 
 		return "{\"url\":\"" + url + geodatabase + "/report/excel/" + filename + ".xlsx\"}";
 	}
-	private static void updateFormulaForReport(Sheet sheet, int startRow, int numberOfRows, int rowOffset,
+	private void updateFormulaForReport(Sheet sheet, int startRow, int numberOfRows, int rowOffset,
 			String[] formulaList) {
 
 		for (int i = startRow; i < startRow + numberOfRows; i++) {
@@ -1330,7 +1329,7 @@ public class RestTrendingReportDAO {
 			}
 		}
 	}
-		private static void updateDateFormatFormulaForReport(Workbook workbook,Sheet sheet, int startRow, int numberOfRows, int rowOffset, String[] formulaList) {
+		private void updateDateFormatFormulaForReport(Workbook workbook,Sheet sheet, int startRow, int numberOfRows, int rowOffset, String[] formulaList) {
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 			CellStyle dateCellStyle = workbook.createCellStyle();
 			short displayDateFormat = workbook.createDataFormat().getFormat("yyyy-MM-dd");

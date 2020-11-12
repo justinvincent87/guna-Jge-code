@@ -25,13 +25,13 @@ public final class TypeUtils {
 
 	private static final Logger LOGGER = Logger.getLogger(TypeUtils.class);
 
-	private static SecureRandom random = new SecureRandom();
+	private SecureRandom random = new SecureRandom();
 
 	private TypeUtils() {
 
 	}
 
-	public static Integer toIntegerValue(Object object) {
+	public  Integer toIntegerValue(Object object) {
 
 		Integer value = null;
 		if (object != null) {
@@ -51,13 +51,13 @@ public final class TypeUtils {
 		return value;
 	}
 
-	public static Integer toInt0Value(Object object) {
+	public Integer toInt0Value(Object object) {
 
 		Integer value = toIntegerValue(object);
 		return value == null ? 0 : value;
 	}
 
-	public static long toLongValue(Object object) {
+	public long toLongValue(Object object) {
 
 		long value = 0L;
 		if (object != null) {
@@ -75,7 +75,7 @@ public final class TypeUtils {
 		return value;
 	}
 
-	public static String toStringValue(Object object) {
+	public String toStringValue(Object object) {
 
 		String value = "";
 		if (object != null) {
@@ -94,7 +94,7 @@ public final class TypeUtils {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static Boolean isNotBlank(Object object) {
+	public Boolean isNotBlank(Object object) {
 
 		if (object instanceof List) {
 			List list = (List) object;
@@ -108,7 +108,7 @@ public final class TypeUtils {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static Object readObject(Class cls, String payload) {
+	public Object readObject(Class cls, String payload) {
 
 		try {
 			ObjectMapper mapper = new ObjectMapper();
@@ -120,7 +120,7 @@ public final class TypeUtils {
 	}
 
 	@SuppressWarnings({ "rawtypes" })
-	public static Object readMapObject(Class cls, Map<String, Object> payload) {
+	public Object readMapObject(Class cls, Map<String, Object> payload) {
 
 		try {
 			ObjectMapper mapper = new ObjectMapper();
@@ -132,11 +132,11 @@ public final class TypeUtils {
 		return null;
 	}
 
-	public static Boolean isBlank(Object object) {
+	public Boolean isBlank(Object object) {
 		return !isNotBlank(object);
 	}
 
-	public static String decapitalize(String string) {
+	public String decapitalize(String string) {
 
 		if (string == null || string.length() == 0) {
 			return string;
@@ -146,12 +146,12 @@ public final class TypeUtils {
 		return new String(c);
 	}
 
-	public static String getField(String column) {
+	public String getField(String column) {
 
 		return getSuffix(column, "");
 	}
  
-	public static String getSuffix(String string, String splitter) {
+	public String getSuffix(String string, String splitter) {
 
 		if (string == null || string.length() == 0 || splitter == null || splitter.length() == 0) {
 			return string;
@@ -160,7 +160,7 @@ public final class TypeUtils {
 		return strings[(strings.length - 1)];
 	}
 
-	public static Date getDateWithoutTime(Date date) {
+	public Date getDateWithoutTime(Date date) {
 
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -171,7 +171,7 @@ public final class TypeUtils {
 		return cal.getTime();
 	}
 
-	public static Date getFormattedFromDateTime(Date date) {
+	public Date getFormattedFromDateTime(Date date) {
 
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -181,7 +181,7 @@ public final class TypeUtils {
 		return cal.getTime();
 	}
 
-	public static Date getFormattedToDateTime(Date date) {
+	public Date getFormattedToDateTime(Date date) {
 
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -191,7 +191,7 @@ public final class TypeUtils {
 		return cal.getTime();
 	}
 
-	public static Date getFormattedFromDateTime(Integer year) {
+	public Date getFormattedFromDateTime(Integer year) {
 
 		Calendar cal = Calendar.getInstance();
 		cal.set(year, 0, 1);
@@ -201,7 +201,7 @@ public final class TypeUtils {
 		return cal.getTime();
 	}
 
-	public static Date getFormattedToDateTime(Integer year) {
+	public Date getFormattedToDateTime(Integer year) {
 
 		Calendar cal = Calendar.getInstance();
 		cal.set(year, 11, 31);
@@ -218,7 +218,7 @@ public final class TypeUtils {
 	 * 
 	 * @return
 	 */
-	public static String nextSessionId() {
+	public String nextSessionId() {
 
 		return new BigInteger(50, random).toString(32);
 	}
@@ -230,11 +230,11 @@ public final class TypeUtils {
 	 * @param date
 	 * @return
 	 */
-	public static Date getOneWeekDateTime(Date date) {
+	public Date getOneWeekDateTime(Date date) {
 		return addDays(date, Calendar.DAY_OF_WEEK);
 	}
 	
-	public static Date addDays(Date date, Integer days) {
+	public Date addDays(Date date, Integer days) {
 
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -243,12 +243,12 @@ public final class TypeUtils {
 		return cal.getTime();
 	}
 
-	public static int numberOfDaysInMonth(int month, int year) {
+	public int numberOfDaysInMonth(int month, int year) {
 		Calendar monthStart = new java.util.GregorianCalendar(year, month - 1, 1);
 		return monthStart.getActualMaximum(Calendar.DAY_OF_MONTH);
 	}
 
-	public static Date toSqlDate(Date date) {
+	public Date toSqlDate(Date date) {
 		
 		java.util.Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -261,7 +261,7 @@ public final class TypeUtils {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static List<Date> getMonthOfDates(Date monthDate) {
+	public List<Date> getMonthOfDates(Date monthDate) {
 
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(monthDate);
@@ -282,7 +282,7 @@ public final class TypeUtils {
 	 * }catch(Exception e) { LOGGER.error("Error while cloning object", e); } return
 	 * null; }
 	 */
-	public static Object getEntityClone(Object trueEntityObject) {
+	public Object getEntityClone(Object trueEntityObject) {
 		
 		try {
 			return SerializationHelper.clone((Serializable) trueEntityObject);
@@ -292,7 +292,7 @@ public final class TypeUtils {
 		return null;
 	}
 
-	public static Object getlyval(Object events,Object jv) {
+	public Object getlyval(Object events,Object jv) {
 		// TODO Auto-generated method stub
 		
 		Map<Long,ArrayList> result=new HashMap<Long,ArrayList>();

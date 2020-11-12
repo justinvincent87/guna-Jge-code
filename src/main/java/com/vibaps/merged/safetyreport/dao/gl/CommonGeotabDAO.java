@@ -27,17 +27,19 @@ import org.springframework.stereotype.Repository;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.vibaps.merged.safetyreport.HibernateUtil;
 import com.vibaps.merged.safetyreport.api.gl.RestDriverSafetyReport;
 import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
 import com.vibaps.merged.safetyreport.entity.gl.GenDriver;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
+import com.vibaps.merged.safetyreport.repo.gl.CommonGeotabRepository;
 import com.vibaps.merged.safetyreport.repo.gl.UserReportFilterRepository;
 
 @Repository
 public class CommonGeotabDAO  {
 	@Autowired
-	private static GlReportDAO glReportDAO;
+	private GlReportDAO glReportDAO;
+	@Autowired
+	private CommonGeotabRepository commonGeotabRepository;
 @Transactional	
 public Object insertDevice(String geouserid,String databaseName,String geosess,String url) throws IOException {
 		// TODO Auto-generated method stub
@@ -80,49 +82,36 @@ int result=0;
 		  JSONArray geotabDeiverJOArray = geotabDriverJO.getJSONArray("result");
 
 		  
-		  Session session = HibernateUtil.getsession();
-			Transaction transaction = session.beginTransaction();
 		  
 		  for(int i=0;i<geotabDeiverJOArray.length();i++)
 		  {
 			  try
 			  {
-				  
-				  
-					result =session.createSQLQuery("insert into gen_device(ref_gen_user_id,device_id,device_name) values (:refid,:deviceid,:devicename)").setParameter("refid",obj).setParameter("deviceid",geotabDeiverJOArray.getJSONObject(i).getString("id")).setParameter("devicename",geotabDeiverJOArray.getJSONObject(i).getString("name")).executeUpdate();
-					
+				  commonGeotabRepository.insertDevice(obj, geotabDeiverJOArray.getJSONObject(i).getString("id"), geotabDeiverJOArray.getJSONObject(i).getString("name"));
+			
 				
 			  }catch (Exception e) {
 				// TODO: handle exception
 			}
 		  }
-		  transaction.commit();
-				
-		  
-	
-
-		  
+  
 		}
 		
-		return null;
+		return "Saved";
 	}
 	
-	private int  getCompanyId(String geouserid,String db) {
+private int  getCompanyId(String geotabUserId,String db) {
 		
 		int obj = 0;
-		Session session=null;
-		Transaction transaction = null;
+		
 		try {
-			 session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			obj = ((BigInteger) session.createSQLQuery("select id from gen_user where companyid=:userid and db=:db").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).intValue();
 			
-			System.out.println(obj+"----"+geouserid);
-
 			
-			transaction.commit();
+			obj=commonGeotabRepository.getCompanyId(geotabUserId, db);
+			
+			
 		} catch (Exception exception) {
-			System.out.println(exception);
+			
 		}
 		
 		return obj;
@@ -167,35 +156,25 @@ int result=0;
 			      JSONObject geotabDriverJO = new JSONObject(GeotabDriverResponse);
 				  JSONArray geotabDeiverJOArray = geotabDriverJO.getJSONArray("result");
 
-				  
-				  Session session = HibernateUtil.getsession();
-					Transaction transaction = session.beginTransaction();
+				
 				  
 				  for(int i=0;i<geotabDeiverJOArray.length();i++)
 				  {
 					  try
 					  {
 						  
-						  
-							result =session.createSQLQuery("insert into gen_driver(ref_gen_user_id,driver_id,driver_name) values (:refid,:deviceid,:devicename)").setParameter("refid",obj).setParameter("deviceid",geotabDeiverJOArray.getJSONObject(i).getString("id")).setParameter("devicename",geotabDeiverJOArray.getJSONObject(i).getString("firstName")+" "+geotabDeiverJOArray.getJSONObject(i).getString("lastName")).executeUpdate();
-							
-						
+						  commonGeotabRepository.insertDriver(obj, geotabDeiverJOArray.getJSONObject(i).getString("id"), geotabDeiverJOArray.getJSONObject(i).getString("firstName")+" "+geotabDeiverJOArray.getJSONObject(i).getString("lastName"));
 					  }catch (Exception e) {
 						// TODO: handle exception
 					}
 				  }
-				  transaction.commit();
-						
-				  
-			
-
-				  
+  
 				}
 				
 				return null;
 	}
 	
-	public static List<String> getTripRecords(String geouserid, String databaseName, String geosess, String url,String sdate,String edate) throws MalformedURLException, IOException
+	public List<String> getTripRecords(String geouserid, String databaseName, String geosess, String url,String sdate,String edate) throws MalformedURLException, IOException
 	{
 		
 
@@ -300,7 +279,7 @@ int result=0;
 
 	}
 	
-	public static ArrayList<String> getTrip(String geouserid, String databaseName, String geosess, String url,String sdate,String edate) throws MalformedURLException, IOException
+	public ArrayList<String> getTrip(String geouserid, String databaseName, String geosess, String url,String sdate,String edate) throws MalformedURLException, IOException
 	{
 		
 		ArrayList<String> compaindRecord = new ArrayList<String>();

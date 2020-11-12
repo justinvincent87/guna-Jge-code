@@ -59,7 +59,6 @@ import com.lytx.dto.GetEventsByLastUpdateDateRequest;
 import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
-import com.vibaps.merged.safetyreport.HibernateUtil;
 import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
 import com.vibaps.merged.safetyreport.entity.gl.GenDriver;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
@@ -76,6 +75,8 @@ public class GlReportDAO {
 @Autowired	
 private UserReportFilterRepository userReportFilterRepository;
 
+@Autowired 
+private CommonGeotabDAO commonGeotabDAO;
 
 	
 	private int ROW_OFFSET = -1;
@@ -85,20 +86,20 @@ private UserReportFilterRepository userReportFilterRepository;
 	LocalDateTime startDate;
 	LocalDateTime endDate;
 	String reportBy;  //Vehicle or Driver
-	static int minimumDistance=50;
+	 int minimumDistance=50;
 //	List<String> selectedRuleNames;
-	static Map<String, Integer> selectedRules;
-	 static List<ReportRow> reportRows;
-	static Map<String, Map<String, Integer>> lytxVehicleEventsRecord;
-	final Integer EXCEPTIONS_START_COLUMN  = 3;
-	static List<String> displayReportColumnHeaders;
-	static Map<String,List<Trip>> vehicleTrips;
-    static Map<Long, String> lytxVehicleList; 
-    static Map<Integer, String> lytxBehaviors;  
-    static List<Score> topNRecords;
-    static List<Score> bottomNRecords;
-    static Integer N_TOP_BOTTOM_RECORDS = 10;
-    static List<Map.Entry<String, Integer>> loadSelectedRuleNames;
+	 Map<String, Integer> selectedRules;
+	 List<ReportRow> reportRows;
+	 Map<String, Map<String, Integer>> lytxVehicleEventsRecord;
+	 Integer EXCEPTIONS_START_COLUMN  = 3;
+	 List<String> displayReportColumnHeaders;
+	 Map<String,List<Trip>> vehicleTrips;
+     Map<Long, String> lytxVehicleList; 
+     Map<Integer, String> lytxBehaviors;  
+     List<Score> topNRecords;
+     List<Score> bottomNRecords;
+     Integer N_TOP_BOTTOM_RECORDS = 10;
+     List<Map.Entry<String, Integer>> loadSelectedRuleNames;
     
 	public Object view(String companyid,String db) {
 		Map<String, Object> result = new HashMap<>();
@@ -396,7 +397,7 @@ while(it.hasNext()){
 		
 	}
 	
-	public static String createJsonForGeotabResponce(List<String> displayColumns,Map<String, Map<String, String>> combinedReport)
+	public String createJsonForGeotabResponce(List<String> displayColumns,Map<String, Map<String, String>> combinedReport)
 	{
 		String responseJson = "";
 		List<Integer> totals = new ArrayList<>();
@@ -467,7 +468,7 @@ while(it.hasNext()){
 		return responseJson;
 	}
 	
-	public static String geotabVechileDriverResponce(String startDate,String endDate,ArrayList<String> getl,String url,ArrayList<String> geotabgroups,String enttype,String userName,
+	public String geotabVechileDriverResponce(String startDate,String endDate,ArrayList<String> getl,String url,ArrayList<String> geotabgroups,String enttype,String userName,
 			String geodatabase,String geosees) throws MalformedURLException, IOException, ParseException
 	{
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -535,33 +536,32 @@ while(it.hasNext()){
 	}
 
 	@SuppressWarnings("unchecked")
-	public static List<GenDriver> driverName(String geouserid,String db) {
+	public List<GenDriver> driverName(String geotabUserId,String db) {
 		
 		Session session = null;
 		Map<String,String> obj = new LinkedHashMap<String, String>();
 		List<GenDriver> driverNameList=new ArrayList<GenDriver>();
-		List<Object[]> list=null;
+		List<GenDriver> list=new ArrayList();
 
 		
 		Transaction transaction = null;
 		try {
-			session = HibernateUtil.getsession();
-			transaction = session.beginTransaction();
-			list =session.createSQLQuery("SELECT a.driver_id,a.driver_name FROM gen_driver a,gen_user b where a.ref_gen_user_id=b.id and b.companyid=:geouserid and b.db=:db").setParameter("geouserid", geouserid).setParameter("db", db).list();
-			transaction.commit();
+			list=userReportFilterRepository.getDriverInfo(geotabUserId, db);
+						
 		} catch (Exception exception) {
-			System.out.println(exception);
 		}
-		session.close();
 		
-		Iterator it = list.iterator();
-		while(it.hasNext()){
-		     Object[] line = (Object[]) it.next();
-		     GenDriver eq = new GenDriver();
-		     eq.setDriverId(line[0].toString());
-		     eq.setDriverName(line[1].toString());
-		     driverNameList.add(eq);
+		if(list.size() > 0)
+		{
+			for(int i=0;i<list.size();i++)
+			{
+				GenDriver eq = new GenDriver();
+			     eq.setDriverId(list.get(i).getDriverId());
+			     eq.setDriverName(list.get(i).getDriverName());
+			     driverNameList.add(eq);
+			}
 		}
+
 		
 		return driverNameList;
 	}
@@ -1162,7 +1162,7 @@ reportRows = new ArrayList<ReportRow>();
 	    		}
 	    		*/
 	    	//THE FOLLOWING METHOD CALL 'loadSampleTrips()' SHOULD BE REPLACED WITH ACTUAL CALL AND VALUE RETURNED AS STRING ARRAY.
-	    		ArrayList<String> tripsData = CommonGeotabDAO.getTrip(geouserid, databaseName, geosess, url, sdate, edate);
+	    		ArrayList<String> tripsData = commonGeotabDAO.getTrip(geouserid, databaseName, geosess, url, sdate, edate);
 	    	// END METHOD CALL 'loadSampleTrips()'
 	    		
 	    	Map<String, List<Trip>> vehicleTrips = new HashMap<String, List<Trip>>();
@@ -1483,7 +1483,7 @@ reportRows = new ArrayList<ReportRow>();
 		}
 
 
-		public static String toStringValue(Object object) {
+		public String toStringValue(Object object) {
 			String value = "";
 			if (object != null)
 				if (object instanceof String) {
@@ -1663,7 +1663,7 @@ reportRows = new ArrayList<ReportRow>();
 			return reportRows;   
 	    }
 	    
-		public static List<String> loadReporColumntHeadersTrending(String userName,String db) {
+		public List<String> loadReporColumntHeadersTrending(String userName,String db) {
 			List<String> reportColumnHeader = new ArrayList<>();
 			reportColumnHeader.add("VehicleName");
 			reportColumnHeader.add("Group");
@@ -1679,7 +1679,7 @@ reportRows = new ArrayList<ReportRow>();
 			return reportColumnHeader;
 		}
 	    
-		private static Map<String, Map<String, String>> extractGeotabDriverData(String geotabDriverExceptionSummariesJson,
+		private Map<String, Map<String, String>> extractGeotabDriverData(String geotabDriverExceptionSummariesJson,
 				String userName,String db) {
 
 			List<String> displayColumns = loadReporColumntHeadersTrending(userName,db);
@@ -1746,7 +1746,7 @@ reportRows = new ArrayList<ReportRow>();
 			return combinedReport;
 		}
 		
-		private static Map<String, Map<String, String>> extractGeotabVehicleData(String geotabVehicleExceptionSummariesJson,
+		private Map<String, Map<String, String>> extractGeotabVehicleData(String geotabVehicleExceptionSummariesJson,
 				String userName,String db) {
 			Map<String, Map<String, String>> combinedReport = new LinkedHashMap<String, Map<String, String>>();
 
@@ -1992,7 +1992,7 @@ reportRows = new ArrayList<ReportRow>();
 
 			return "{\"url\":\"" + url + geodatabase + "/report/excel/" + filename + ".xlsx\"}";
 		}
-		public static void copyFileUsingStream(File source, File dest) throws IOException {
+		public void copyFileUsingStream(File source, File dest) throws IOException {
 			InputStream is = null;
 			OutputStream os = null;
 			try {
@@ -2008,7 +2008,7 @@ reportRows = new ArrayList<ReportRow>();
 			}
 		}
 		
-		private static void updateFormulaForReport(Sheet sheet, int startRow, int numberOfRows, int rowOffset,
+		private void updateFormulaForReport(Sheet sheet, int startRow, int numberOfRows, int rowOffset,
 				String[] formulaList) {
 
 			for (int i = startRow; i < startRow + numberOfRows; i++) {

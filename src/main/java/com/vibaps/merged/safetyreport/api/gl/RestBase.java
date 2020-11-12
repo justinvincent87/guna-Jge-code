@@ -43,8 +43,9 @@ import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.dto.LoginResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.Cookies;
-import com.vibaps.merged.safetyreport.HibernateUtil;
 import com.vibaps.merged.safetyreport.TypeUtils;
+import com.vibaps.merged.safetyreport.entity.gl.LyUserEntity;
+import com.vibaps.merged.safetyreport.repo.gl.CommonGeotabRepository;
 import com.vibaps.merged.safetyreport.services.gl.RestDriverSafetyReportService;
 
 @CrossOrigin(origins = "*",allowedHeaders = "*")
@@ -54,6 +55,10 @@ public class RestBase {
 	
 	@Autowired
 	 private RestDriverSafetyReportService glReportService;
+	@Autowired
+	 private TypeUtils typeUtils;
+	@Autowired
+	 private CommonGeotabRepository commonGeotabRepository;
 
 	@RequestMapping(value="/getKey",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
 	  public java.lang.String get(HttpServletRequest request) throws RemoteException 
@@ -137,34 +142,22 @@ public class RestBase {
 		  String lytxUsername="";
 		  String lytxPassword="";
 		  
+		  LyUserEntity entity=new LyUserEntity();
+		  
 		  List<Object[]> list=null;
 			Session session = null;
 
 			
 			Transaction transaction = null;
 			try {
-				session = HibernateUtil.getsession();
-				transaction = session.beginTransaction();
-				list =session.createSQLQuery("SELECT ly_username,ly_password FROM ly_user where dbname=:db").setParameter("db", dbname).list();
-				transaction.commit();
+				
+				entity=commonGeotabRepository.getLytxCredentials(dbname);
+				
 			} catch (Exception exception) {
 				System.out.println(exception);
 			}
-			session.close();
-			
-			Iterator it = list.iterator();
-			while(it.hasNext()){
-			     Object[] line = (Object[]) it.next();
-			      lytxUsername=line[0].toString();
-				  lytxPassword= line[1].toString();
-			   
-			     
-			}
- 
-		  
-		  
 		  ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
-		  LoginResponse value=er.login(lytxUsername,lytxPassword);
+		  LoginResponse value=er.login(entity.getLytxUsername(),entity.getLytxPassword());
 		  return value;
 	  }
 	  
@@ -275,7 +268,7 @@ public class RestBase {
 		  vr=er.getEventsByLastUpdateDate(geteventbyid);
 		Object gv=GetVehicle(sees,endpoint);
 		  
-      return TypeUtils.getlyval(vr,gv);
+      return typeUtils.getlyval(vr,gv);
 	  }
 	 
 	  

@@ -14,6 +14,7 @@ import org.springframework.objenesis.instantiator.annotations.Instantiator;
 import org.springframework.stereotype.Repository;
 
 import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
+import com.vibaps.merged.safetyreport.entity.gl.GenDriver;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
 import com.vibaps.merged.safetyreport.entity.gl.UserReportFilterEntity;
 
@@ -90,4 +91,8 @@ public interface UserReportFilterRepository extends JpaRepository<UserReportFilt
 	
 	@Query(value = "SELECT a.device_id,a.device_name FROM gen_device a,gen_user b where a.ref_gen_user_id=b.id and b.companyid=:userid and b.db=:db")
 	List<GenDevice> deviceInfo(@Param("userid") String userid,@Param("db") String db);
+	
+	@Query(value="SELECT a.driver_id,a.driver_name FROM gen_driver a,gen_user b where a.ref_gen_user_id=b.id and b.companyid=:geouserid and b.db=:db",nativeQuery = true)
+	List<GenDriver> getDriverInfo(@Param("userid") String userid,@Param("db") String db);
+
 }

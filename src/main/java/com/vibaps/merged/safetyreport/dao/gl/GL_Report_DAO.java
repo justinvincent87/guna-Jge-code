@@ -258,28 +258,30 @@ public class GL_Report_DAO {
 	
 	public static int geoCount(String geouserid,String db) {
 		Session session = null;
-		int obj = 0;
+		BigInteger obj = null;
 		Transaction transaction = null;
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = ((Integer) session.createSQLQuery("select count(b.id) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).intValue();
+			obj = ((BigInteger) session.createSQLQuery("select count(b.id) from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id").setParameter("userid", geouserid).setParameter("db", db).uniqueResult());
 			transaction.commit();
-		} catch (Exception exception) {}
-		return obj;
+		} catch (Exception exception) {
+			System.out.println(exception+"exe");
+		}
+		return obj.intValue();
 	}
 	
 	public static int lyCount(String geouserid,String db) {
 		Session session = null;
-		int obj = 0;
+		BigInteger obj = null;
 		Transaction transaction = null;
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = ((Integer) session.createSQLQuery("select count(b.id) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='L' and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).intValue();
+			obj = ((BigInteger) session.createSQLQuery("select count(b.id) from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='L' and a.gen_rulelist_id=b.id").setParameter("userid", geouserid).setParameter("db", db).uniqueResult());
 			transaction.commit();
 		} catch (Exception exception) {}
-		return obj;
+		return obj.intValue();
 	}
 	
 	public static int getwe(String geouserid, String rule,String db) {
@@ -525,14 +527,21 @@ reportRows = new ArrayList<ReportRow>();
 			}
 			
 			//process GEOTAB exceptions response
+	
+			int geoRuleCount=0;
+			geoRuleCount=geoCount(geouname, geodatabase);
 			
+			System.out.println("Geoci---"+geoRuleCount);
 			
+			if(geoRuleCount > 0)
+			{
 			if(reportBy.equalsIgnoreCase("Driver")) {
 				System.out.println("COMBINED REPORT - DRIVER");
 				extractGeotabDriverData(getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype),geouname);
 			} else {
 				System.out.println("COMBINED REPORT - VEHICLE");
 				extractGeotabVehicleData(getGeotabVehicleExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype),geouname);
+			}
 			}
 			
 			//process LYTX exceptions response
@@ -542,8 +551,15 @@ reportRows = new ArrayList<ReportRow>();
 	     //  System.out.println(lytxVehicleEventsRecord+"----");
 	        
 	        //combine Lytx exceptions data with the geotab exception report
+	       if(geoRuleCount > 0)
+			{
 	        updateCombinedReportWithLytxExceptions(lytxVehicleEventsRecord,geouname);
-
+			}
+	       else
+	       {
+		        createLytxExceptionsReport(lytxVehicleEventsRecord,geouname);
+ 
+	       }
 		/*
 		 * calculateTopBottomNRecords(); //Print the top scores for(int i = 0; i <
 		 * topNRecords.size(); i++) { System.out.println("Top " + (i+1)+" - " +
@@ -839,6 +855,40 @@ reportRows = new ArrayList<ReportRow>();
 				}
 			}
 		}
+		
+		private void createLytxExceptionsReport(Map<String, Map<String, Integer>> lytxVehicleEventsRecord,String userName) {
+			//for every vehicle in lytxVehicleEventsRecord
+			// displayReportColumnHeaders=loadReporColumntHeaders(userName);
+			
+			for (Map.Entry<String, Map<String, Integer>> lytxVehiclesEventsMapEntry : lytxVehicleEventsRecord.entrySet()) {
+				//Get the report row corresponding to that vehicle.
+				String lytxVehicleName = lytxVehiclesEventsMapEntry.getKey();
+				
+				//possible performance issue here.  Better to use Maps.
+				ReportRow reportRow = new ReportRow();
+				reportRow.setDistance(0);
+				reportRow.setGroup("-");
+			    reportRow.setName(lytxVehicleName);
+				
+	
+				Map<String, Integer> lytxVehExceptions = lytxVehiclesEventsMapEntry.getValue();
+				for(int m=EXCEPTIONS_START_COLUMN; m < displayReportColumnHeaders.size(); m++) {
+					if(lytxVehExceptions.get(displayReportColumnHeaders.get(m)) != null) {
+						//System.out.println(lytxVehicleName+"-"+displayReportColumnHeaders.get(m)+"--"+lytxVehExceptions.get(displayReportColumnHeaders.get(m)));
+						
+						reportRow.getSelectedRules().put(displayReportColumnHeaders.get(m),lytxVehExceptions.get(displayReportColumnHeaders.get(m)));
+					}
+					else {
+						if(reportRow.getSelectedRules().get(displayReportColumnHeaders.get(m)) == null){
+							reportRow.getSelectedRules().put(displayReportColumnHeaders.get(m), 0);
+						}	
+					}
+					
+				}
+				reportRows.add(reportRow);
+			}
+		}
+
 
 		public String createReportReponseJson(String userName) {
 	        //create a json response
@@ -1307,7 +1357,6 @@ reportRows = new ArrayList<ReportRow>();
 			JSONObject jsonObject3 = new JSONObject(qr);
 			String lytxExceptionSummariesResponseJson = toStringValue(jsonObject3);
 			
-
 			return lytxExceptionSummariesResponseJson;
 		}
 		

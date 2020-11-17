@@ -1,6 +1,7 @@
 package com.vibaps.merged.safetyreport.services.trending;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -19,14 +20,14 @@ public class RestTrendingReportService {
 	public Object getReportGeo(String groupid,String sdate,String edate,
 			String sees,String geosees,ArrayList<String> geotabgroups,
 		String userName,String geodatabase,String url,
-		String enttype,String period,String endpoint) throws RemoteException, ParseException
+		String enttype,String period,String endpoint) throws ParseException, MalformedURLException, IOException
 	{
 		return restTrendingReportDao.getReportGeo(groupid,sdate,edate,sees,geosees,geotabgroups,userName,geodatabase,url,enttype,period,endpoint);
 	}
 	
 	public Object getReportGeoLytx(String sdate,String edate,String geosees,
 		ArrayList<String> geotabgroups,String userName,
-		String geodatabase,String url,String enttype, String period)
+		String geodatabase,String url,String enttype, String period) throws MalformedURLException, IOException
 	{
 		return restTrendingReportDao.getReportGeoLytx(sdate,edate,geosees,geotabgroups,userName,
 				geodatabase,url,enttype,period);

@@ -51,6 +51,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.lytx.dto.ExistingSessionRequest;
@@ -75,7 +76,7 @@ public class GlReportDAO {
 @Autowired	
 private UserReportFilterRepository userReportFilterRepository;
 
-@Autowired 
+@Autowired
 private CommonGeotabDAO commonGeotabDAO;
 
 	
@@ -107,20 +108,11 @@ private CommonGeotabDAO commonGeotabDAO;
 		List<GlRulelistEntity> obj1 = null;
 
 		Integer countuser = null;
+	   countuser=userReportFilterRepository.userCount(companyid, db);
 		
-		try {
 
-			countuser=userReportFilterRepository.userCount(companyid, db);
-		
-		} catch (Exception e) 
-		{
-			log.error("error occured : userReportFilterRepository->userCount",e);
-		}	
-
-
-		
 		if(countuser.intValue() ==0) { 
-			try {
+			
 
 		 BigInteger newUserId = userReportFilterRepository.userCreation(companyid, db);
 
@@ -128,7 +120,7 @@ private CommonGeotabDAO commonGeotabDAO;
 		  
 		  if(newUserId.intValue() != 0) {
 		  
-		  try { 
+		 
 			  
 			  obj1=userReportFilterRepository.getRuleList();
 		  
@@ -139,23 +131,11 @@ private CommonGeotabDAO commonGeotabDAO;
 		  userReportFilterRepository.insertUserRuleList(newUserId, Integer.parseInt(line[0].toString()), Integer.parseInt(line[1].toString()), Integer.parseInt(line[2].toString()));
 
 		  }		  
-		  } catch (Exception e) {
-				log.error("error occured : userReportFilterRepository->insertUserRuleList",e);
-
-		  }
+		  
 
 		  
 		  }
-		  
-		  
-		  
-		  } catch (Exception e) { 
-			  
-				log.error("error occured :userReportFilterRepository->userCreation",e);
 
-			  
-		  }
-		  
 		 
 		  }
 		
@@ -177,9 +157,9 @@ private CommonGeotabDAO commonGeotabDAO;
 	
 		List<GlRulelistEntity> obj = null;
 
-		try {
+		
 			obj = userReportFilterRepository.viewadd(geotabUserid, db);
-		} catch (Exception exception) {}
+		
 		return obj;
 	}
 	
@@ -187,10 +167,10 @@ private CommonGeotabDAO commonGeotabDAO;
 
 		List<GlRulelistEntity> obj = null;
 
-		try {
+		
 
 			obj = userReportFilterRepository.getgeodropdown(geotabUserid,db);
-		} catch (Exception exception) {}
+		
 		return obj;
 	}
 	
@@ -198,9 +178,9 @@ private CommonGeotabDAO commonGeotabDAO;
 		
 		List<GlRulelistEntity> obj = null;
 		
-		try {
+		
 		obj = userReportFilterRepository.getLybehave(geouserid, db);
-		} catch (Exception exception) {}
+		
 		return obj;
 	}
 	
@@ -208,21 +188,19 @@ private CommonGeotabDAO commonGeotabDAO;
 	
 		List obj = new ArrayList();
 		
-		try {
-		
-			obj = userReportFilterRepository.getallbehave(geotabUserid, db);
+		obj = userReportFilterRepository.getallbehave(geotabUserid, db);
 			
-		} catch (Exception exception) {}
+		
 		return obj;
 	}
 	
 	public List getallbehaveui(String geotabUserid,String db) {
 		
-		List obj = new ArrayList();
+		    List obj = new ArrayList();
 		
-		try {
+		
 			obj = userReportFilterRepository.getallbehave(geotabUserid, db);
-		} catch (Exception exception) {}
+		
 		return obj;
 	}
 	
@@ -230,61 +208,59 @@ private CommonGeotabDAO commonGeotabDAO;
 	public  List<Object[]> getallBehaveFromDB(String geotabUserid,String db) {
 		List<Object[]> obj = null;
 		
-		try {
-			
-			obj = userReportFilterRepository.getallBehaveFromDB(geotabUserid, db);
-		} catch (Exception exception) {}
+		obj = userReportFilterRepository.getallBehaveFromDB(geotabUserid, db);
+		
 		return obj;
 	}
 	
 	
 	public int geoCount(String geotabUserid,String db) {
 		int obj = 0;
-		try {
+		
 			obj = userReportFilterRepository.geoCount(geotabUserid, db);
-			}
-		catch (Exception exception) {}
+			
+		
 		return obj;
 	}
 	
 	public int lyCount(String geotabUserid,String db) {
 		int obj = 0;
-		try {
+		
 			obj = userReportFilterRepository.lyCount(geotabUserid, db);
 
-		} catch (Exception exception) {}
+		
 		return obj;
 	}
 	
 	public  int getwe(String geotabUserid, String rule,String db) {
 		int obj = 0;
-		try {
+		
 			obj = userReportFilterRepository.getWeight(geotabUserid, db, rule);
-		} catch (Exception exception) {}
+		
 		return obj;
 	}
 	
 	public float getminmiles(String geotabUserid,String db) {
 		float obj = 0.0F;
-		try {
+		
 			obj=userReportFilterRepository.getminmiles(geotabUserid, db);
-		} catch (Exception exception) {}
+		
 		return obj;
 	}
 	public Object updateresponce(String geotabUserId, String responseJson,String db) {
 	
-		try {
+		
 			userReportFilterRepository.updateresponce(geotabUserId, db, responseJson);
 			
-		} catch (Exception exception) {}
+		
 		return "Data Inserted";
 	}
 	public String selectresponce(String geotabuUserId,String db) {
 		// TODO Auto-generated method stub
 		String i = "";
-		try {
+		
 			i = userReportFilterRepository.selectresponce(geotabuUserId, db);
-		} catch (Exception exception) {}
+		
 		return i;
 	}
 	
@@ -298,13 +274,15 @@ private CommonGeotabDAO commonGeotabDAO;
 		} catch (Exception exception) {}
 		int j = 0;
 		if (i > 0)
-			try {
+		{
+			
 				for (int d = 0; d < v.size(); d++) {
 				
 					userReportFilterRepository.updateRuleListValue(companyid, db, Integer.valueOf(((GlRulelistEntity)v.get(d)).getWeight()), ((GlRulelistEntity)v.get(d)).getRulevalue());
 					result.put("result", "Rules list saved");
 				} 
-			} catch (Exception exception) {} 
+			
+		}
 		return result;
 	}
 	
@@ -316,10 +294,10 @@ private CommonGeotabDAO commonGeotabDAO;
 		Session session = null;
 		Map<String,String> obj = new LinkedHashMap<String, String>();;
 		Transaction transaction = null;
-		try {
+		
 			
 			list =userReportFilterRepository.deviceInfo(geotabUserId, db);
-			} catch (Exception exception) {}
+			
 		
 
 Iterator it = list.iterator();
@@ -338,7 +316,7 @@ while(it.hasNext()){
 	public Object getReportGeo(String startDate,String endDate,String geosees,
 			ArrayList<String> geotabgroups,String userName,
 			String geodatabase,String url,String filename,
-			String templect,String enttype)
+			String templect,String enttype) throws MalformedURLException, IOException, ParseException
 	{
 		String responseJson="";
 		Object getgeodropdown = getgeodropdown(userName,geodatabase);
@@ -347,10 +325,12 @@ while(it.hasNext()){
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
 		List<String> displayColumns = null;
 		Map<Integer, String> lytxBehaviors = null;
-		try {
 		
-			String geotabDriverExceptionSummariesJson=geotabVechileDriverResponce(startDate, endDate, getl, url, geotabgroups, enttype, userName, geodatabase, geosees);
-			try {
+		
+			JsonObject geotabDriverExceptionJson=geotabVechileDriverResponce(startDate, endDate, getl, url, geotabgroups, enttype, userName, geodatabase, geosees);
+			
+			String geotabDriverExceptionSummariesJson = "{\"result\":" + geotabDriverExceptionJson.getAsJsonArray("result").get(0).toString()
+					+ "}";
 
 				// load the header for report data (from the database based on the userName in
 				// actual application)
@@ -379,19 +359,12 @@ while(it.hasNext()){
 
 				responseJson=createJsonForGeotabResponce(displayColumns, combinedReport);
 				
-//System.out.println(responseJson);
-			} catch (Exception e) {
-				e.printStackTrace();
-				log.error("error occured",e);
-			}
-		} catch (Exception exception) {
-		}
+			
+		
 
-		try {
+		
 			updateresponce(userName, responseJson,geodatabase);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+		
 
 		return responseJson;
 		
@@ -468,7 +441,7 @@ while(it.hasNext()){
 		return responseJson;
 	}
 	
-	public String geotabVechileDriverResponce(String startDate,String endDate,ArrayList<String> getl,String url,ArrayList<String> geotabgroups,String enttype,String userName,
+	public JsonObject geotabVechileDriverResponce(String startDate,String endDate,ArrayList<String> getl,String url,ArrayList<String> geotabgroups,String enttype,String userName,
 			String geodatabase,String geosees) throws MalformedURLException, IOException, ParseException
 	{
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -529,27 +502,23 @@ while(it.hasNext()){
 		JsonParser parser = new JsonParser();
 		JsonObject o = parser.parse(response.toString()).getAsJsonObject();
 
-		String geotabDriverExceptionSummariesJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString()
-				+ "}";
+	
 		
-		return geotabDriverExceptionSummariesJson;
+		return o;
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<GenDriver> driverName(String geotabUserId,String db) {
 		
-		Session session = null;
 		Map<String,String> obj = new LinkedHashMap<String, String>();
 		List<GenDriver> driverNameList=new ArrayList<GenDriver>();
 		List<GenDriver> list=new ArrayList();
 
 		
 		Transaction transaction = null;
-		try {
+		
 			list=userReportFilterRepository.getDriverInfo(geotabUserId, db);
 						
-		} catch (Exception exception) {
-		}
 		
 		if(list.size() > 0)
 		{
@@ -597,11 +566,18 @@ bottomNRecords=new ArrayList<Score>();
 		
 		//process GEOTAB exceptions response
 		if(reportBy.equalsIgnoreCase("Driver")) {
+		JsonObject o=getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype);
+	 String geotabDriverExceptionSummariesResponseJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
+	
 			System.out.println("COMBINED REPORT - DRIVER");
-			extractGeotabDriverData(getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype),geouname);
+			extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson,geouname);
 		} else {
 			System.out.println("COMBINED REPORT - VEHICLE");
-			extractGeotabVehicleData(getGeotabVehicleExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype),geouname);
+			JsonObject o=getGeotabVehicleExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype);
+
+		      String geotabVehileExceptionSummariesJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
+
+			extractGeotabVehicleData(geotabVehileExceptionSummariesJson,geouname);
 		}
 		
 		//process LYTX exceptions response
@@ -626,12 +602,9 @@ bottomNRecords=new ArrayList<Score>();
     	
     	
 		String reportResponseJson = createReportReponseJson(geouname);
-		 try
-			{
+		 
 			 updateresponce(geouname,reportResponseJson,geodatabase);
-			}catch (Exception e) {
-				// TODO: handle exception
-			}
+			
 		 System.out.println(reportResponseJson);
 		return reportResponseJson;
 	}
@@ -669,11 +642,19 @@ reportRows = new ArrayList<ReportRow>();
 			
 			
 			if(reportBy.equalsIgnoreCase("Driver")) {
+				JsonObject o=getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype);
+				String geotabDriverExceptionSummariesResponseJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
+				
 				System.out.println("COMBINED REPORT - DRIVER");
-				extractGeotabDriverData(getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype),geouname);
+				extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson,geouname);
 			} else {
 				System.out.println("COMBINED REPORT - VEHICLE");
-				extractGeotabVehicleData(getGeotabVehicleExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype),geouname);
+				JsonObject o=getGeotabVehicleExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype);
+
+			      String geotabVehileExceptionSummariesJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
+
+				
+				extractGeotabVehicleData(geotabVehileExceptionSummariesJson,geouname);
 			}
 			
 			//process LYTX exceptions response
@@ -698,12 +679,9 @@ reportRows = new ArrayList<ReportRow>();
 	    	
 	    	
 			String reportResponseJson = createReportReponseJson(geouname);
-			 try
-				{
+			 
 				 updateresponce(geouname,reportResponseJson,geodatabase);
-				}catch (Exception e) {
-					// TODO: handle exception
-				}
+				
 			 System.out.println(reportResponseJson);
 			return reportResponseJson;
 		}
@@ -713,8 +691,7 @@ reportRows = new ArrayList<ReportRow>();
 		 */
 		private void extractGeotabDriverData(String geotabDriverExceptionSummariesResponseJson,String userName) {
 
-			try
-			{
+			
 			
 		//	List<String> displayReportColumnHeaders = loadReporColumntHeaders(userName);
 			JSONObject geotabEventsJO = new JSONObject(geotabDriverExceptionSummariesResponseJson);
@@ -795,9 +772,7 @@ reportRows = new ArrayList<ReportRow>();
 				}
 				reportRows.add(reportRow);
 			}
-			}catch (Exception e) {
-				// TODO: handle exception
-			}
+			
 		}
 
 		/**
@@ -807,8 +782,7 @@ reportRows = new ArrayList<ReportRow>();
 			//GEOTAB Events processing
 
 			//System.out.println(geotabVehicleExceptionSummariesResponseJson);
-			try
-			{
+			
 				// displayReportColumnHeaders=loadReporColumntHeaders(userName);
 			
 			//System.out.println(displayReportColumnHeaders.toString());
@@ -850,7 +824,7 @@ reportRows = new ArrayList<ReportRow>();
 
 				JSONArray geotabExceptionSummariesJA = resultsChild.getJSONArray("exceptionSummaries");
 
-				try {
+				
 				for(int k = 0; k < geotabExceptionSummariesJA.length(); k++) {
 					if(!geotabExceptionSummariesJA.isNull(k))
 					{
@@ -864,10 +838,7 @@ reportRows = new ArrayList<ReportRow>();
 					}
 
 				}
-				}catch (Exception e) {
-					// TODO: handle exception
-					System.out.println(e+"000");
-				}
+				
 
 				for(int m=3; m < displayReportColumnHeaders.size(); m++) {
 					if(geotabExceptionEvents.get(displayReportColumnHeaders.get(m)) != null) {
@@ -880,11 +851,7 @@ reportRows = new ArrayList<ReportRow>();
 				}
 				reportRows.add(reportRow);
 		
-			}	}catch (Exception e) {
-				// TODO: handle exception
-				
-				System.out.println("json"+e);
-			}
+			}	
 			
 		}
 	    
@@ -987,7 +954,7 @@ reportRows = new ArrayList<ReportRow>();
 			// displayReportColumnHeaders=loadReporColumntHeaders(userName,db);
 			String responseJson = null;
 	        StringBuffer combinedReportResponseJson = new StringBuffer();
-	    	try {
+	    	
 	        	List<Integer> totals = new ArrayList<Integer>();
 	        	for(int q=0; q<displayReportColumnHeaders.size(); q++) {
 	        		totals.add(0);
@@ -1060,9 +1027,7 @@ reportRows = new ArrayList<ReportRow>();
 	            //for driver :	 {"totals": [{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "68" },{ "Rule": "6" },{ "Rule": "61" },{ "Rule": "22" },{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" }],"information": [{"Vehicle Name": "Rick Schwenk","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "821","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Troy Giordano","Group": "VEHICLE: CDL Truck, LICENSE: CDL B, VEHICLE: CMV (Non-CDL)","Distance": "894","Behave": [{"Rule": "3"},{"Rule": "1"},{"Rule": "3"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Jay Hoagland","Group": "LICENSE: CDL A, VEHICLE: CDL Tractor, VEHICLE: CDL Truck, VEHICLE: CMV (Non-CDL)","Distance": "668","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Kenneth Moore","Group": "VEHICLE: CDL Truck, VEHICLE: CMV (Non-CDL), VEHICLE: CDL Tractor, LICENSE: CDL A","Distance": "1931","Behave": [{"Rule": "7"},{"Rule": "4"},{"Rule": "23"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Richard Fox","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "596","Behave": [{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Michael Merwick","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "231","Behave": [{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Carlos Rivera","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "874","Behave": [{"Rule": "6"},{"Rule": "0"},{"Rule": "0"},{"Rule": "6"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Kevin Neidert","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "4","Behave": [{"Rule": "5"},{"Rule": "0"},{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Christopher Rounds","Group": "VEHICLE: CMV (Non-CDL), CMV Driver (Non-CDL)","Distance": "69","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Luann Whitcomb","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "166","Behave": [{"Rule": "7"},{"Rule": "0"},{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Lorrie Mabee","Group": "VEHICLE: CMV (Non-CDL), CMV Driver (Non-CDL)","Distance": "584","Behave": [{"Rule": "8"},{"Rule": "0"},{"Rule": "1"},{"Rule": "6"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Bob Boutelle","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "417","Behave": [{"Rule": "2"},{"Rule": "0"},{"Rule": "10"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Randall Arthur","Group": "VEHICLE: CDL Tractor, VEHICLE: CMV (Non-CDL), LICENSE: CDL A, VEHICLE: CDL Truck","Distance": "781","Behave": [{"Rule": "7"},{"Rule": "0"},{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Ethan Fellows","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "621","Behave": [{"Rule": "3"},{"Rule": "0"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Wayne Haney","Group": "VEHICLE: CMV (Non-CDL), CMV Driver (Non-CDL)","Distance": "1444","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Michael Wilson","Group": "VEHICLE: CMV (Non-CDL), VEHICLE: CDL Truck, VEHICLE: CDL Tractor, LICENSE: CDL A","Distance": "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Kenneth Roberts","Group": "LICENSE: CDL B, VEHICLE: CDL Truck, VEHICLE: CMV (Non-CDL)","Distance": "999","Behave": [{"Rule": "3"},{"Rule": "1"},{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Ronald Harrower","Group": "VEHICLE: CDL Tractor, VEHICLE: CDL Truck, VEHICLE: CMV (Non-CDL), CMV Driver (Non-CDL), LICENSE: CDL A","Distance": "688","Behave": [{"Rule": "4"},{"Rule": "0"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Mary Beth Moss","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "79","Behave": [{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Non-CDL Driver","Group": "Assets, Compliance, Mechanics, Office, Operations","Distance": "735","Behave": [{"Rule": "8"},{"Rule": "0"},{"Rule": "8"},{"Rule": "6"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]}]}
 
 
-	    	} catch(Exception e) {
-	    		e.printStackTrace();
-	    	}
+	    	
 	    	
 			return responseJson;
 		}
@@ -1172,12 +1137,9 @@ reportRows = new ArrayList<ReportRow>();
 	    		String driverName[] = tripVars[1].split(" ");  //ASSUMPTION: NO SPACES IN FIRSTNAME AND LASTNAMES.  THE DRIVER NAME WILL HAVE ONLY ONE SPACE BETWEEN FIRST AND LAST NAMES.
 	    		String driverFirstName = driverName[0];
 	    		String driverLastName = "";
-	    		try {
+	    		
 	    		driverLastName=driverName[1];
-	    		}catch (Exception e) {
-					// TODO: handle exception
-	    			System.out.println(e);
-				}
+	    		
 	    		LocalDateTime tripStartDate = convertToLocalDateTime(tripVars[2]);
 	    		LocalDateTime tripEndDate = convertToLocalDateTime(tripVars[3]);
 	    		Trip trip = new Trip(vehicleName, driverFirstName, driverLastName, tripStartDate, tripEndDate);
@@ -1290,7 +1252,7 @@ reportRows = new ArrayList<ReportRow>();
 
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
-		public String getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
+		public JsonObject getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 		
 			  Object getgeodropdown = getgeodropdown(geouname,geodatabase);
 			    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
@@ -1344,18 +1306,17 @@ reportRows = new ArrayList<ReportRow>();
 			  JsonParser parser = new JsonParser();
 		      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
 		      
-		      String geotabDriverExceptionSummariesResponseJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
 		
 		      
 			
 			//System.out.println(geotabDriverExceptionSummariesResponseJson);
 			
-			return geotabDriverExceptionSummariesResponseJson;
+			return o;
 		}	
 
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
-		public String getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
+		public JsonObject getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 			Object getgeodropdown = getgeodropdown(geouname,geodatabase);
 		    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			String gvalue = "";
@@ -1407,20 +1368,19 @@ reportRows = new ArrayList<ReportRow>();
 			  JsonParser parser = new JsonParser();
 		      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
 		      
-		      String geotabDriverExceptionSummariesJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
 		
 		      
 			 //String geotabDriverExceptionSummariesJson = geotabVehicleExceptionSummariesResponseJson.toString();
 			// String  geotabDriverExceptionSummariesJson = "{\"results\":" + geotabVehicleExceptionSummariesResponseJson.getAsJsonArray("result").get(0).toString() + "}";
 		
 			//System.out.println(geotabDriverExceptionSummariesJson);
-			return geotabDriverExceptionSummariesJson;
+			return o;
 		}	
 
 		
 		//FOR TESTING ONLY:  This method should make the actual call to Lytx and get the exceptionSummariesJson with startDate and EndDate as search parameters.
 		//Guna todo: copy the request here (commented) to get the response below;
-		public String getLytxExceptionSummariesResponseJson(String sdate,String edate,String lytxSess,String groupid,String endpoint) throws ParseException {
+		public String getLytxExceptionSummariesResponseJson(String sdate,String edate,String lytxSess,String groupid,String endpoint) throws ParseException, RemoteException {
 			
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			String sDate = sdate;
@@ -1437,11 +1397,9 @@ reportRows = new ArrayList<ReportRow>();
 			{
 				geteventbyid.setGroupId(Long.valueOf(Long.parseLong(groupid)));
 			}
-				try {
+				
 				qr = dr.getEventsByLastUpdateDate(geteventbyid);
-			} catch (Exception e) {
-				System.out.println(e);
-			}
+			
 			JSONObject jsonObject3 = new JSONObject(qr);
 			String lytxExceptionSummariesResponseJson = toStringValue(jsonObject3);
 			
@@ -1489,10 +1447,9 @@ reportRows = new ArrayList<ReportRow>();
 				if (object instanceof String) {
 					value = (String) object;
 				} else {
-					try {
+					
 						value = "" + object.toString().trim();
-					} catch (Exception exception) {
-					}
+					
 				}
 			return value;
 		}
@@ -1720,16 +1677,13 @@ reportRows = new ArrayList<ReportRow>();
 				Map<String, Integer> geotabExceptionEvents = new HashMap<String, Integer>();
 				JSONArray geotabExceptionSummariesJA = resultsChild.getJSONArray("exceptionSummaries");
 				for (int k = 0; k < geotabExceptionSummariesJA.length(); k++) {
-					try
-					{
+					
 					int eventCount = geotabExceptionSummariesJA.getJSONObject(k).getInt("eventCount");
 					JSONObject geotabExceptionRuleJO = geotabExceptionSummariesJA.getJSONObject(k)
 							.getJSONObject("exceptionRule");
 					String geotabExceptionName = "G-" + geotabExceptionRuleJO.getString("name");
 					geotabExceptionEvents.put(geotabExceptionName, geotabExceptionEvents.get(geotabExceptionName)==null?eventCount:geotabExceptionEvents.get(geotabExceptionName)+eventCount);
-					}catch (Exception e) {
-						// TODO: handle exception
-					}
+					
 				}
 				for (int m = 3; m < displayColumns.size(); m++) {
 					if (geotabExceptionEvents.get(displayColumns.get(m)) != null) {
@@ -1750,7 +1704,7 @@ reportRows = new ArrayList<ReportRow>();
 				String userName,String db) {
 			Map<String, Map<String, String>> combinedReport = new LinkedHashMap<String, Map<String, String>>();
 
-			try {
+			
 
 				List<String> displayColumns = loadReporColumntHeadersTrending(userName,db);
 
@@ -1771,23 +1725,19 @@ reportRows = new ArrayList<ReportRow>();
 					String group = null;
 					for (int j = 0; j < geotabVehicleGroups.length(); j++) {
 						if (group == null) {
-							try {
+							
 								group = geotabVehicleGroups.getJSONObject(j).getString("name");
-							} catch (Exception e) {
-								// TODO: handle exception
-							}
+							
 						} else {
 
-							try {
+							
 								String newGroup = geotabVehicleGroups.getJSONObject(j).getString("name");
 								if ("Prohibit Idling".equalsIgnoreCase(newGroup)) {
 									group = newGroup + ", " + group;
 								} else {
 									group = group + ", " + newGroup;
 								}
-							} catch (Exception e) {
-								// TODO: handle exception
-							}
+							
 						}
 					}
 					newReportRow.put(displayColumns.get(1), group);
@@ -1803,7 +1753,7 @@ reportRows = new ArrayList<ReportRow>();
 					JSONArray geotabExceptionSummariesJA = resultsChild.getJSONArray("exceptionSummaries");
 					for (int k = 0; k < geotabExceptionSummariesJA.length(); k++) {
 						
-						try {
+						
 						int eventCount = geotabExceptionSummariesJA.getJSONObject(k).getInt("eventCount");
 						JSONObject geotabExceptionRuleJO = geotabExceptionSummariesJA.getJSONObject(k)
 								.getJSONObject("exceptionRule");
@@ -1812,9 +1762,7 @@ reportRows = new ArrayList<ReportRow>();
 					//	System.out.println("-----guna"+geotabExceptionName);
 
 						geotabExceptionEvents.put(geotabExceptionName, geotabExceptionEvents.get(geotabExceptionName)==null?eventCount:geotabExceptionEvents.get(geotabExceptionName)+eventCount);
-						}catch (Exception e) {
-							// TODO: handle exception
-						}
+						
 					}
 					for (int m = 3; m < displayColumns.size(); m++) {
 						if (geotabExceptionEvents.get(displayColumns.get(m)) != null) {
@@ -1837,9 +1785,7 @@ reportRows = new ArrayList<ReportRow>();
 					
 					combinedReport.put(geotabVehicleName, newReportRow);
 				}
-			} catch (Exception e) {
-				System.out.println(e);
-			}
+			
 			return combinedReport;
 		}
 		
@@ -1847,11 +1793,9 @@ reportRows = new ArrayList<ReportRow>();
 				String filename,String templect) throws EncryptedDocumentException, IOException
 		{
 			String responseJson = "";
-			try {
+			
 				responseJson = selectresponce(geouname,geodatabase);
-			} catch (Exception e) {
-				// TODO: handle exception
-			}
+			
 
 			List<String> displayColumns = loadReporColumntHeaders(geouname,geodatabase);
 
@@ -1995,17 +1939,18 @@ reportRows = new ArrayList<ReportRow>();
 		public void copyFileUsingStream(File source, File dest) throws IOException {
 			InputStream is = null;
 			OutputStream os = null;
-			try {
+			
 				is = new FileInputStream(source);
 				os = new FileOutputStream(dest);
 				byte[] buffer = new byte[1024];
 				int length;
 				while ((length = is.read(buffer)) > 0)
+				{
 					os.write(buffer, 0, length);
-			} finally {
+				}
 				is.close();
 				os.close();
-			}
+			
 		}
 		
 		private void updateFormulaForReport(Sheet sheet, int startRow, int numberOfRows, int rowOffset,

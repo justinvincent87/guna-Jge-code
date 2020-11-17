@@ -3,10 +3,13 @@ package com.vibaps.merged.safetyreport.entity.gl;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -38,7 +41,10 @@ public class ReportRow {
 	
 	@Column(name = "distance")
 	private Long					distance;
-	
-	@Column(name = "selectedRules")
-	private Map<String, Integer>	selectedRules	= new LinkedHashMap<>();
+    
+	 @ElementCollection
+	 @CollectionTable(name = "order_item_mapping",joinColumns = {@JoinColumn(name = "order_id", referencedColumnName = "id")})
+	    @MapKeyColumn(name = "item_name")
+	    @Column(name = "price")
+	 private Map<String, Integer>	selectedRules	= new LinkedHashMap<>();
 }

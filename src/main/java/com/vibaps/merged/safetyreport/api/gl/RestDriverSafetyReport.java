@@ -57,7 +57,7 @@ public class RestDriverSafetyReport {
 	}
 	@PostMapping(value="/getReportGeo")
 	public Object getReportGeo(@RequestBody ReportParams reportParams)
-			throws EncryptedDocumentException, InvalidFormatException, IOException {
+			throws EncryptedDocumentException, InvalidFormatException, IOException, ParseException {
 		return glReportService.getReportGeo(reportParams);
 	}
 

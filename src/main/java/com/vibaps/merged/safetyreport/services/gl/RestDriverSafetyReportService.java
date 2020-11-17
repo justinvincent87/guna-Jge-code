@@ -69,7 +69,7 @@ public class RestDriverSafetyReportService {
 		return glReportDao.process(reportParams.getLytexSessionid(),reportParams.getStartDate(), reportParams.getEndDate(), reportParams.getGroupId(),reportParams.getGeotabSessionId(),reportParams.getGeotabGroups(),reportParams.getGeotabUserName(),reportParams.getGeotabDatabase(), reportParams.getUrl(),reportParams.getFilename(),reportParams.getTemplect(), reportParams.getEntityType(),reportParams.getEndPoint());
 	}
 	
-	public Object getReportGeo(ReportParams reportParams)
+	public Object getReportGeo(ReportParams reportParams) throws MalformedURLException, IOException, ParseException
 	{
 		return glReportDao.getReportGeo(reportParams.getStartDate(),reportParams.getEndDate(),reportParams.getGeotabSessionId(),reportParams.getGeotabGroups(),reportParams.getGeotabUserName(),reportParams.getGeotabDatabase(),reportParams.getUrl(),reportParams.getFilename(),reportParams.getTemplect(),reportParams.getEntityType());
 	}

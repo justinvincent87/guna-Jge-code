@@ -76,7 +76,7 @@ public class RestTrendingReportDAO {
 	public Object getReportGeo(String groupId,String startDate,String endDate,
 			String lytxSessionId,String geotabSessionId,ArrayList<String> geotabGroups,
 		String userName,String geotabDatabase,String url,
-		String enttype,String period,String endPoint) throws RemoteException, ParseException
+		String enttype,String period,String endPoint) throws ParseException, MalformedURLException, IOException
 	{
 		String responseJson = "";
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
@@ -91,7 +91,7 @@ public class RestTrendingReportDAO {
 		
 		 getVehicleResponseJson=lytexVechileResponce(startDate, endDate, groupId, lytxSessionId, endPoint);
 		
-		try {
+		
 			String lytxBehaviorsJson = "";
 			String sdate="";
 
@@ -102,11 +102,11 @@ public class RestTrendingReportDAO {
 			// System.out.println(geotabDriverExceptionSummariesJson);
 
 			
-			String geotabDriverExceptionSummariesJson=geotabTrendingResponce(getl, geotabGroups, endDate, startDate, url, geotabDatabase, geotabSessionId, enttype, userName, period);
+			String geotabDriverExceptionSummariesJson=geotabTrendingResponce(getl, geotabGroups, endDate, startDate, url, geotabDatabase, geotabSessionId, enttype, userName, period).toString();
 			String startDateStr = startDate + "T01:00:00";
 			String endDateStr = endDate + "T59:59:59";
 
-			try {
+			
 
 				if (!groupId.equalsIgnoreCase("0")) {
 					int EXCEPTIONS_START_COLUMN = 3;
@@ -120,11 +120,9 @@ public class RestTrendingReportDAO {
 					if (enttype.equalsIgnoreCase("Driver")) {
 						// Load Trips data to get driver data from Vehicles;
 
-						try {
+						
 							vehicleTrips = loadVehicleTripsMap(enttype, userName, geotabDatabase,geotabSessionId, url,startDateStr, endDateStr);
-						} catch (Exception e) {
-							// TODO: handle exception
-						}
+						
 					}
 				}
 				boolean trending = true;
@@ -174,8 +172,7 @@ public class RestTrendingReportDAO {
 
 						System.out.println("check---" + s++);
 
-						try {
-
+			
 							lytxExceptionSummariesJson = sendLytxRequest(groupId, startDate, endDate, geotabSessionId, endPoint);
 
 							JSONObject lytxEventsJO = new JSONObject(lytxExceptionSummariesJson);
@@ -214,10 +211,7 @@ public class RestTrendingReportDAO {
 							} else {
 								break;
 							}
-						} catch (Exception e) {
-							e.printStackTrace();
-							break;
-						}
+						
 					} while (true);
 
 					updatedCombinedReportWithLytxExceptions(combinedReport, lytxVehicleEventsRecord);
@@ -227,18 +221,8 @@ public class RestTrendingReportDAO {
 				responseJson=createTrendingResponce(combinedReport,displayColumns);
 				
 
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-
-		try {
 			glReportdao.updateresponce(userName, responseJson, geotabDatabase);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+		
 
 		return responseJson; 
 	}
@@ -311,7 +295,7 @@ public class RestTrendingReportDAO {
 	}
 	
 	
-	public String geotabTrendingResponce(ArrayList<String> getl,ArrayList<String> geotabGroups,String endDate,String startDate,String url,String geotabDatabase,String geotabSessionId,String enttype,String userName,String period) throws MalformedURLException, IOException
+	public JsonObject geotabTrendingResponce(ArrayList<String> getl,ArrayList<String> geotabGroups,String endDate,String startDate,String url,String geotabDatabase,String geotabSessionId,String enttype,String userName,String period) throws MalformedURLException, IOException
 	{
 		String gvalue = "";
 		for (int j = 0; j < getl.size(); j++) {
@@ -360,9 +344,8 @@ public class RestTrendingReportDAO {
 		rd.close();
 		JsonParser parser = new JsonParser();
 		JsonObject o = parser.parse(response.toString()).getAsJsonObject();
-		String geotabDriverExceptionSummariesJson = o.toString();
 		
-		return geotabDriverExceptionSummariesJson;
+		return o;
 	}
 	
 	public String lytexVechileResponce(String startDate,String endDate,String groupId,String lytxSessionId,String endPoint) throws ParseException, RemoteException
@@ -406,10 +389,9 @@ public class RestTrendingReportDAO {
 			if (object instanceof String) {
 				value = (String) object;
 			} else {
-				try {
+				
 					value = "" + object.toString().trim();
-				} catch (Exception exception) {
-				}
+				
 			}
 		return value;
 	}
@@ -817,7 +799,7 @@ public class RestTrendingReportDAO {
 
 	private Map<String, Map<String, Integer>> extractExceptionDataFromLytxResponse(
 			JSONArray lytxExceptionSummariesJson, Map<Long, String> lytxVehicleList, boolean trending, Date startDate,
-			Date endDate, String lytxBehaviorsJson) {
+			Date endDate, String lytxBehaviorsJson) throws ParseException {
 
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
 		// Process lytxExceptionSummariesJson
@@ -904,21 +886,19 @@ public class RestTrendingReportDAO {
 		}
 		return ldt;
 	}
-	private Date getDate(String dateStr) {
+	private Date getDate(String dateStr) throws ParseException {
 		dateStr = dateStr.substring(0, dateStr.indexOf('.'));
 		TimeZone timeZone = TimeZone.getTimeZone("UTC");
 		Calendar calendar = Calendar.getInstance(timeZone);
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 //					simpleDateFormat.setTimeZone(timeZone);
 		Date date = null;
-		try {
+		
 			date = simpleDateFormat.parse(dateStr);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+		
 		return date;
 	}
-	public Integer getPeriodNumberForDate(Date date) {
+	public Integer getPeriodNumberForDate(Date date) throws ParseException {
 		for (Map.Entry<Integer, String[]> entry : periods.entrySet()) {
 			Integer key = entry.getKey();
 			String[] value = entry.getValue();
@@ -933,7 +913,7 @@ public class RestTrendingReportDAO {
 	
 	public Object getReportGeoLytx(String sdate,String edate,String geosees,
 			ArrayList<String> geotabgroups,String userName,
-			String geodatabase,String url,String enttype, String period)
+			String geodatabase,String url,String enttype, String period) throws MalformedURLException, IOException
 		{
 		String responseJson = "";
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
@@ -946,7 +926,7 @@ public class RestTrendingReportDAO {
 		List<String> displayColumns = null;
 		Map<Integer, String> lytxBehaviors = null;
 		StringBuffer combinedReportResponseJson = new StringBuffer();
-		try {
+		
 			String lytxBehaviorsJson = "";
 			Date ssdate = null;
 			Date eedate = null;
@@ -1007,7 +987,7 @@ public class RestTrendingReportDAO {
 			String startDateStr = sdate + "T01:00:00";
 			String endDateStr = edate + "T59:59:59";
 
-			try {
+			
 
 				boolean trending = true;
 
@@ -1104,19 +1084,11 @@ public class RestTrendingReportDAO {
 
 				responseJson = totalsJson.toString() + combinedReportResponseJson.toString();
 
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+			
 
-		try {
+		
 			glReportdao.updateresponce(userName, responseJson, geodatabase);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-
+		
 		return responseJson;
 			
 		}
@@ -1126,11 +1098,9 @@ public class RestTrendingReportDAO {
 			String filename,String templect,String entityType) throws EncryptedDocumentException, IOException
 	{
 		String responseJson = "";
-		try {
+		
 			responseJson = glReportdao.selectresponce(geouname, geodatabase);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+		
 
 		/*
 		 * List<Score> topNRecords=new ArrayList<Score>();
@@ -1151,11 +1121,9 @@ public class RestTrendingReportDAO {
 		File source = new File(
 				"/usr/local/apache-tomcat-8.5.51/webapps/GL_Driver_Safety_Report_Template_" + templect + ".xlsx");
 		File dest = new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx");
-		try {
+		
 			glReportdao.copyFileUsingStream(source, dest);
-		} catch (IOException e3) {
-			e3.printStackTrace();
-		}
+		
 		Workbook workbook = WorkbookFactory
 				.create(new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx"));
 		Sheet sheet = workbook.getSheetAt(0);
@@ -1258,14 +1226,10 @@ public class RestTrendingReportDAO {
 		Row rows = report.getRow(5);
 		Cell cells = rows.getCell(2);
 		float min = 0.0F;
-		try {
+		
 			min = glReportdao.getminmiles(geouname, geodatabase);
 
-			System.out.println("min-value" + min);
-		} catch (Exception exception) {
-		}
-		System.out.println("min-value111" + min);
-
+			
 		cells.setCellValue(min);
 		int statrpoint = s + 7;
 
@@ -1306,7 +1270,8 @@ public class RestTrendingReportDAO {
 		dateCellStyle.setDataFormat(displayDateFormat);
 
 		try (FileOutputStream outputStream = new FileOutputStream(
-				"/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/" + filename + ".xlsx")) {
+				"/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/" + filename + ".xlsx")) 
+		{
 			XSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
 			workbook.write(outputStream);
 		}

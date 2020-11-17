@@ -85,14 +85,10 @@ int result=0;
 		  
 		  for(int i=0;i<geotabDeiverJOArray.length();i++)
 		  {
-			  try
-			  {
+			  
 				  commonGeotabRepository.insertDevice(obj, geotabDeiverJOArray.getJSONObject(i).getString("id"), geotabDeiverJOArray.getJSONObject(i).getString("name"));
 			
 				
-			  }catch (Exception e) {
-				// TODO: handle exception
-			}
 		  }
   
 		}
@@ -104,16 +100,8 @@ private int  getCompanyId(String geotabUserId,String db) {
 		
 		int obj = 0;
 		
-		try {
-			
-			
 			obj=commonGeotabRepository.getCompanyId(geotabUserId, db);
-			
-			
-		} catch (Exception exception) {
-			
-		}
-		
+					
 		return obj;
 	}
 
@@ -160,13 +148,9 @@ private int  getCompanyId(String geotabUserId,String db) {
 				  
 				  for(int i=0;i<geotabDeiverJOArray.length();i++)
 				  {
-					  try
-					  {
-						  
+					   
 						  commonGeotabRepository.insertDriver(obj, geotabDeiverJOArray.getJSONObject(i).getString("id"), geotabDeiverJOArray.getJSONObject(i).getString("firstName")+" "+geotabDeiverJOArray.getJSONObject(i).getString("lastName"));
-					  }catch (Exception e) {
-						// TODO: handle exception
-					}
+					  
 				  }
   
 				}
@@ -221,34 +205,27 @@ private int  getCompanyId(String geotabUserId,String db) {
 			List<GenDevice> deviceNameList=new ArrayList<GenDevice>();
 			List<GenDriver> driverNameList=new ArrayList<GenDriver> ();
 			
-			try
-			{
+			
 				driverNameList=glReportDAO.driverName(geouserid,databaseName);
 				
 				for(int i=0;i<driverNameList.size();i++)
 				{
 					driverName.put(driverNameList.get(i).getDriverId(),driverNameList.get(i).getDriverName());
 				}
-			}catch (Exception e) {
-				// TODO: handle exception
-				System.out.println(e);
-			}
 			
-			try
-			{
+			
+			
 				deviceNameList=glReportDAO.deviceName(geouserid,databaseName);
 				for(int i=0;i<deviceNameList.size();i++)
 				{
 					deviceName.put(deviceNameList.get(i).getDeviceId(),deviceNameList.get(i).getDeviceName());
 				}
-			}catch (Exception e) {
-				// TODO: handle exception
-			}
+			
 			
 			for (int i = 0; i < geotabEventsJOArray.length(); i++) 
 			{
 				
-				try {
+				
 				  JSONObject resultsChild = geotabEventsJOArray.getJSONObject(i);
 				    JSONObject driverIdJO = resultsChild.getJSONObject("driver");
 				    JSONObject deviceIdJO = resultsChild.getJSONObject("device");
@@ -266,9 +243,7 @@ private int  getCompanyId(String geotabUserId,String db) {
 				    String stop=resultsChild.getString("stop");
 				    compaindRecord.add(deviceName.get(deviceIdJO.getString("id").toString())+"|"+driverName.get(driverIdJO.getString("id").toString())+"|"+start+"|"+stop);
 		
-				}catch (Exception e) {
-					// TODO: handle exception
-				}
+				
 			}
 			
 			
@@ -329,54 +304,37 @@ private int  getCompanyId(String geotabUserId,String db) {
 			List<GenDevice> deviceNameList=new ArrayList<GenDevice>();
 			List<GenDriver> driverNameList=new ArrayList<GenDriver> ();
 			
-			try
-			{
+			
 				driverNameList=glReportDAO.driverName(geouserid,databaseName);
 				
 				for(int i=0;i<driverNameList.size();i++)
 				{
 					driverName.put(driverNameList.get(i).getDriverId(),driverNameList.get(i).getDriverName());
 				}
-			}catch (Exception e) {
-				// TODO: handle exception
-				System.out.println(e);
-			}
 			
-			try
-			{
+			
+			
 				deviceNameList=glReportDAO.deviceName(geouserid,databaseName);
 				for(int i=0;i<deviceNameList.size();i++)
 				{
 					deviceName.put(deviceNameList.get(i).getDeviceId(),deviceNameList.get(i).getDeviceName());
 				}
-			}catch (Exception e) {
-				// TODO: handle exception
-			}
 			
 			for (int i = 0; i < geotabEventsJOArray.length(); i++) 
 			{
 				
-				try {
+				
 				  JSONObject resultsChild = geotabEventsJOArray.getJSONObject(i);
 				    JSONObject driverIdJO = resultsChild.getJSONObject("driver");
 				    JSONObject deviceIdJO = resultsChild.getJSONObject("device");
 				    //vehicleName
 				    long dataCallsStart=System.currentTimeMillis();
-
-				    //String driverName = GL_Report_DAO.driverName(geouserid, driverIdJO.getString("id").toString());
-				    //String deviceName = GL_Report_DAO.deviceName(geouserid, deviceIdJO.getString("id").toString()); 
-				    
-				 
-				    
-
-				    
+ 
 				    String start=resultsChild.getString("start");
 				    String stop=resultsChild.getString("stop");
 				    compaindRecord.add(deviceName.get(deviceIdJO.getString("id").toString())+"|"+driverName.get(driverIdJO.getString("id").toString())+"|"+start+"|"+stop);
 		
-				}catch (Exception e) {
-					// TODO: handle exception
-				}
+				
 			}
 			
 			

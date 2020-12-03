@@ -27,6 +27,8 @@ import com.lytx.dto.GetBehaviorsResponse;
 import com.lytx.dto.GetEventsByLastUpdateDateRequest;
 import com.lytx.dto.GetGroupsByIdRequest;
 import com.lytx.dto.GetGroupsResponse;
+import com.lytx.dto.GetUsersRequest;
+import com.lytx.dto.GetUsersResponse;
 import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.dto.LoginResponse;
@@ -96,6 +98,18 @@ public class BasicCountroller {
 		  getVehiclesRequest.setIncludeSubgroups(true);
 		  getVehiclesRequest.setSessionId(sees);
 		  vr=er.getVehicles(getVehiclesRequest);
+		  return vr;
+	  }
+	  
+	  
+	  @RequestMapping(value="/GetUser",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
+	  public @ResponseBody Object GetUser(@RequestParam String sees,@RequestParam String endpoint) throws RemoteException 
+	  { 
+	  ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
+	  GetUsersResponse vr=new GetUsersResponse();
+	  GetUsersRequest getusersrequest=new GetUsersRequest();
+	  getusersrequest.setSessionId(sees);
+		  vr=er.getUsers(getusersrequest);
 		  return vr;
 	  }
 	  

@@ -351,7 +351,6 @@ public class GL_Report_DAO {
 			transaction.commit();
 		} catch (Exception exception) {}
 		int j = 0;
-		if (i > 0)
 			try {
 				for (int d = 0; d < v.size(); d++) {
 					session = HibernateUtil.getsession();

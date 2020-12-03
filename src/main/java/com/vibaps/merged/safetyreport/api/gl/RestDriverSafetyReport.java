@@ -327,7 +327,7 @@ public class RestDriverSafetyReport {
 		List<String> displayColumns = loadReporColumntHeaders(geouname,geodatabase);
 
 		File source = new File(
-				"/usr/local/apache-tomcat-8.5.51/webapps/GL_Driver_Safety_Report_Template_" + templect + ".xlsx");
+				"/home/atiadmin/GL_Driver_Safety_Report_Template_" + templect + ".xlsx");
 		File dest = new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx");
 		try {
 			copyFileUsingStream(source, dest);
@@ -422,8 +422,8 @@ public class RestDriverSafetyReport {
 		cells.setCellValue(min);
 		int statrpoint = s + 7;
 
-		String[] formulas = { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)", "Data!E@", "Data!F@",
-				"Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@", "Data!N@",
+		String[] formulas = { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)","Data!D@","Data!E@", "Data!F@",
+				"Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@",
 				"IFERROR((E#*E$6)/($C#/100),0)", "IFERROR((F#*F$6)/($C#/100),0)", "IFERROR((G#*G$6)/($C#/100),0)",
 				"IFERROR((H#*H$6)/($C#/100),0)", "IFERROR((I#*I$6)/($C#/100),0)", "IFERROR((J#*J$6)/($C#/100),0)",
 				"IFERROR((K#*K$6)/($C#/100),0)", "IFERROR((L#*L$6)/($C#/100),0)", "IFERROR((M#*M$6)/($C#/100),0)",

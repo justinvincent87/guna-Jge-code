@@ -80,9 +80,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @CrossOrigin(origins = "*",allowedHeaders = "*")
 @RestController
 @RequestMapping("Lytx/Api")
-public class BasicCountroller {
-	@RequestMapping(value="/getKey",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
-	  public java.lang.String get(HttpServletRequest request) throws RemoteException 
+public class BasicController {
+	@RequestMapping(value="/getLytxSessionId",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
+	  public java.lang.String getLytxSessionId(HttpServletRequest request) throws RemoteException 
 	  { 
         return Cookies.getcook(request,"SesId");
 	  }
@@ -207,7 +207,7 @@ public class BasicCountroller {
 	  }
 	  
 
-	  @RequestMapping(value="/LoginasCompany",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
+	  @RequestMapping(value="/LoginAsCompany",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
 	  public @ResponseBody Object LoginasCompany(@RequestParam String userid,@RequestParam String password,@RequestParam Long companyId,@RequestParam String endpoint) throws RemoteException 
 	  { 
 		  ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
@@ -289,34 +289,29 @@ public class BasicCountroller {
 		  return rep.getgeodropdown(geouserid);
 	  }
 	  
-	  @RequestMapping(value="/GetEventsByLastUpdateDateforReport",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
-	  public @ResponseBody Object GetEventsByLastUpdateDateforReport(@RequestParam String sees,@RequestParam String sdate,@RequestParam String edate,@RequestParam String groupid,@RequestParam String endpoint) throws RemoteException, ParseException 
-	  {      
-		  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-		    String sDate=sdate;
-		    String eDate=edate;
-		    Date ssdate=sdf.parse(sDate);  
-		    Date eedate=sdf.parse(eDate);  
-		  ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
-		  GetEventsResponse vr=new GetEventsResponse();
-		  GetEventsByLastUpdateDateRequest geteventbyid=new
-		  GetEventsByLastUpdateDateRequest(); 
-		  geteventbyid.setSessionId(sees);
-		  geteventbyid.setStartDate(ssdate);
-		  geteventbyid.setEndDate(eedate);
-		  if(!groupid.equalsIgnoreCase("null"))
-		  {
-		  geteventbyid.setGroupId(Long.parseLong(groupid));
-		  }
-		  
-		  
-		  
-		  vr=er.getEventsByLastUpdateDate(geteventbyid);
-		Object gv=GetVehicle(sees,endpoint);
-		  
-      return TypeUtils.getlyval(vr,gv);
-	  }
-	 
+	  /*  @RequestMapping(value="/GetEventsByLastUpdateDateforReport",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
+	
+	 * public @ResponseBody Object GetEventsByLastUpdateDateforReport(@RequestParam
+	 * String sees,@RequestParam String sdate,@RequestParam String
+	 * edate,@RequestParam String groupid,@RequestParam String endpoint) throws
+	 * RemoteException, ParseException { SimpleDateFormat sdf = new
+	 * SimpleDateFormat("yyyy-MM-dd"); String sDate=sdate; String eDate=edate; Date
+	 * ssdate=sdf.parse(sDate); Date eedate=sdf.parse(eDate);
+	 * ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
+	 * GetEventsResponse vr=new GetEventsResponse();
+	 * GetEventsByLastUpdateDateRequest geteventbyid=new
+	 * GetEventsByLastUpdateDateRequest(); geteventbyid.setSessionId(sees);
+	 * geteventbyid.setStartDate(ssdate); geteventbyid.setEndDate(eedate);
+	 * if(!groupid.equalsIgnoreCase("null")) {
+	 * geteventbyid.setGroupId(Long.parseLong(groupid)); }
+	 * 
+	 * 
+	 * 
+	 * vr=er.getEventsByLastUpdateDate(geteventbyid); Object
+	 * gv=GetVehicle(sees,endpoint);
+	 * 
+	 * return TypeUtils.getlyval(vr,gv); }
+	 */
 	  
 	  
 	  

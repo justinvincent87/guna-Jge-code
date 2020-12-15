@@ -30,6 +30,9 @@ import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.text.ParseException;
 import com.lytx.dto.GetEventsByLastUpdateDateRequest;
+import com.lytx.dto.GetUsersRequest;
+import com.lytx.dto.GetUsersResponse;
+
 import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_MessageClasses_Api_GetEvents_V5.GetEventsResponse;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -47,6 +50,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.DataOutputStream;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.net.HttpURLConnection;
 import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
@@ -84,7 +88,8 @@ public class RestTrendingReport
     static Map<String, List<Trip>> vehicleTrips;
     static GL_Report_DAO dao;
     Map<Long, String> lytxVehicleList;
-    
+    static String vechilelytxlist; 
+    static Map<Long,String> vechilemap;
     public RestTrendingReport() {
         this.ser = new GL_Report_SER();
     }
@@ -96,7 +101,7 @@ public class RestTrendingReport
         Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
         String getVehicleResponseJson = "";
         final List<Integer> totals = new ArrayList<Integer>();
-        final Object getgeodropdown = this.ser.getgeodropdown(userName);
+        final Object getgeodropdown = this.ser.getgeodropdown(userName,geodatabase);
         final ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
         final String value = "";
         Map<String, Map<String, String>> combinedReport = new HashMap<String, Map<String, String>>();
@@ -173,6 +178,9 @@ public class RestTrendingReport
             final JsonParser parser = new JsonParser();
             final JsonObject o = parser.parse(response.toString()).getAsJsonObject();
             final String geotabDriverExceptionSummariesJson = o.toString();
+            
+   System.out.println("report"+geotabDriverExceptionSummariesJson);         
+            
             final String startDateStr = sdate + "T01:00:00";
             final String endDateStr = edate + "T59:59:59";
             try {
@@ -211,13 +219,23 @@ public class RestTrendingReport
                 Date newStartDate = ssdate;
                 int s = 0;
                 if (!groupid.equalsIgnoreCase("0")) {
+                	
                     while (true) {
                         System.out.println("check---" + s++);
                         try {
                             RestTrendingReport.lytxExceptionSummariesJson = this.sendLytxRequest(groupid, sdate, edate, sees, endpoint);
                             final JSONObject lytxEventsJO = new JSONObject(RestTrendingReport.lytxExceptionSummariesJson);
                             final JSONArray lytxEventsArray = lytxEventsJO.getJSONArray("events");
-                            lytxVehicleEventsRecord = extractExceptionDataFromLytxResponse(lytxEventsArray, this.lytxVehicleList, trending, ssdate, eedate, lytxBehaviorsJson);
+                            if (enttype.equals("Driver")) 
+                            {
+                            	System.out.println("Driver");
+                            lytxVehicleEventsRecord = extractExceptionDataFromLytxResponseDriver(endpoint,sees,lytxEventsArray, this.lytxVehicleList, trending, ssdate, eedate, lytxBehaviorsJson);
+                            }
+                            else
+                            {
+                                lytxVehicleEventsRecord = extractExceptionDataFromLytxResponse(lytxEventsArray, this.lytxVehicleList, trending, ssdate, eedate, lytxBehaviorsJson);
+	
+                            }
                             if (lytxEventsJO.has("queryCutoff")) {
                                 final String cutoffData = lytxEventsJO.getString("queryCutoff");
                                 System.out.println(cutoffData);
@@ -322,7 +340,7 @@ public class RestTrendingReport
         final Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
         final String getVehicleResponseJson = "";
         final List<Integer> totals = new ArrayList<Integer>();
-        final Object getgeodropdown = this.ser.getgeodropdown(userName);
+        final Object getgeodropdown = this.ser.getgeodropdown(userName,geodatabase);
         final ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
         final String value = "";
         Map<String, Map<String, String>> combinedReport = new HashMap<String, Map<String, String>>();
@@ -517,6 +535,82 @@ public class RestTrendingReport
         for (int i = 0; i < lytxExceptionSummariesJson.length(); ++i) {
             final Long eventsVehicleId = lytxExceptionSummariesJson.getJSONObject(i).getLong("vehicleId");
             final String vehicleName = lytxVehicleList.get(eventsVehicleId);
+            Map<String, Integer> lytxExceptionEvents = lytxVehicleEventsRecord.get(vehicleName);
+            if (lytxExceptionEvents == null) {
+                lytxExceptionEvents = new HashMap<String, Integer>();
+                String key = vehicleName;
+                if (trending) {
+                    final String recordDateUTC = lytxExceptionSummariesJson.getJSONObject(i).getString("recordDateUTC");
+                    Date recordDate = null;
+                    if (recordDateUTC.contains("java")) {
+                        recordDate = getDateFromMilliSeconds(recordDateUTC);
+                    }
+                    else {
+                        recordDate = getDate(recordDateUTC);
+                    }
+                    if (recordDate.before(startDate)) {
+                        continue;
+                    }
+                    if (recordDate.after(endDate)) {
+                        continue;
+                    }
+                    final Integer periodNumber = getPeriodNumberForDate(recordDate);
+                    key = periodNumber + "|" + key;
+                }
+                lytxVehicleEventsRecord.put(key, lytxExceptionEvents);
+            }
+            final JSONArray lytxBehavioursArray = lytxExceptionSummariesJson.getJSONObject(i).getJSONArray("behaviors");
+            for (int j = 0; j < lytxBehavioursArray.length(); ++j) {
+                final int behavior = lytxBehavioursArray.getJSONObject(j).getInt("behavior");
+                final String exceptionName = RestTrendingReport.lytxBehaviors.get(behavior);
+                Integer behaviorCount = lytxExceptionEvents.get(exceptionName);
+                if (behaviorCount == null) {
+                    behaviorCount = 0;
+                }
+                lytxExceptionEvents.put(exceptionName, ++behaviorCount);
+            }
+        }
+        return lytxVehicleEventsRecord;
+    }
+    
+    private static Map<String, Map<String, Integer>> extractExceptionDataFromLytxResponseDriver(String endpoint,String lytxSess,final JSONArray lytxExceptionSummariesJson, final Map<Long, String> lytxVehicleList, final boolean trending, final Date startDate, final Date endDate, final String lytxBehaviorsJson) throws RemoteException {
+        final Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
+        RestTrendingReport.lytxBehaviors = loadLytxBehaviors(lytxBehaviorsJson);
+		vechilelytxlist=null;
+
+		/*
+		 * System.out.println("EndPoint"+endpoint);
+		 * System.out.println("lytex"+lytxSess);
+		 */
+    	vechilemap=new LinkedHashMap<Long, String>();
+		ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
+		  GetUsersResponse vr=new GetUsersResponse();
+		  GetUsersRequest getusersrequest=new GetUsersRequest();
+		  getusersrequest.setSessionId(lytxSess);
+			  vr=er.getUsers(getusersrequest);
+			JSONObject jsonObject2 = new JSONObject(vr);
+
+	
+	  vechilelytxlist=jsonObject2.toString(); 
+	  JSONObject lytxVechileJO = new JSONObject(vechilelytxlist);
+	 
+			JSONArray lytxVechileArray = jsonObject2.getJSONArray("users");
+			
+			//System.out.println("vlist"+vechilelytxlist);
+			
+			for(int i=0;i<lytxVechileArray.length();i++)
+			{
+				JSONObject lytxObjValue=lytxVechileArray.getJSONObject(i);
+				
+				//System.out.println(lytxObjValue.getLong("userId")+"-"+lytxObjValue.getString("firstName")+" "+lytxObjValue.getString("lastName"));
+				
+				vechilemap.put(lytxObjValue.getLong("userId"),lytxObjValue.getString("firstName")+" "+lytxObjValue.getString("lastName"));
+			}
+        for (int i = 0; i < lytxExceptionSummariesJson.length(); ++i) {
+            final Long eventsVehicleId = lytxExceptionSummariesJson.getJSONObject(i).getLong("driverId");
+            final String vehicleName = vechilemap.get(eventsVehicleId);
+            System.out.println(vehicleName);
+            
             Map<String, Integer> lytxExceptionEvents = lytxVehicleEventsRecord.get(vehicleName);
             if (lytxExceptionEvents == null) {
                 lytxExceptionEvents = new HashMap<String, Integer>();

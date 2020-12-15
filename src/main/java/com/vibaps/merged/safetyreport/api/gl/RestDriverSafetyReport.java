@@ -129,7 +129,7 @@ public class RestDriverSafetyReport {
 			throws EncryptedDocumentException, InvalidFormatException, IOException {
 		String responseJson = "";
 		List<Integer> totals = new ArrayList<>();
-		Object getgeodropdown = this.ser.getgeodropdown(userName);
+		Object getgeodropdown = this.ser.getgeodropdown(userName,geodatabase);
 		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();

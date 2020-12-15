@@ -15,7 +15,7 @@ public class GL_Report_SER {
 		ArrayList<Gl_RulelistEntity> v = new ArrayList<>();
 		for (int j = 0; j < val.size(); j++) {
 			Gl_RulelistEntity ent = new Gl_RulelistEntity();
-			ent.setRulevalue(val.get(j));
+			ent.setId(Integer.parseInt(val.get(j)));
 			ent.setWeight(((Integer)we.get(j)).intValue());
 			v.add(ent);
 		} 
@@ -29,9 +29,9 @@ public class GL_Report_SER {
 		// TODO Auto-generated method stub
 		return dao.viewadd(geouserid,db);
 	}
-	public Object getgeodropdown(String geouserid) {
+	public Object getgeodropdown(String geouserid,String db) {
 		// TODO Auto-generated method stub
-		return dao.getgeodropdown(geouserid);
+		return dao.getgeodropdown(geouserid,db);
 	}
 
 	public Object getLybehave(String geouserid,String db) {

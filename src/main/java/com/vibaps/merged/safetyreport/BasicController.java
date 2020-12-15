@@ -81,6 +81,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RestController
 @RequestMapping("Lytx/Api")
 public class BasicController {
+	static  GL_Report_SER ser = new GL_Report_SER();
+
 	@RequestMapping(value="/getLytxSessionId",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
 	  public java.lang.String getLytxSessionId(HttpServletRequest request) throws RemoteException 
 	  { 
@@ -216,12 +218,76 @@ public class BasicController {
 		  return value;
 	  }
 	  
+	  @RequestMapping(value="/getGeotabDriverException",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
+	  public @ResponseBody Object getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
+			
+		  Object getgeodropdown = this.ser.getgeodropdown(geouname,geodatabase);
+		    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
+		  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	      String sDate = sdate;
+	      String eDate = edate;
+	      Date ssdate = sdf.parse(sDate);
+	      Date eedate = sdf.parse(eDate);
+	      String gvalue = "";
+	      for (int j = 0; j < getl.size(); j++) {
+	        if (j != getl.size() - 1) {
+	          gvalue = gvalue + "{\"id\":\"" + (String)getl.get(j) + "\"},";
+	        } else {
+	          gvalue = gvalue + "{\"id\":\"" + (String)getl.get(j) + "\"}";
+	        } 
+	      } 
+	      String groupvalue = "";
+	      for (int i = 0; i < geotabgroups.size(); i++) {
+	        if (i != geotabgroups.size() - 1) {
+	          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroups.get(i) + "\"},";
+	        } else {
+	          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroups.get(i) + "\"}";
+	        } 
+	      } 
+	      String uri = "https://" + url + "/apiv1";
+	      String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\"" + sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate + "T03:59:59.000Z\",\"entityType\":\""+enttype+"\",\"reportArgumentType\":\"RiskManagement\",\"groups\":[" + groupvalue + "],\"reportSubGroup\":\"None\",\"rules\":[" + gvalue + "]}}},{\"method\":\"Get\",\"params\":{\"typeName\":\"SystemSettings\"}}],\"credentials\":{\"database\":\"" + geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + geouname + "\"}}}";
+	      
+	     // System.out.println(uri+"-"+urlParameters);
+	      
+	      String serverurl = uri;
+	      HttpURLConnection con = (HttpURLConnection)(new URL(serverurl)).openConnection();
+	      con.setRequestMethod("POST");
+	      con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
+	      con.setRequestProperty("Content-Language", "en-US");
+	      con.setDoOutput(true);
+	      con.setUseCaches(false);
+	      con.setDoInput(true);
+	      DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+	      wr.writeBytes(urlParameters);
+	      wr.flush();
+	      wr.close();
+	      InputStream is = con.getInputStream();
+	      BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+	      StringBuilder response = new StringBuilder();
+	      String line;
+	      while ((line = rd.readLine()) != null) {
+	        response.append(line);
+	        response.append('\r');
+	      } 
+	      rd.close();
+		  JsonParser parser = new JsonParser();
+	      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
+	      
+	      String geotabDriverExceptionSummariesResponseJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
+	
+	      
+		
+		//System.out.println(geotabDriverExceptionSummariesResponseJson);
+		
+		return geotabDriverExceptionSummariesResponseJson;
+	}	
+	  
 	  
 	  @RequestMapping(value="/GeotabCall",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
-	  public @ResponseBody String GeotabCall(@RequestParam String fdate,String tdate,@RequestParam String geouserid) throws IOException, ParseException 
+	  public @ResponseBody String GeotabCall(@RequestParam String fdate,String tdate,@RequestParam String geouserid,@RequestParam String db) throws IOException, ParseException 
 	  { 
 		  String gvalue="";
-		  Object getgeodropdown=GetGeotabBehaveDropDown(geouserid);
+		  Object getgeodropdown=GetGeotabBehaveDropDown(geouserid,db);
 		  
 		  ArrayList getl=(ArrayList) getgeodropdown;
 		  
@@ -283,10 +349,10 @@ public class BasicController {
 			 
 	  }
 	  @RequestMapping(value="/GetGeotabBehaveDropDown",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
-	  public @ResponseBody Object GetGeotabBehaveDropDown(@RequestParam String geouserid) throws RemoteException 
+	  public @ResponseBody Object GetGeotabBehaveDropDown(@RequestParam String geouserid,@RequestParam String db) throws RemoteException 
 	  { 
 		  GL_Report_SER rep=new GL_Report_SER();
-		  return rep.getgeodropdown(geouserid);
+		  return rep.getgeodropdown(geouserid,db);
 	  }
 	  
 	  /*  @RequestMapping(value="/GetEventsByLastUpdateDateforReport",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 

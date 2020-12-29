@@ -96,7 +96,7 @@ public class RestTrendingReport
     
     @RequestMapping(value = { "/getTrendingReport" }, method = { RequestMethod.GET }, produces = { "application/json" })
     @ResponseBody
-    public Object getReportGeo(@RequestParam final String groupid, @RequestParam String sdate, @RequestParam final String edate, @RequestParam final String sees, @RequestParam final String geosees, @RequestParam final ArrayList<String> geotabgroups, @RequestParam final String userName, @RequestParam final String geodatabase, @RequestParam final String url, @RequestParam final String enttype, @RequestParam final String period, @RequestParam final String endpoint) throws EncryptedDocumentException, InvalidFormatException, IOException {
+    public Object getReportGeo(@RequestParam final String groupid, @RequestParam String sdate, @RequestParam final String edate, @RequestParam final String sees, @RequestParam final String geosees, @RequestParam final String geotabgroups, @RequestParam final String userName, @RequestParam final String geodatabase, @RequestParam final String url, @RequestParam final String enttype, @RequestParam final String period, @RequestParam final String endpoint) throws EncryptedDocumentException, InvalidFormatException, IOException {
         String responseJson = "";
         Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
         String getVehicleResponseJson = "";
@@ -144,14 +144,15 @@ public class RestTrendingReport
                 }
             }
             String groupvalue = "";
-            for (int i = 0; i < geotabgroups.size(); ++i) {
-                if (i != geotabgroups.size() - 1) {
-                    groupvalue = groupvalue + "{\"id\":\"" + geotabgroups.get(i) + "\"},";
-                }
-                else {
-                    groupvalue = groupvalue + "{\"id\":\"" + geotabgroups.get(i) + "\"}";
-                }
-            }
+        	String[] geotabgroupsval = geotabgroups.split(",");
+		      
+		      for (int i = 0; i < geotabgroupsval.length; i++) {
+		        if (i != geotabgroupsval.length - 1) {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"},";
+		        } else {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"}";
+		        } 
+		      } 
             final String uri = "https://" + url + "/apiv1";
             final String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\"" + sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate + "T03:59:59.000Z\",\"entityType\":\"" + enttype + "\",\"reportArgumentType\":\"RiskManagement\",\"groups\":[" + groupvalue + "],\"reportSubGroup\":\"" + period + "\",\"rules\":[" + gvalue + "]}}},{\"method\":\"Get\",\"params\":{\"typeName\":\"SystemSettings\"}}],\"credentials\":{\"database\":\"" + geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + userName + "\"}}}";
             final String serverurl = uri;
@@ -335,7 +336,7 @@ public class RestTrendingReport
     
     @RequestMapping(value = { "/getTrendingReportNonLytx" }, method = { RequestMethod.GET }, produces = { "application/json" })
     @ResponseBody
-    public Object getReportGeoLytx(@RequestParam final String sdate, @RequestParam final String edate, @RequestParam final String geosees, @RequestParam final ArrayList<String> geotabgroups, @RequestParam final String userName, @RequestParam final String geodatabase, @RequestParam final String url, @RequestParam final String enttype, final String period) throws EncryptedDocumentException, InvalidFormatException, IOException {
+    public Object getReportGeoLytx(@RequestParam final String sdate, @RequestParam final String edate, @RequestParam final String geosees, @RequestParam final String geotabgroups, @RequestParam final String userName, @RequestParam final String geodatabase, @RequestParam final String url, @RequestParam final String enttype, final String period) throws EncryptedDocumentException, InvalidFormatException, IOException {
         String responseJson = "";
         final Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
         final String getVehicleResponseJson = "";
@@ -361,14 +362,15 @@ public class RestTrendingReport
                 }
             }
             String groupvalue = "";
-            for (int i = 0; i < geotabgroups.size(); ++i) {
-                if (i != geotabgroups.size() - 1) {
-                    groupvalue = groupvalue + "{\"id\":\"" + geotabgroups.get(i) + "\"},";
-                }
-                else {
-                    groupvalue = groupvalue + "{\"id\":\"" + geotabgroups.get(i) + "\"}";
-                }
-            }
+        	String[] geotabgroupsval = geotabgroups.split(",");
+		      
+		      for (int i = 0; i < geotabgroupsval.length; i++) {
+		        if (i != geotabgroupsval.length - 1) {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"},";
+		        } else {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"}";
+		        } 
+		      } 
             final String uri = "https://" + url + "/apiv1";
             final String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\"" + sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate + "T03:59:59.000Z\",\"entityType\":\"" + enttype + "\",\"reportArgumentType\":\"RiskManagement\",\"groups\":[" + groupvalue + "],\"reportSubGroup\":\"" + period + "\",\"rules\":[" + gvalue + "]}}},{\"method\":\"Get\",\"params\":{\"typeName\":\"SystemSettings\"}}],\"credentials\":{\"database\":\"" + geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + userName + "\"}}}";
             final String serverurl = uri;

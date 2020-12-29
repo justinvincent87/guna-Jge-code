@@ -110,7 +110,7 @@ public class RestDriverSafetyReport {
 	@RequestMapping(value = { "/getReport" }, method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	public Object getReport(@RequestParam String sees, @RequestParam String sdate, @RequestParam String edate,
-			@RequestParam String groupid, @RequestParam String geosees, @RequestParam ArrayList<String> geotabgroups,
+			@RequestParam String groupid, @RequestParam String geosees, @RequestParam String geotabgroups,
 			@RequestParam String geouname, @RequestParam String geodatabase, @RequestParam String url,
 			@RequestParam String filename, @RequestParam String templect, @RequestParam String enttype,@RequestParam String endpoint)
 			throws EncryptedDocumentException, InvalidFormatException, IOException, ParseException {

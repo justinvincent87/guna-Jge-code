@@ -436,7 +436,7 @@ while(it.hasNext()){
 	
 	
 	
-	public String processforNonLytx(String sdate, String edate, String geosees, ArrayList<String> geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype) throws ParseException, MalformedURLException, IOException {
+	public String processforNonLytx(String sdate, String edate, String geosees, String geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype) throws ParseException, MalformedURLException, IOException {
 		
 		reportBy=enttype;
 
@@ -506,7 +506,7 @@ bottomNRecords=new ArrayList<Score>();
 	
 	
 		
-		public String process(String sees, String sdate, String edate, String groupid, String geosees, ArrayList<String> geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype,String endpoint) throws ParseException, MalformedURLException, IOException {
+		public String process(String sees, String sdate, String edate, String groupid, String geosees, String geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype,String endpoint) throws ParseException, MalformedURLException, IOException {
 			
 			reportBy=enttype;
 
@@ -1293,7 +1293,7 @@ reportRows = new ArrayList<ReportRow>();
 
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
-		public String getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
+		public String getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,String geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 		
 			  Object getgeodropdown = this.ser.getgeodropdown(geouname,geodatabase);
 			    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
@@ -1311,11 +1311,14 @@ reportRows = new ArrayList<ReportRow>();
 		        } 
 		      } 
 		      String groupvalue = "";
-		      for (int i = 0; i < geotabgroups.size(); i++) {
-		        if (i != geotabgroups.size() - 1) {
-		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroups.get(i) + "\"},";
+		      
+				String[] geotabgroupsval = geotabgroups.split(",");
+		      
+		      for (int i = 0; i < geotabgroupsval.length; i++) {
+		        if (i != geotabgroupsval.length - 1) {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"},";
 		        } else {
-		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroups.get(i) + "\"}";
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"}";
 		        } 
 		      } 
 		      String uri = "https://" + url + "/apiv1";
@@ -1358,7 +1361,7 @@ reportRows = new ArrayList<ReportRow>();
 
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
-		public String getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
+		public String getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,String geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 			Object getgeodropdown = this.ser.getgeodropdown(geouname,geodatabase);
 		    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			String gvalue = "";
@@ -1370,13 +1373,15 @@ reportRows = new ArrayList<ReportRow>();
 				}
 			}
 			String groupvalue = "";
-			for (int i = 0; i < geotabgroups.size(); i++) {
-				if (i != geotabgroups.size() - 1) {
-					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"},";
-				} else {
-					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"}";
-				}
-			}
+			String[] geotabgroupsval = geotabgroups.split(",");
+		      
+		      for (int i = 0; i < geotabgroupsval.length; i++) {
+		        if (i != geotabgroupsval.length - 1) {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"},";
+		        } else {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"}";
+		        } 
+		      } 
 			String uri = "https://" + url + "/apiv1";
 			String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\""
 					+ sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate

@@ -13,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,8 @@ public class ReportRow{
 	String group;
 	@Column(name = "distance")
 	long distance;
-	@Column(name = "selectedRules")
+	
+	@Transient
 	LinkedHashMap<String, Integer> selectedRules=new LinkedHashMap<String, Integer>();
 	 public ReportRow() {
 

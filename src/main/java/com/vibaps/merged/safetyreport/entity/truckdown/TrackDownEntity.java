@@ -36,4 +36,10 @@ private Double lng;
 private String servicetype;
 @Transient
 private String day;
+
+@Transient
+private String ids;
+
+@Transient
+private Long lid;
 }

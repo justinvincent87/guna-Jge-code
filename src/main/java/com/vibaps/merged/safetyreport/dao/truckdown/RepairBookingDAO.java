@@ -33,9 +33,12 @@ public class RepairBookingDAO{
 	@Autowired
 	private TdUserService repairBookingService;
 	
+	@Autowired
+	Optional<TdUser> truckdoun;
+	
 	
 	public Object view(Double lat, Double lng,String serviceType,String day) throws MalformedURLException, IOException {
-		Optional<TdUser> truckdoun=null;
+		
 		
 		JSONObject holeResponce = new JSONObject();
 		JSONArray holeCompany=new JSONArray();
@@ -51,7 +54,7 @@ public class RepairBookingDAO{
 			 url=truckdoun.get().getBaseUrl()+"search?key="+truckdoun.get().getKey()+"&service="+serviceType+"&lng="+lng+"&lat="+lat;
 			
 		 }
-		
+		System.out.println(url);
 		
 		serviceResponse=getTruckdownResponce(url);
 			
@@ -70,6 +73,7 @@ public class RepairBookingDAO{
 	            JSONObject servicecJO = serviceArray.getJSONObject(i);
 	            Long lid = servicecJO.getLong("lid");
 	            String ids = servicecJO.getString("_id");
+	          
 	            
 	            
 	            url=truckdoun.get().getBaseUrl()+"location?key="+truckdoun.get().getKey()+"&id="+lid;
@@ -111,6 +115,8 @@ public class RepairBookingDAO{
 		        	JSONObject entries= timing.getJSONObject("entries");
 		        	JSONObject dayentries= entries.getJSONObject(day);
 		        	uiResponce.put("company_name",servicecJO.getString("n"));
+		        	uiResponce.put("website",servicecJO.getString("wa"));
+		        	uiResponce.put("company_address",servicecJO.getJSONObject("a"));
 		        	uiResponce.put("company_timing",dayentries);
 		        	JSONObject companyphoneObject = new JSONObject(phoneResponce);
 		        	uiResponce.put("company_phone",companyphoneObject.getJSONArray("result").get(0));
@@ -141,9 +147,137 @@ public class RepairBookingDAO{
 		return "{\"company_details\":"+holeCompany+"}";
 	}
 	
+	public Object getTruckdowndealer(Double lat, Double lng,String serviceType) throws MalformedURLException, IOException
+	{
+		JSONObject holeResponce = new JSONObject();
+		JSONArray holeCompany=new JSONArray();
+		
+		
+		 truckdoun=repairBookingService.findById(Long.valueOf(1));
+		 String serviceResponse="";
+		 String componyResponce="";
+		 String url="";
+		if(truckdoun.isPresent())
+		 {
+			 url=truckdoun.get().getBaseUrl()+"search?key="+truckdoun.get().getKey()+"&service="+serviceType+"&lng="+lng+"&lat="+lat;
+			
+		 }
+		
+		try
+	      {	
+			serviceResponse=getTruckdownResponce(url);
+			
+			
+			
+		JSONObject serviceObject = new JSONObject(serviceResponse);
+        JSONArray serviceArray = serviceObject.getJSONArray("ls");
+      
+        for (int i = 0; i < serviceArray.length(); i++) 
+        {
+        	JSONObject uiResponce = new JSONObject();
+
+    		
+        	
+        	
+            JSONObject servicecJO = serviceArray.getJSONObject(i);
+            Long lid = servicecJO.getLong("lid");
+            String ids = servicecJO.getString("_id");
+            
+            uiResponce.put("company_name",servicecJO.getString("n"));
+        	uiResponce.put("website",servicecJO.getString("wa"));
+        	uiResponce.put("company_address",servicecJO.getJSONObject("a"));
+        	uiResponce.put("lid",lid);
+        	uiResponce.put("id",ids);
+        	
+        	holeCompany.put(uiResponce);
+        }
+        holeResponce.put("company_details",holeCompany);  
+      }catch (Exception e) {
+		// TODO: handle exception
+    	  System.out.println("-----"+e);
+	} 
+		
+		return holeResponce.toString();
+	}
+	
+	public Object getTruckTiming(Long lid) throws MalformedURLException, IOException
+	{
+		JSONObject holeResponce = new JSONObject();
+		JSONArray holeCompany=new JSONArray();
+		
+		
+		 truckdoun=repairBookingService.findById(Long.valueOf(1));
+		 String serviceResponse="";
+		 String componyResponce="";
+		 String url="";
+		if(truckdoun.isPresent())
+		 {
+			url=truckdoun.get().getBaseUrl()+"location?key="+truckdoun.get().getKey()+"&id="+lid;
+		 }
+		 String locationResponce=null;
+         try
+         {
+         locationResponce=getTruckdownResponce(url);
+         }catch (Exception e) {
+				// TODO: handle exception
+			}
+         componyResponce="{\"result\":["+locationResponce+"]}";
+         
+        
+		return componyResponce.toString();
+	}
+	
+	public Object getTruckdownservices() {
+		String url="";
+		
+		 truckdoun=repairBookingService.findById(Long.valueOf(1));
+		 
+		 url=truckdoun.get().getBaseUrl()+"service?key="+truckdoun.get().getKey();
+    	
+        
+        String serviceResponce=null;
+        try
+        {
+        	serviceResponce="{\"dropval\":["+getTruckdownResponce(url)+"]}";
+        }catch (Exception e) {
+				// TODO: handle exception
+			}
+        JSONObject companyphoneObject = new JSONObject(serviceResponce);
+        
+       
+		return companyphoneObject.toString();
+	}
+	
+	
+	public Object getTruckPhone(String ids) throws MalformedURLException, IOException
+	{
+		JSONObject holeResponce = new JSONObject();
+		JSONArray holeCompany=new JSONArray();
+		
+		
+		 truckdoun=repairBookingService.findById(Long.valueOf(1));
+		 String serviceResponse="";
+		 String componyResponce="";
+		 String url="";
+		 
+		 url=truckdoun.get().getBaseUrl()+"phone?key="+truckdoun.get().getKey()+"&id="+ids;
+     	
+         
+         String phoneResponce=null;
+         try
+         {
+         	phoneResponce="{\"result\":["+getTruckdownResponce(url)+"]}";
+         }catch (Exception e) {
+				// TODO: handle exception
+			}
+         JSONObject companyphoneObject = new JSONObject(phoneResponce);
+         
+        
+		return companyphoneObject.getJSONArray("result").get(0).toString();
+	}
 	
 
-	private String getTruckdownResponce(String urls) throws MalformedURLException, IOException
+	public String getTruckdownResponce(String urls) throws MalformedURLException, IOException
 	{
 		StringBuilder response = new StringBuilder();
 		
@@ -176,6 +310,8 @@ public class RepairBookingDAO{
 		return response.toString();
 		
 	}
+
+	
 	
 
 }

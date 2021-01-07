@@ -26,4 +26,34 @@ private RepairBookingDAO repairBookingDAO;
 		return repairBookingDAO.view(entity.getLat(),entity.getLng(),entity.getServicetype(),entity.getDay());
 	}
 
+@Transactional
+public String viewtruckdownresponse(String url) throws MalformedURLException, IOException {
+	// TODO Auto-generated method stub
+	return repairBookingDAO.getTruckdownResponce(url);
+}
+
+@Transactional
+public Object getTruckdowndealer(TrackDownEntity entity) throws MalformedURLException, IOException {
+	// TODO Auto-generated method stub
+	return repairBookingDAO.getTruckdowndealer(entity.getLat(),entity.getLng(),entity.getServicetype());
+}
+
+@Transactional
+public Object getTruckPhone(TrackDownEntity entity) throws MalformedURLException, IOException {
+	// TODO Auto-generated method stub
+	return repairBookingDAO.getTruckPhone(entity.getIds());
+}
+
+@Transactional
+public Object getTruckTiming(TrackDownEntity entity) throws MalformedURLException, IOException {
+	// TODO Auto-generated method stub
+	return repairBookingDAO.getTruckTiming(entity.getLid());
+}
+
+public Object getTruckdownservices() {
+	// TODO Auto-generated method stub
+	return repairBookingDAO.getTruckdownservices();
+}
+
+
 }

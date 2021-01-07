@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vibaps.merged.safetyreport.entity.truckdown.TrackDownEntity;
@@ -28,6 +29,36 @@ public class RepairBooking {
 	public Object view(@RequestBody TrackDownEntity entity) throws IOException {
 		
 		return repairBookingService.view(entity);
+	}
+	
+	@PostMapping(value="/viewtruckdownresponse")
+	public Object viewtruckdownresponse(@RequestParam String url) throws IOException {
+		
+		return repairBookingService.viewtruckdownresponse(url);
+	}
+	
+	@PostMapping(value="/getTruckTiming")
+	public Object getTruckTiming(@RequestBody TrackDownEntity entity) throws IOException {
+		
+		return repairBookingService.getTruckTiming(entity);
+	}
+	
+	@PostMapping(value="/getTruckDownDealerPhone")
+	public Object getTruckPhone(@RequestBody TrackDownEntity entity) throws IOException {
+		
+		return repairBookingService.getTruckPhone(entity);
+	}
+	
+	@PostMapping(value="/getTruckDownDealer")
+	public Object getTruckdowndealer(@RequestBody TrackDownEntity entity) throws IOException {
+		
+		return repairBookingService.getTruckdowndealer(entity);
+	}
+	
+	@PostMapping(value="/getTruckDownService")
+	public Object getTruckdownservices() throws IOException {
+		
+		return repairBookingService.getTruckdownservices();
 	}
 
 }

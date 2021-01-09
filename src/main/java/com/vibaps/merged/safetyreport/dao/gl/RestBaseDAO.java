@@ -1,5 +1,6 @@
-package com.vibaps.merged.safetyreport;
+package com.vibaps.merged.safetyreport.dao.gl;
 
+import org.springframework.stereotype.Repository;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -15,22 +16,22 @@ import org.hibernate.internal.util.SerializationHelper;
 import org.jboss.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lytx.dto.EventsInfoV5;
 
-public final class TypeUtils {
 
-	private static final Logger LOGGER = Logger.getLogger(TypeUtils.class);
-
+@Repository
+public class RestBaseDAO {
+	@Autowired
+	private static final Logger LOGGER = Logger.getLogger(RestBaseDAO.class);
+	
 	private SecureRandom random = new SecureRandom();
-
-	private TypeUtils() {
-
-	}
-
+	
+	
 	public  Integer toIntegerValue(Object object) {
 
 		Integer value = null;
@@ -350,5 +351,4 @@ public final class TypeUtils {
 	        }
 		return flis;
 	}
-
 }

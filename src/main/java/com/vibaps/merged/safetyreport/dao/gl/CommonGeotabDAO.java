@@ -23,6 +23,7 @@ import org.hibernate.Transaction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Repository;
 
 import com.google.gson.JsonObject;
@@ -36,11 +37,12 @@ import com.vibaps.merged.safetyreport.repo.gl.UserReportFilterRepository;
 
 @Repository
 public class CommonGeotabDAO  {
+	@Lazy
 	@Autowired
 	private GlReportDAO glReportDAO;
 	@Autowired
 	private CommonGeotabRepository commonGeotabRepository;
-@Transactional	
+	
 public Object insertDevice(String geouserid,String databaseName,String geosess,String url) throws IOException {
 		// TODO Auto-generated method stub
 

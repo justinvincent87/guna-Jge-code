@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -34,17 +35,13 @@ public class ReportRow {
 	private Long					id;
 	
 	@Column(name = "name")
-	private String					name;
+	private String name;
 	
 	@Column(name = "group")
-	private String					group;
+	private String	group;
 	
 	@Column(name = "distance")
-	private Long					distance;
-    
-	 @ElementCollection
-	 @CollectionTable(name = "order_item_mapping",joinColumns = {@JoinColumn(name = "order_id", referencedColumnName = "id")})
-	    @MapKeyColumn(name = "item_name")
-	    @Column(name = "price")
-	 private Map<String, Integer>	selectedRules	= new LinkedHashMap<>();
+	private Long distance;
+    @Transient
+	private Map<String, Integer> selectedRules	= new LinkedHashMap<>();
 }

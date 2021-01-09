@@ -43,9 +43,9 @@ import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.dto.LoginResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.Cookies;
-import com.vibaps.merged.safetyreport.TypeUtils;
 import com.vibaps.merged.safetyreport.entity.gl.LyUserEntity;
 import com.vibaps.merged.safetyreport.repo.gl.CommonGeotabRepository;
+import com.vibaps.merged.safetyreport.services.gl.RestBaseService;
 import com.vibaps.merged.safetyreport.services.gl.RestDriverSafetyReportService;
 
 @CrossOrigin(origins = "*",allowedHeaders = "*")
@@ -56,7 +56,7 @@ public class RestBase {
 	@Autowired
 	 private RestDriverSafetyReportService glReportService;
 	@Autowired
-	 private TypeUtils typeUtils;
+	 private RestBaseService typeUtils;
 	@Autowired
 	 private CommonGeotabRepository commonGeotabRepository;
 

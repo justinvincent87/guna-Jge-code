@@ -3,6 +3,7 @@ package com.vibaps.merged.safetyreport.api.gl;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,8 @@ import com.vibaps.merged.safetyreport.services.gl.CommonGeotabService;
 @RestController
 @RequestMapping({ "/geotab_common_call" })
 public class CommonGeotabAPI {
+	
+@Lazy
 @Autowired
 private CommonGeotabService commonGeotabService;
 

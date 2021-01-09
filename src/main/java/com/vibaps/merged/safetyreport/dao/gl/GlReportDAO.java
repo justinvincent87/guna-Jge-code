@@ -272,9 +272,8 @@ private CommonGeotabDAO commonGeotabDAO;
 			i=userReportFilterRepository.getRuleListInsert(companyid, db, Float.valueOf(Float.parseFloat(minmiles)));
 			
 		} catch (Exception exception) {}
-		int j = 0;
-		if (i > 0)
-		{
+		
+		
 			
 				for (int d = 0; d < v.size(); d++) {
 				
@@ -282,7 +281,7 @@ private CommonGeotabDAO commonGeotabDAO;
 					result.put("result", "Rules list saved");
 				} 
 			
-		}
+		
 		return result;
 	}
 	

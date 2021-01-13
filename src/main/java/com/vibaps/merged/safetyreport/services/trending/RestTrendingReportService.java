@@ -12,32 +12,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.vibaps.merged.safetyreport.dao.trending.RestTrendingReportDAO;
+import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 @Service
 public class RestTrendingReportService {
 	@Autowired
 	private RestTrendingReportDAO restTrendingReportDao;
 	
-	public Object getReportGeo(String groupid,String sdate,String edate,
-			String sees,String geosees,ArrayList<String> geotabgroups,
-		String userName,String geodatabase,String url,
-		String enttype,String period,String endpoint) throws ParseException, MalformedURLException, IOException
+	public Object getReportGeo(ReportParams reportParams) throws ParseException, MalformedURLException, IOException
 	{
-		return restTrendingReportDao.getReportGeo(groupid,sdate,edate,sees,geosees,geotabgroups,userName,geodatabase,url,enttype,period,endpoint);
+		return restTrendingReportDao.getReportGeo(reportParams.getGroupId(),reportParams.getStartDate(),reportParams.getEndDate(),reportParams.getLytexSessionid(),reportParams.getGeotabSessionId(),reportParams.getGeotabGroups(),reportParams.getGeotabUserName(),reportParams.getGeotabDatabase(),reportParams.getUrl(),reportParams.getEntityType(),reportParams.getPeriod(),reportParams.getEndPoint());
 	}
 	
-	public Object getReportGeoLytx(String sdate,String edate,String geosees,
-		ArrayList<String> geotabgroups,String userName,
-		String geodatabase,String url,String enttype, String period) throws MalformedURLException, IOException
+	public Object getReportGeoLytx(ReportParams reportParams) throws MalformedURLException, IOException
 	{
-		return restTrendingReportDao.getReportGeoLytx(sdate,edate,geosees,geotabgroups,userName,
-				geodatabase,url,enttype,period);
+		return restTrendingReportDao.getReportGeoLytx(reportParams.getStartDate(),reportParams.getEndDate(),reportParams.getGeotabSessionId(),reportParams.getGeotabGroups(),reportParams.getGeotabUserName(),
+				reportParams.getGeotabDatabase(),reportParams.getUrl(),reportParams.getEntityType(),reportParams.getPeriod());
 	}
 	
-	public String createExcelReport(String sdate,String edate,
-			String geouname,String geodatabase,String url,
-			String filename,String templect,String entityType) throws EncryptedDocumentException, IOException
+	public String createExcelReport(ReportParams reportParams) throws EncryptedDocumentException, IOException
 	{
-		return restTrendingReportDao.createExcelReport(sdate,edate,geouname,geodatabase,url,filename,templect,entityType);
+		return restTrendingReportDao.createExcelReport(reportParams.getStartDate(),reportParams.getEndDate(),reportParams.getGeotabUserName(),reportParams.getGeotabDatabase(),reportParams.getUrl(),reportParams.getFilename(),reportParams.getTemplect(),reportParams.getEntityType());
 		
 	}
 

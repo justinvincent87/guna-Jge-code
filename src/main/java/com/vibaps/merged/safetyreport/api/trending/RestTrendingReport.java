@@ -12,11 +12,12 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.services.trending.RestTrendingReportService;
 
 @CrossOrigin(origins = { "*" }, allowedHeaders = { "*" })
@@ -27,32 +28,24 @@ public class RestTrendingReport {
 	private RestTrendingReportService restTrendingReportService;
 
 	@PostMapping(value ="/getTrendingReport")
-	public Object getReportGeo(@RequestParam String groupid, @RequestParam String sdate, @RequestParam String edate,
-			@RequestParam String sees, @RequestParam String geosees, @RequestParam ArrayList<String> geotabgroups,
-			@RequestParam String userName, @RequestParam String geodatabase, @RequestParam String url,
-			@RequestParam String enttype, @RequestParam String period, @RequestParam String endpoint)
+	public Object getReportGeo(@RequestBody ReportParams reportParams)
 			throws EncryptedDocumentException, InvalidFormatException, IOException, ParseException {
-		return restTrendingReportService.getReportGeo(groupid,sdate,edate,sees,geosees,geotabgroups,userName,geodatabase,url,enttype,period,endpoint);
+		return restTrendingReportService.getReportGeo(reportParams);
 
 		
 	}
 
 	@PostMapping(value ="/getTrendingReportNonLytx")
-	public Object getReportGeoLytx(@RequestParam String sdate, @RequestParam String edate, @RequestParam String geosees,
-			@RequestParam ArrayList<String> geotabgroups, @RequestParam String userName,
-			@RequestParam String geodatabase, @RequestParam String url, @RequestParam String enttype, String period)
+	public Object getReportGeoLytx(@RequestBody ReportParams reportParams)
 			throws EncryptedDocumentException, InvalidFormatException, IOException 
 	{
-		return restTrendingReportService.getReportGeoLytx(sdate,edate,geosees,geotabgroups,userName,
-				geodatabase,url,enttype,period);	
+		return restTrendingReportService.getReportGeoLytx(reportParams);	
 	}
 	
 	@PostMapping(value ="/createExcelTrendingReport")
-	private String createExcelReport(@RequestParam String sdate, @RequestParam String edate,
-			@RequestParam String geouname, @RequestParam String geodatabase, @RequestParam String url,
-			@RequestParam String filename, @RequestParam String templect, @RequestParam String entityType)
+	private String createExcelReport(@RequestBody ReportParams reportParams)
 			throws IOException, FileNotFoundException {
-		return restTrendingReportService.createExcelReport(sdate,edate,geouname,geodatabase,url,filename,templect,entityType);
+		return restTrendingReportService.createExcelReport(reportParams);
 
 	}
 

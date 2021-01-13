@@ -22,7 +22,7 @@ public class ReportParams {
 	private String				endDate;
 	private String				groupId;
 	private String				geotabSessionId;
-	private ArrayList<String>	geotabGroups;
+	private String	geotabGroups;
 	private String				geotabUserName;
 	private String				geotabDatabase;
 	private String				url;
@@ -30,5 +30,7 @@ public class ReportParams {
 	private String				templect;
 	private String				entityType;
 	private String				endPoint;
+	private String				period;
+	private ArrayList<Integer>	ruleId;
 
 }

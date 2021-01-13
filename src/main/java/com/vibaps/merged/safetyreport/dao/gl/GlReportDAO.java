@@ -57,6 +57,8 @@ import com.google.gson.JsonParser;
 import com.lytx.dto.ExistingSessionRequest;
 import com.lytx.dto.GetBehaviorsResponse;
 import com.lytx.dto.GetEventsByLastUpdateDateRequest;
+import com.lytx.dto.GetUsersRequest;
+import com.lytx.dto.GetUsersResponse;
 import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
@@ -79,7 +81,8 @@ private UserReportFilterRepository userReportFilterRepository;
 @Autowired
 private CommonGeotabDAO commonGeotabDAO;
 
-	
+	private String vechilelytxlist; 
+	private Map<Long,String> vechilemap;
 	private int ROW_OFFSET = -1;
 	private int FORMULA_START_ROW = 7;
 
@@ -122,7 +125,7 @@ private CommonGeotabDAO commonGeotabDAO;
 		  
 		 
 			  
-			  obj1=userReportFilterRepository.getRuleList();
+			  obj1=userReportFilterRepository.getRuleList(db);
 		  
 		  Iterator it = obj1.iterator(); 
 		  while(it.hasNext())
@@ -163,7 +166,7 @@ private CommonGeotabDAO commonGeotabDAO;
 		return obj;
 	}
 	
-	public Object getgeodropdown(String geotabUserid,String db) {
+	public List<GlRulelistEntity> getgeodropdown(String geotabUserid,String db) {
 
 		List<GlRulelistEntity> obj = null;
 
@@ -194,9 +197,9 @@ private CommonGeotabDAO commonGeotabDAO;
 		return obj;
 	}
 	
-	public List getallbehaveui(String geotabUserid,String db) {
+	public List<String> getallbehaveui(String geotabUserid,String db) {
 		
-		    List obj = new ArrayList();
+		    List<String> obj = new ArrayList();
 		
 		
 			obj = userReportFilterRepository.getallbehave(geotabUserid, db);
@@ -313,20 +316,30 @@ while(it.hasNext()){
 	}
 	
 	public Object getReportGeo(String startDate,String endDate,String geosees,
-			ArrayList<String> geotabgroups,String userName,
+			String geotabgroups,String userName,
 			String geodatabase,String url,String filename,
 			String templect,String enttype) throws MalformedURLException, IOException, ParseException
 	{
 		String responseJson="";
-		Object getgeodropdown = getgeodropdown(userName,geodatabase);
-		ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
+		List<GlRulelistEntity> getl = getgeodropdown(userName,geodatabase);
+		//ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
 		List<String> displayColumns = null;
 		Map<Integer, String> lytxBehaviors = null;
 		
-		
-			JsonObject geotabDriverExceptionJson=geotabVechileDriverResponce(startDate, endDate, getl, url, geotabgroups, enttype, userName, geodatabase, geosees);
+		String groupvalue = "";
+    	String[] geotabgroupsval = geotabgroups.split(",");
+	      
+	      for (int i = 0; i < geotabgroupsval.length; i++) {
+	        if (i != geotabgroupsval.length - 1) {
+	          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"},";
+	        } else {
+	          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"}";
+	        } 
+	      } 
+	      
+			JsonObject geotabDriverExceptionJson=geotabVechileDriverResponce(startDate, endDate, getl, url, groupvalue, enttype, userName, geodatabase, geosees);
 			
 			String geotabDriverExceptionSummariesJson = "{\"result\":" + geotabDriverExceptionJson.getAsJsonArray("result").get(0).toString()
 					+ "}";
@@ -440,7 +453,7 @@ while(it.hasNext()){
 		return responseJson;
 	}
 	
-	public JsonObject geotabVechileDriverResponce(String startDate,String endDate,ArrayList<String> getl,String url,ArrayList<String> geotabgroups,String enttype,String userName,
+	public JsonObject geotabVechileDriverResponce(String startDate,String endDate,List<GlRulelistEntity> getl,String url,String groupval,String enttype,String userName,
 			String geodatabase,String geosees) throws MalformedURLException, IOException, ParseException
 	{
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -451,23 +464,16 @@ while(it.hasNext()){
 		String gvalue = "";
 		for (int j = 0; j < getl.size(); j++) {
 			if (j != getl.size() - 1) {
-				gvalue = gvalue + "{\"id\":\"" + (String) getl.get(j) + "\"},";
+				gvalue = gvalue + "{\"id\":\"" +getl.get(j).getRulevalue() + "\"},";
 			} else {
-				gvalue = gvalue + "{\"id\":\"" + (String) getl.get(j) + "\"}";
+				gvalue = gvalue + "{\"id\":\"" +getl.get(j).getRulevalue()+ "\"}";
 			}
 		}
-		String groupvalue = "";
-		for (int i = 0; i < geotabgroups.size(); i++) {
-			if (i != geotabgroups.size() - 1) {
-				groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"},";
-			} else {
-				groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"}";
-			}
-		}
+		
 		String uri = "https://" + url + "/apiv1";
 		String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\""
 				+ sDate + "T01:00:00.000Z\",\"toUtc\":\"" + eDate + "T03:59:59.000Z\",\"entityType\":\"" + enttype
-				+ "\",\"reportArgumentType\":\"RiskManagement\",\"groups\":[" + groupvalue
+				+ "\",\"reportArgumentType\":\"RiskManagement\",\"groups\":[" + groupval
 				+ "],\"reportSubGroup\":\"None\",\"rules\":[" + gvalue
 				+ "]}}},{\"method\":\"Get\",\"params\":{\"typeName\":\"SystemSettings\"}}],\"credentials\":{\"database\":\""
 				+ geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + userName + "\"}}}";
@@ -537,7 +543,7 @@ while(it.hasNext()){
 	
 	
 	
-	public String processforNonLytx(String sdate, String edate, String geosees, ArrayList<String> geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype) throws ParseException, MalformedURLException, IOException {
+	public String processforNonLytx(String sdate, String edate, String geosees, String geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype) throws ParseException, MalformedURLException, IOException {
 		
 		reportBy=enttype;
 
@@ -558,9 +564,42 @@ topNRecords=new ArrayList<Score>();
 bottomNRecords=new ArrayList<Score>();
 
 
+String groupvalue = "";
+
+String[] geotabgroupsval = geotabgroups.split(",");
+
+for (int i = 0; i < geotabgroupsval.length; i++) {
+  if (i != geotabgroupsval.length - 1) {
+    groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"},";
+  } else {
+    groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"}";
+  } 
+} 
 		if(reportBy.equalsIgnoreCase("Driver")) {
 			//Load Trips data to get driver data corresponding to Vehicles;
 			vehicleTrips = loadVehicleTripsMap(geouname,geodatabase,geosees,url,sdate,edate);
+		}
+		
+		int geoRuleCount=0;
+		geoRuleCount=geoCount(geouname, geodatabase);
+		
+		System.out.println("Geoci---"+geoRuleCount);
+		
+		if(geoRuleCount > 0)
+		{
+		if(reportBy.equalsIgnoreCase("Driver")) {
+			System.out.println("COMBINED REPORT - DRIVER");
+			
+			String geotabDriverExceptionSummariesResponseJson = "{\"result\":" + getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,groupvalue,geodatabase,geosees,url,enttype).getAsJsonArray("result").get(0).toString() + "}";
+			
+			
+			extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson,geouname);
+		} else {
+			System.out.println("COMBINED REPORT - VEHICLE");
+			 String geotabVechileExceptionSummariesJson = "{\"result\":" + getGeotabVehicleExceptionSummariesResponseJson(sdate,edate,geouname,groupvalue,geodatabase,geosees,url,enttype).getAsJsonArray("result").get(0).toString() + "}";
+				
+			extractGeotabVehicleData(geotabVechileExceptionSummariesJson,geouname);
+		}
 		}
 		
 		//process GEOTAB exceptions response
@@ -611,7 +650,7 @@ bottomNRecords=new ArrayList<Score>();
 
 	
 		
-		public String process(String sees, String sdate, String edate, String groupid, String geosees, ArrayList<String> geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype,String endpoint) throws ParseException, MalformedURLException, IOException {
+		public String process(String sees, String sdate, String edate, String groupid, String geosees,String geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype,String endpoint) throws ParseException, MalformedURLException, IOException {
 			
 			reportBy=enttype;
 
@@ -638,18 +677,28 @@ reportRows = new ArrayList<ReportRow>();
 			}
 			
 			//process GEOTAB exceptions response
-			
+			 String groupvalue = "";
+	        	String[] geotabgroupsval = geotabgroups.split(",");
+			      
+			      for (int i = 0; i < geotabgroupsval.length; i++) {
+			        if (i != geotabgroupsval.length - 1) {
+			          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"},";
+			        } else {
+			          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"}";
+			        } 
+			      } 
 			
 			if(reportBy.equalsIgnoreCase("Driver")) {
-				JsonObject o=getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype);
+				JsonObject o=getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,groupvalue,geodatabase,geosees,url,enttype);
 				String geotabDriverExceptionSummariesResponseJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
 				
 				System.out.println("COMBINED REPORT - DRIVER");
 				extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson,geouname);
 			} else {
 				System.out.println("COMBINED REPORT - VEHICLE");
-				JsonObject o=getGeotabVehicleExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype);
-
+				JsonObject o=getGeotabVehicleExceptionSummariesResponseJson(sdate,edate,geouname,groupvalue,geodatabase,geosees,url,enttype);
+				
+				
 			      String geotabVehileExceptionSummariesJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
 
 				
@@ -658,8 +707,19 @@ reportRows = new ArrayList<ReportRow>();
 			
 			//process LYTX exceptions response
 			//Create a Map of lytx vehicleIds to exception map
-	       lytxVehicleEventsRecord = extractExceptionDataFromLytxResponse(getLytxExceptionSummariesResponseJson(sdate,edate,sees,groupid,endpoint),sees,endpoint);
-	        
+
+			if(reportBy.equalsIgnoreCase("Driver")) 
+
+			{
+				System.out.println("Driver-----Lytx");
+	       lytxVehicleEventsRecord = extractExceptionDataFromLytxResponseforDriver(getLytxExceptionSummariesResponseJson(sdate,edate,sees,groupid,endpoint),sees,endpoint);
+			}
+			else
+			{
+          lytxVehicleEventsRecord = extractExceptionDataFromLytxResponse(getLytxExceptionSummariesResponseJson(sdate,edate,sees,groupid,endpoint),sees,endpoint);
+
+			}
+			
 	     //  System.out.println(lytxVehicleEventsRecord+"----");
 	        
 	        //combine Lytx exceptions data with the geotab exception report
@@ -1251,10 +1311,10 @@ reportRows = new ArrayList<ReportRow>();
 
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
-		public JsonObject getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
+		public JsonObject getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,String groupvalue,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 		
-			  Object getgeodropdown = getgeodropdown(geouname,geodatabase);
-			    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
+			List<GlRulelistEntity> getl = getgeodropdown(geouname,geodatabase);
+			    //ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		      String sDate = sdate;
 		      String eDate = edate;
@@ -1263,19 +1323,12 @@ reportRows = new ArrayList<ReportRow>();
 		      String gvalue = "";
 		      for (int j = 0; j < getl.size(); j++) {
 		        if (j != getl.size() - 1) {
-		          gvalue = gvalue + "{\"id\":\"" + (String)getl.get(j) + "\"},";
+		          gvalue = gvalue + "{\"id\":\"" +getl.get(j).getRulevalue() + "\"},";
 		        } else {
-		          gvalue = gvalue + "{\"id\":\"" + (String)getl.get(j) + "\"}";
+		          gvalue = gvalue + "{\"id\":\"" +getl.get(j).getRulevalue() + "\"}";
 		        } 
 		      } 
-		      String groupvalue = "";
-		      for (int i = 0; i < geotabgroups.size(); i++) {
-		        if (i != geotabgroups.size() - 1) {
-		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroups.get(i) + "\"},";
-		        } else {
-		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroups.get(i) + "\"}";
-		        } 
-		      } 
+		     
 		      String uri = "https://" + url + "/apiv1";
 		      String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\"" + sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate + "T03:59:59.000Z\",\"entityType\":\""+enttype+"\",\"reportArgumentType\":\"RiskManagement\",\"groups\":[" + groupvalue + "],\"reportSubGroup\":\"None\",\"rules\":[" + gvalue + "]}}},{\"method\":\"Get\",\"params\":{\"typeName\":\"SystemSettings\"}}],\"credentials\":{\"database\":\"" + geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + geouname + "\"}}}";
 		      
@@ -1304,36 +1357,25 @@ reportRows = new ArrayList<ReportRow>();
 		      rd.close();
 			  JsonParser parser = new JsonParser();
 		      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
-		      
-		
-		      
-			
-			//System.out.println(geotabDriverExceptionSummariesResponseJson);
+
 			
 			return o;
 		}	
 
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
-		public JsonObject getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
-			Object getgeodropdown = getgeodropdown(geouname,geodatabase);
-		    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
+		public JsonObject getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,String groupvalue,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
+			List<GlRulelistEntity> getl = getgeodropdown(geouname,geodatabase);
+		    //ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			String gvalue = "";
 			for (int j = 0; j < getl.size(); j++) {
 				if (j != getl.size() - 1) {
-					gvalue = gvalue + "{\"id\":\"" + getl.get(j) + "\"},";
+					gvalue = gvalue + "{\"id\":\"" + getl.get(j).getRulevalue() + "\"},";
 				} else {
-					gvalue = gvalue + "{\"id\":\"" + getl.get(j) + "\"}";
+					gvalue = gvalue + "{\"id\":\"" + getl.get(j).getRulevalue() + "\"}";
 				}
 			}
-			String groupvalue = "";
-			for (int i = 0; i < geotabgroups.size(); i++) {
-				if (i != geotabgroups.size() - 1) {
-					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"},";
-				} else {
-					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"}";
-				}
-			}
+	
 			String uri = "https://" + url + "/apiv1";
 			String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\""
 					+ sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate
@@ -1968,5 +2010,79 @@ reportRows = new ArrayList<ReportRow>();
 			}
 		}
 		
+		private Map<String, Map<String, Integer>> extractExceptionDataFromLytxResponseforDriver(String getLytxExceptionSummariesResponseJson,String lytxSess,String endpoint) throws RemoteException 
+		{
+			//Load Lytx vehicle map with vehicleId and names
 
+			lytxBehaviors=null;
+			vechilelytxlist=null;
+			if(vechilelytxlist == null) {
+				vechilemap=new LinkedHashMap<Long, String>();
+				ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
+				  GetUsersResponse vr=new GetUsersResponse();
+				  GetUsersRequest getusersrequest=new GetUsersRequest();
+				  getusersrequest.setSessionId(lytxSess);
+					  vr=er.getUsers(getusersrequest);
+					JSONObject jsonObject2 = new JSONObject(vr);
+
+
+			  vechilelytxlist=jsonObject2.toString(); 
+			  JSONObject lytxVechileJO = new JSONObject(vechilelytxlist);
+
+					JSONArray lytxVechileArray = jsonObject2.getJSONArray("users");
+
+
+					for(int i=0;i<lytxVechileArray.length();i++)
+					{
+						JSONObject lytxObjValue=lytxVechileArray.getJSONObject(i);
+
+						//System.out.println(lytxObjValue.getLong("userId")+"-"+lytxObjValue.getString("firstName")+"-"+lytxObjValue.getString("lastName"));
+
+						vechilemap.put(lytxObjValue.getLong("userId"),lytxObjValue.getString("firstName")+" "+lytxObjValue.getString("lastName"));
+					}
+
+		        //lytxVehicleList = loadLytxVehicleID_NameMap(getLytxVehicleID_NameResponseJson(lytxSess,endpoint));
+			}
+	 		//Load Lytx Behaviours map
+			if(lytxBehaviors == null) {
+				lytxBehaviors=new LinkedHashMap<Integer, String>();
+				lytxBehaviors = loadLytxBehaviors(getLytxBehaviorsResponseJson(lytxSess,endpoint));  
+
+			}
+			//Process lytxExceptionSummariesJson
+			lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
+
+
+			JSONObject lytxEventsJO = new JSONObject(getLytxExceptionSummariesResponseJson);
+			JSONArray lytxEventsArray = lytxEventsJO.getJSONArray("events");
+			for (int i = 0; i < lytxEventsArray.length(); i++) {
+			    Long driverId = lytxEventsArray.getJSONObject(i).getLong("driverId");
+			    String vehicleName = vechilemap.get(driverId);
+
+
+			    Map<String, Integer> lytxExceptionEvents = lytxVehicleEventsRecord.get(vehicleName);
+			    if(lytxExceptionEvents == null) {
+			    	lytxExceptionEvents = new HashMap<String, Integer>();
+
+			    	lytxVehicleEventsRecord.put(vehicleName, lytxExceptionEvents);
+
+
+			    }
+				JSONArray lytxBehavioursArray = lytxEventsArray.getJSONObject(i).getJSONArray("behaviors");
+				for(int j = 0; j < lytxBehavioursArray.length(); j++) {
+					int behavior = lytxBehavioursArray.getJSONObject(j).getInt("behavior");
+					String exceptionName = lytxBehaviors.get(behavior);
+					Integer behaviorCount = lytxExceptionEvents.get(exceptionName); 
+					if(behaviorCount == null) {
+						behaviorCount = 0;
+					}
+					lytxExceptionEvents.put(exceptionName, ++behaviorCount);
+				}
+				}
+			return lytxVehicleEventsRecord;
+			}
+		
+		
 }
+		
+

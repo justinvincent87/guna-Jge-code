@@ -40,31 +40,31 @@ public interface UserReportFilterRepository extends JpaRepository<UserReportFilt
 	@Query(value = "call insertuserrecord(:userid,:db)",nativeQuery = true)
 	BigInteger userCreation(@Param("userid") String userid,@Param("db") String db);
 	
-	@Query(value="SELECT gen_rulelist_id,status,weight FROM gl_selectedvalues where gen_user_id=1 order by gen_rulelist_id",nativeQuery = true)
-	List<GlRulelistEntity> getRuleList();
+	@Query(value="SELECT a.gen_rulelist_id,a.status,a.weight FROM gl_selectedvalues a ,gl_rulelist b,gen_user c WHERE a.gen_user_id=c.id AND b.db=c.db AND b.db=:db GROUP BY a.gen_rulelist_id",nativeQuery = true)
+	List<GlRulelistEntity> getRuleList(@Param("db") String db);
 	
 	@Query(value="insert into gl_selectedvalues(gen_user_id,gen_rulelist_id,status,weight) values (:userid,:rule,:status,:weight)",nativeQuery = true)
 	void insertUserRuleList(@Param("userid") BigInteger userid,@Param("rule") Integer rule,@Param("status") Integer status,@Param("weight") Integer weight);
 	
-	@Query(value="select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id order by value) as value order by value.value",nativeQuery = true)
+	@Query(value="select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.db=:db order by value) as value order by value.status desc",nativeQuery = true)
 	List<GlRulelistEntity> viewadd(@Param("userid") String userid,@Param("db") String db);
 
-	@Query(value = "select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.rulecompany='G'",nativeQuery = true)
+	@Query(value = "select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.rulecompany='G' and a.db=:db",nativeQuery = true)
 	List<GlRulelistEntity> getgeodropdown(@Param("userid") String userid,@Param("db") String db);
 	
-	@Query(value="select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.rulecompany='L'",nativeQuery = true)
+	@Query(value="select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.db=:db and a.id=b.gen_rulelist_id and a.rulecompany='L'",nativeQuery = true)
 	List<GlRulelistEntity> getLybehave(@Param("userid") String userid,@Param("db") String db);
 	
-	@Query(value="select CONCAT(a.rulecompany,'-',a.rulename) as value from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 order by value",nativeQuery = true)
-	List getallbehave(@Param("userid") String userid,@Param("db") String db);
+	@Query(value="select CONCAT(a.rulecompany,'-',a.rulename) as value from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.db=:db order by value",nativeQuery = true)
+	List<String> getallbehave(@Param("userid") String userid,@Param("db") String db);
 	
-	@Query(value = "select CONCAT(a.rulecompany,'-',a.rulename) as value,b.weight from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 order by value",nativeQuery = true)
+	@Query(value = "select CONCAT(a.rulecompany,'-',a.rulename) as value,b.weight from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.db=:db order by value",nativeQuery = true)
 	List getallbehaveui(@Param("userid") String userid,@Param("db") String db);
 	
-	@Query(value = "select concat(b.rulecompany,'-',b.rulename) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and a.gen_rulelist_id=b.id order by val",nativeQuery = true)
+	@Query(value = "select concat(b.rulecompany,'-',b.rulename) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and b.db=:db and a.status= 1 and a.gen_user_id=c.id and a.gen_rulelist_id=b.id order by val",nativeQuery = true)
 	List<Object[]> getallBehaveFromDB(@Param("userid") String userid,@Param("db") String db);
 	
-	@Query(value = "select count(b.id) from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id",nativeQuery = true)
+	@Query(value = "select count(b.id) from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and b.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id",nativeQuery = true)
 	int geoCount(@Param("userid") String userid,@Param("db") String db);
 	
 	@Query(value = "select count(b.id),a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='L' and a.gen_rulelist_id=b.id",nativeQuery = true)
@@ -86,7 +86,7 @@ public interface UserReportFilterRepository extends JpaRepository<UserReportFilt
 	@Query(value = "update gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d set b.status=0,d.minmiles=:minmiles  where  c.companyid=:companyid and c.db=:db  and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and d.gen_user_id=c.id",nativeQuery = true)
 	int getRuleListInsert(@Param("companyid") String companyid,@Param("db") String db,@Param("minmiles") Float minmiles);
 	
-	@Query(value = "update gl_rulelist a,gl_selectedvalues b,gen_user c set b.status=1,b.weight=:we where  c.companyid=:companyid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.rulevalue=:rval",nativeQuery = true)
+	@Query(value = "update gl_rulelist a,gl_selectedvalues b,gen_user c set b.status=1,b.weight=:we where  c.companyid=:companyid and c.db=:db and a.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.id=:rval",nativeQuery = true)
 	void updateRuleListValue(@Param("companyid") String companyid,@Param("db") String db,@Param("we") Integer we,@Param("rval") String rval);
 	
 	@Query(value = "SELECT a.device_id,a.device_name FROM gen_device a,gen_user b where a.ref_gen_user_id=b.id and b.companyid=:userid and b.db=:db",nativeQuery = true)

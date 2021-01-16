@@ -10,16 +10,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.vibaps.merged.safetyreport.dao.gl.GlReportDAO;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
+import com.vibaps.merged.safetyreport.service.gl.GlReportService;
 
 
 @Service
 public class RestDriverSafetyReportService {
 
 	@Autowired
-	private GlReportDAO glReportDao;
+	private GlReportService glReportService;
 
 	public Object insert(ReportParams reportParams) {
 		ArrayList<GlRulelistEntity> glRuleListValue = new ArrayList<>();
@@ -29,41 +29,41 @@ public class RestDriverSafetyReportService {
 			glRulelistEntity.setWeight(((Integer) reportParams.getWeight().get(j)).intValue());
 			glRuleListValue.add(glRulelistEntity);
 		}
-		return glReportDao.insert(glRuleListValue, reportParams.getCompanyId(), reportParams.getMinmiles(),
+		return glReportService.insert(glRuleListValue, reportParams.getCompanyId(), reportParams.getMinmiles(),
 		        reportParams.getGeotabDatabase());
 	}
 
 	public Object view(ReportParams reportParams) {
-		return glReportDao.view(reportParams.getGeotabUserName(), reportParams.getGeotabDatabase());
+		return glReportService.view(reportParams.getGeotabUserName(), reportParams.getGeotabDatabase());
 	}
 
 	public Object viewadd(ReportParams reportParams) {
-		return glReportDao.viewadd(reportParams.getGeotabUserName(), reportParams.getGeotabDatabase());
+		return glReportService.viewadd(reportParams.getGeotabUserName(), reportParams.getGeotabDatabase());
 	}
 
 	public Object getgeodropdown(String geouserid, String geotabDatabase) {
-		return glReportDao.getgeodropdown(geouserid, geotabDatabase);
+		return glReportService.getgeodropdown(geouserid, geotabDatabase);
 	}
 
 	public Object getLybehave(@RequestBody ReportParams reportParams) {
-		return glReportDao.getLybehave(reportParams.getGeotabUserName(), reportParams.getGeotabDatabase());
+		return glReportService.getLybehave(reportParams.getGeotabUserName(), reportParams.getGeotabDatabase());
 	}
 
 	public Object viewui(ReportParams reportParams) {
-		return glReportDao.getallbehaveui(reportParams.getGeotabUserName(), reportParams.getGeotabDatabase());
+		return glReportService.getallbehaveui(reportParams.getGeotabUserName(), reportParams.getGeotabDatabase());
 	}
 
 	public Object updateresponce(String geouname, String responseJson, String db) {
-		return glReportDao.updateresponce(geouname, responseJson, db);
+		return glReportService.updateresponce(geouname, responseJson, db);
 	}
 
 	public String selectresponce(String geouname, String db) {
-		return glReportDao.selectresponce(geouname, db);
+		return glReportService.selectresponce(geouname, db);
 	}
 
 	public Object process(ReportParams reportParams)
 	        throws MalformedURLException, ParseException, IOException {
-		return glReportDao.process(reportParams.getLytexSessionid(), reportParams.getStartDate(),
+		return glReportService.process(reportParams, reportParams.getLytexSessionid(), reportParams.getStartDate(),
 		        reportParams.getEndDate(), reportParams.getGroupId(), reportParams.getGeotabSessionId(),
 		        reportParams.getGeotabGroups(), reportParams.getGeotabUserName(), reportParams.getGeotabDatabase(),
 		        reportParams.getUrl(), reportParams.getFilename(), reportParams.getTemplect(),
@@ -71,7 +71,7 @@ public class RestDriverSafetyReportService {
 	}
 
 	public Object getReportGeo(ReportParams reportParams) throws MalformedURLException, IOException, ParseException {
-		return glReportDao.getReportGeo(reportParams.getStartDate(), reportParams.getEndDate(),
+		return glReportService.getReportGeo(reportParams.getStartDate(), reportParams.getEndDate(),
 		        reportParams.getGeotabSessionId(), reportParams.getGeotabGroups(), reportParams.getGeotabUserName(),
 		        reportParams.getGeotabDatabase(), reportParams.getUrl(), reportParams.getFilename(),
 		        reportParams.getTemplect(), reportParams.getEntityType());
@@ -79,7 +79,7 @@ public class RestDriverSafetyReportService {
 
 	public String createExcelReport(@RequestBody ReportParams reportParams)
 	        throws EncryptedDocumentException, IOException {
-		return glReportDao.createExcelReport(reportParams.getStartDate(), reportParams.getEndDate(),
+		return glReportService.createExcelReport(reportParams.getStartDate(), reportParams.getEndDate(),
 		        reportParams.getGeotabUserName(), reportParams.getGeotabDatabase(), reportParams.getUrl(),
 		        reportParams.getFilename(), reportParams.getTemplect());
 	}

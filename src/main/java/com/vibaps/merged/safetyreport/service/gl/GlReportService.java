@@ -1,4 +1,4 @@
-package com.vibaps.merged.safetyreport.dao.gl;
+package com.vibaps.merged.safetyreport.service.gl;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -17,10 +17,8 @@ import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -29,10 +27,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.TimeZone;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Cell;
@@ -65,7 +62,10 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
+import com.vibaps.merged.safetyreport.common.EntityType;
+import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.gl.Behave;
+import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
 import com.vibaps.merged.safetyreport.entity.gl.GenDriver;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
@@ -73,14 +73,17 @@ import com.vibaps.merged.safetyreport.entity.gl.ReportRow;
 import com.vibaps.merged.safetyreport.entity.gl.Score;
 import com.vibaps.merged.safetyreport.entity.gl.Trip;
 import com.vibaps.merged.safetyreport.repo.gl.UserReportFilterRepository;
+import com.vibaps.merged.safetyreport.services.gl.GeoTabApiService;
+import com.vibaps.merged.safetyreport.services.gl.LytxProxyService;
 import com.vibaps.merged.safetyreport.services.gl.UserReportFilterService;
 import com.vibaps.merged.safetyreport.util.DateTimeUtil;
+import com.vibaps.merged.safetyreport.util.ResponseUtil;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Repository
-public class GlReportDAO {
+public class GlReportService {
 	
 	@Autowired
 	private UserReportFilterService userReportFilterService;
@@ -90,6 +93,12 @@ public class GlReportDAO {
 	
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	private GeoTabApiService geoTabApiService;
+	
+	@Autowired
+	private LytxProxyService lytxProxyService;
 
 	@Autowired
 	private CommonGeotabDAO commonGeotabDAO;
@@ -146,14 +155,6 @@ public class GlReportDAO {
 
 		}
 
-		/*
-		 * try { Session session = HibernateUtil.getsession(); Transaction transaction =
-		 * session.beginTransaction(); obj = session.
-		 * createSQLQuery("select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id order by value) as value order by value.status desc"
-		 * ).setParameter("userid", geouserid).setParameter("db",
-		 * db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP)
-		 * .list(); transaction.commit(); } catch (Exception exception) {}
-		 */
 		return countuser;
 	}
 
@@ -595,7 +596,7 @@ public class GlReportDAO {
 		return reportResponseJson;
 	}
 
-	public String process(String sees, String sdate, String edate, String groupid, String geosees, String geotabgroups,
+	public String process(ReportParams reportParams, String sees, String sdate, String edate, String groupid, String geosees, String geotabgroups,
 	        String geouname, String geodatabase, String url, String filename, String templect, String enttype,
 	        String endpoint) throws ParseException, MalformedURLException, IOException {
 
@@ -612,7 +613,7 @@ public class GlReportDAO {
 		topNRecords		= new ArrayList<Score>();
 		bottomNRecords	= new ArrayList<Score>();
 
-		if (reportBy.equalsIgnoreCase("Driver")) {
+		if (EntityType.isDriver(reportParams.getEntityType())) {
 			// Load Trips data to get driver data corresponding to Vehicles;
 			vehicleTrips = loadVehicleTripsMap(geouname, geodatabase, geosees, url, sdate, edate);
 		}
@@ -629,7 +630,7 @@ public class GlReportDAO {
 			}
 		}
 
-		if (reportBy.equalsIgnoreCase("Driver")) {
+		if (EntityType.isDriver(reportParams.getEntityType())) {
 			JsonObject	o = getGeotabDriverExceptionSummariesResponseJson(
 			        sdate, edate, geouname, groupvalue, geodatabase, geosees, url, enttype);
 			String		geotabDriverExceptionSummariesResponseJson	= "{\"result\":"
@@ -638,32 +639,23 @@ public class GlReportDAO {
 			System.out.println("COMBINED REPORT - DRIVER");
 			extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson, geouname);
 		} else {
-			System.out.println("COMBINED REPORT - VEHICLE");
-			JsonObject o = getGeotabVehicleExceptionSummariesResponseJson(sdate, edate, geouname, geotabgroups,
-			        geodatabase, geosees, url, enttype);
-
-			String geotabVehileExceptionSummariesJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString()
-			        + "}";
-
-			extractGeotabVehicleData(geotabVehileExceptionSummariesJson, geouname);
+			log.info("Generate combined vehicle report");
+			reportRows = geoTabApiService.getVehicleExceptionSummary(reportParams);
 		}
 
 		// process LYTX exceptions response
 		// Create a Map of lytx vehicleIds to exception map
 
-		if (reportBy.equalsIgnoreCase("Driver"))
+		if (EntityType.isDriver(reportParams.getEntityType()))
 
 		{
 			System.out.println("Driver-----Lytx");
 			lytxVehicleEventsRecord = extractExceptionDataFromLytxResponseforDriver(
 			        getLytxExceptionSummariesResponseJson(sdate, edate, sees, groupid, endpoint), sees, endpoint);
 		} else {
-			lytxVehicleEventsRecord = extractExceptionDataFromLytxResponse(
-			        getLytxExceptionSummariesResponseJson(sdate, edate, sees, groupid, endpoint), sees, endpoint);
+			lytxVehicleEventsRecord = lytxProxyService.getLytxExceptionData(reportParams);
 
 		}
-
-		// System.out.println(lytxVehicleEventsRecord+"----");
 
 		// combine Lytx exceptions data with the geotab exception report
 		updateCombinedReportWithLytxExceptions(lytxVehicleEventsRecord, geouname);
@@ -843,6 +835,7 @@ public class GlReportDAO {
 	 * @param getLytxExceptionSummariesResponseJson
 	 * @throws RemoteException
 	 */
+	@Deprecated(forRemoval = true)
 	private Map<String, Map<String, Integer>> extractExceptionDataFromLytxResponse(
 	        String getLytxExceptionSummariesResponseJson, String lytxSess, String endpoint) throws RemoteException {
 		// Load Lytx vehicle map with vehicleId and names
@@ -896,31 +889,20 @@ public class GlReportDAO {
 	 */
 	private void updateCombinedReportWithLytxExceptions(Map<String, Map<String, Integer>> lytxVehicleEventsRecord,
 	        String userName) {
-		// for every vehicle in lytxVehicleEventsRecord
-		// displayReportColumnHeaders=loadReporColumntHeaders(userName);
 
 		for (Map.Entry<String, Map<String, Integer>> lytxVehiclesEventsMapEntry : lytxVehicleEventsRecord.entrySet()) {
-			// Get the report row corresponding to that vehicle.
 			String lytxVehicleName = lytxVehiclesEventsMapEntry.getKey();
-
-			// possible performance issue here. Better to use Maps.
-			ReportRow reportRow = null;
-			for (ReportRow row : reportRows) {
-				if (row.getName().equalsIgnoreCase(lytxVehicleName)) {
-					reportRow = row;
-					break;
-				}
-			}
-			// if the lytxVehicle is not in the Geotab's vehicle list, then skip.
-			if (reportRow == null) {
+			Optional<ReportRow> reportRow = reportRows.stream()
+										.filter(r -> lytxVehicleName.equalsIgnoreCase(r.getName()))
+										.findFirst();
+			if (reportRow.isEmpty()) {
 				continue;
 			}
+			
 			Map<String, Integer> lytxVehExceptions = lytxVehiclesEventsMapEntry.getValue();
 			for (int m = EXCEPTIONS_START_COLUMN; m < displayReportColumnHeaders.size(); m++) {
 				if (lytxVehExceptions.get(displayReportColumnHeaders.get(m)) != null) {
-					// System.out.println(lytxVehicleName+"-"+displayReportColumnHeaders.get(m)+"--"+lytxVehExceptions.get(displayReportColumnHeaders.get(m)));
-
-					reportRow.getSelectedRules().put(displayReportColumnHeaders.get(m),
+					reportRow.get().getSelectedRules().put(displayReportColumnHeaders.get(m),
 					        lytxVehExceptions.get(displayReportColumnHeaders.get(m)));
 				}
 			}
@@ -1000,147 +982,6 @@ public class GlReportDAO {
 
 		responseJson = totalsJson.toString() + combinedReportResponseJson.toString();
 		System.out.println(responseJson);
-
-		// you will get OUTPUT like this below
-		// for vehicle: {"totals": [{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" },{
-		// "Rule": "39" },{ "Rule": "0" },{ "Rule": "35" },{ "Rule": "0" },{ "Rule": "0"
-		// },{ "Rule": "0" },{ "Rule": "34" },{ "Rule": "23" },{ "Rule": "6"
-		// }],"information": [{"Vehicle Name": "15 - BLUE Peterbilt","Group": "Prohibit
-		// Idling, 10,001 to 26,000 GVWR","Distance": "606","Behave": [{"Rule":
-		// "2"},{"Rule": "0"},{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "12"},{"Rule": "0"},{"Rule": "1"}]},{"Vehicle Name": "14 -
-		// BAFFIN Peterbilt","Group": "Prohibit Idling, 2 Axle CDL","Distance":
-		// "359","Behave": [{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "4"},{"Rule": "0"},{"Rule":
-		// "0"}]},{"Vehicle Name": "16 - GRAY Peterbilt","Group": "Prohibit Idling,
-		// 10,001 to 26,000 GVWR","Distance": "13","Behave": [{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "2"},{"Rule": "0"}]},{"Vehicle Name": "31 - WHITE
-		// Transit","Group": "Prohibit Idling, Under 10,000 GVWR","Distance":
-		// "51","Behave": [{"Rule": "13"},{"Rule": "0"},{"Rule": "5"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"}]},{"Vehicle Name": "32 - BLUE Ford","Group": "Prohibit Idling, 10,001 to
-		// 26,000 GVWR","Distance": "25","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "2"},{"Rule":
-		// "0"},{"Rule": "1"}]},{"Vehicle Name": "33 - RED Ford","Group": "Prohibit
-		// Idling, 10,001 to 26,000 GVWR","Distance": "265","Behave": [{"Rule":
-		// "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "35 -
-		// PURPLE Peterbilt","Group": "Prohibit Idling, 3 Axle CDL","Distance":
-		// "767","Behave": [{"Rule": "4"},{"Rule": "0"},{"Rule": "5"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "6"},{"Rule": "2"},{"Rule":
-		// "0"}]},{"Vehicle Name": "36 - BLUE International","Group": "Prohibit Idling,
-		// 10,001 to 26,000 GVWR","Distance": "254","Behave": [{"Rule": "1"},{"Rule":
-		// "0"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "37 - GOLD
-		// Peterbilt","Group": "Prohibit Idling, 10,001 to 26,000 GVWR","Distance":
-		// "717","Behave": [{"Rule": "4"},{"Rule": "0"},{"Rule": "7"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"}]},{"Vehicle Name": "40 - WHITE Ford","Group": "Prohibit Idling, 10,001
-		// to 26,000 GVWR","Distance": "69","Behave": [{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "41 - SILVER
-		// Ford","Group": "Prohibit Idling, VEHICLE: CMV (Non-CDL)","Distance":
-		// "147","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "2"}]},{"Vehicle Name": "42 - RED Peterbilt","Group": "Prohibit Idling,
-		// 10,001 to 26,000 GVWR","Distance": "501","Behave": [{"Rule": "1"},{"Rule":
-		// "0"},{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "4"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "43 - BLUE
-		// Freightliner","Group": "Prohibit Idling, VEHICLE: CDL Tractor","Distance":
-		// "1103","Behave": [{"Rule": "11"},{"Rule": "0"},{"Rule": "10"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"}]},{"Vehicle Name": "38 - BLUE Peterbilt","Group": "0","Distance":
-		// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "4"},{"Rule": "4"},{"Rule":
-		// "0"}]},{"Vehicle Name": "34 - GOLD Ford","Group": "0","Distance":
-		// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"}]},{"Vehicle Name": "37 - GOLDPeterbilt","Group": "0","Distance":
-		// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "15"},{"Rule":
-		// "0"}]},{"Vehicle Name": "40 - WHITEFord","Group": "0","Distance":
-		// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "2"}]},{"Vehicle Name": "29 - WHITE Peterbilt","Group": "0","Distance":
-		// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "2"},{"Rule": "0"},{"Rule":
-		// "0"}]}]}
-		// for driver : {"totals": [{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" },{
-		// "Rule": "68" },{ "Rule": "6" },{ "Rule": "61" },{ "Rule": "22" },{ "Rule":
-		// "0" },{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0" },{ "Rule": "0"
-		// }],"information": [{"Vehicle Name": "Rick Schwenk","Group": "CMV Driver
-		// (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "821","Behave": [{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Troy
-		// Giordano","Group": "VEHICLE: CDL Truck, LICENSE: CDL B, VEHICLE: CMV
-		// (Non-CDL)","Distance": "894","Behave": [{"Rule": "3"},{"Rule": "1"},{"Rule":
-		// "3"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"}]},{"Vehicle Name": "Jay Hoagland","Group": "LICENSE: CDL
-		// A, VEHICLE: CDL Tractor, VEHICLE: CDL Truck, VEHICLE: CMV
-		// (Non-CDL)","Distance": "668","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"}]},{"Vehicle Name": "Kenneth Moore","Group": "VEHICLE: CDL
-		// Truck, VEHICLE: CMV (Non-CDL), VEHICLE: CDL Tractor, LICENSE: CDL
-		// A","Distance": "1931","Behave": [{"Rule": "7"},{"Rule": "4"},{"Rule":
-		// "23"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"}]},{"Vehicle Name": "Richard Fox","Group": "CMV Driver
-		// (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "596","Behave": [{"Rule":
-		// "2"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Michael
-		// Merwick","Group": "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance":
-		// "231","Behave": [{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"}]},{"Vehicle Name": "Carlos Rivera","Group": "CMV Driver (Non-CDL),
-		// VEHICLE: CMV (Non-CDL)","Distance": "874","Behave": [{"Rule": "6"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "6"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Kevin Neidert","Group":
-		// "CMV Driver (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "4","Behave":
-		// [{"Rule": "5"},{"Rule": "0"},{"Rule": "2"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle
-		// Name": "Christopher Rounds","Group": "VEHICLE: CMV (Non-CDL), CMV Driver
-		// (Non-CDL)","Distance": "69","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"}]},{"Vehicle Name": "Luann Whitcomb","Group": "CMV Driver
-		// (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "166","Behave": [{"Rule":
-		// "7"},{"Rule": "0"},{"Rule": "1"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Lorrie
-		// Mabee","Group": "VEHICLE: CMV (Non-CDL), CMV Driver (Non-CDL)","Distance":
-		// "584","Behave": [{"Rule": "8"},{"Rule": "0"},{"Rule": "1"},{"Rule":
-		// "6"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"}]},{"Vehicle Name": "Bob Boutelle","Group": "CMV Driver (Non-CDL),
-		// VEHICLE: CMV (Non-CDL)","Distance": "417","Behave": [{"Rule": "2"},{"Rule":
-		// "0"},{"Rule": "10"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Randall Arthur","Group":
-		// "VEHICLE: CDL Tractor, VEHICLE: CMV (Non-CDL), LICENSE: CDL A, VEHICLE: CDL
-		// Truck","Distance": "781","Behave": [{"Rule": "7"},{"Rule": "0"},{"Rule":
-		// "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"}]},{"Vehicle Name": "Ethan Fellows","Group": "CMV Driver
-		// (Non-CDL), VEHICLE: CMV (Non-CDL)","Distance": "621","Behave": [{"Rule":
-		// "3"},{"Rule": "0"},{"Rule": "3"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Wayne
-		// Haney","Group": "VEHICLE: CMV (Non-CDL), CMV Driver (Non-CDL)","Distance":
-		// "1444","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "3"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"}]},{"Vehicle Name": "Michael Wilson","Group": "VEHICLE: CMV (Non-CDL),
-		// VEHICLE: CDL Truck, VEHICLE: CDL Tractor, LICENSE: CDL A","Distance":
-		// "0","Behave": [{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "1"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"}]},{"Vehicle Name": "Kenneth Roberts","Group": "LICENSE: CDL B, VEHICLE:
-		// CDL Truck, VEHICLE: CMV (Non-CDL)","Distance": "999","Behave": [{"Rule":
-		// "3"},{"Rule": "1"},{"Rule": "2"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle Name": "Ronald
-		// Harrower","Group": "VEHICLE: CDL Tractor, VEHICLE: CDL Truck, VEHICLE: CMV
-		// (Non-CDL), CMV Driver (Non-CDL), LICENSE: CDL A","Distance": "688","Behave":
-		// [{"Rule": "4"},{"Rule": "0"},{"Rule": "3"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]},{"Vehicle
-		// Name": "Mary Beth Moss","Group": "CMV Driver (Non-CDL), VEHICLE: CMV
-		// (Non-CDL)","Distance": "79","Behave": [{"Rule": "1"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule":
-		// "0"},{"Rule": "0"}]},{"Vehicle Name": "Non-CDL Driver","Group": "Assets,
-		// Compliance, Mechanics, Office, Operations","Distance": "735","Behave":
-		// [{"Rule": "8"},{"Rule": "0"},{"Rule": "8"},{"Rule": "6"},{"Rule":
-		// "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"},{"Rule": "0"}]}]}
 
 		return responseJson;
 	}
@@ -1354,7 +1195,8 @@ public class GlReportDAO {
 	// FOR TESTING ONLY: This method should make the actual call to Geotab and get
 	// the exceptionSummariesJson
 	// Guna todo: copy the request here (commented) to get the response below;
-	public JsonObject getGeotabVehicleExceptionSummariesResponseJson(String sdate, String edate, String geouname,
+	@Deprecated(forRemoval = true)
+	private JsonObject getGeotabVehicleExceptionSummariesResponseJson(String sdate, String edate, String geouname,
 	        String groupvalue, String geodatabase, String geosees, String url, String enttype)
 	        throws ParseException, MalformedURLException, IOException {
 		List<GlRulelistEntity> getl = getgeodropdown(geouname, geodatabase);
@@ -1388,58 +1230,9 @@ public class GlReportDAO {
 				.params()
 					.typeName("SystemSettings").build();
 		
-		// ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
-		/*String gvalue = "";
-		for (int j = 0; j < getl.size(); j++) {
-			if (j != getl.size() - 1) {
-				gvalue = gvalue + "{\"id\":\"" + getl.get(j).getRulevalue() + "\"},";
-			} else {
-				gvalue = gvalue + "{\"id\":\"" + getl.get(j).getRulevalue() + "\"}";
-			}
-		}
-
-		String	uri				= "https://" + url + "/apiv1";
-		String	urlParameters	= "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\""
-		        + sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate
-		        + "T03:59:59.000Z\",\"entityType\":\"Device\",\"reportArgumentType\":\"RiskManagement\",\"groups\":["
-		        + groupvalue + "],\"reportSubGroup\":\"None\",\"rules\":[" + gvalue
-		        + "]}}},{\"method\":\"Get\",\"params\":{\"typeName\":\"SystemSettings\"}}],\"credentials\":{\"database\":\""
-		        + geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + geouname + "\"}}}";
-		String	serverurl		= uri;
-
-		HttpURLConnection con = (HttpURLConnection) (new URL(serverurl)).openConnection();
-		con.setRequestMethod("POST");
-		con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
-		con.setRequestProperty("Content-Language", "en-US");
-		con.setDoOutput(true);
-		con.setUseCaches(false);
-		con.setDoInput(true);
-		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		wr.writeBytes(urlParameters);
-		wr.flush();
-		wr.close();
-		InputStream		is			= con.getInputStream();
-		BufferedReader	rd			= new BufferedReader(new InputStreamReader(is));
-		StringBuilder	response	= new StringBuilder();
-		String			line;
-		while ((line = rd.readLine()) != null) {
-			response.append(line);
-			response.append('\r');
-		}
-		rd.close();
-		JsonParser	parser	= new JsonParser();
-		JsonObject	o		= parser.parse(response.toString()).getAsJsonObject();*/
-
-		// String geotabDriverExceptionSummariesJson =
-		// geotabVehicleExceptionSummariesResponseJson.toString();
-		// String geotabDriverExceptionSummariesJson = "{\"results\":" +
-		// geotabVehicleExceptionSummariesResponseJson.getAsJsonArray("result").get(0).toString()
-		// + "}";
-
-		// System.out.println(geotabDriverExceptionSummariesJson);
 		String	uri				= "https://" + url + "/apiv1";
 		ResponseEntity<String> response = restTemplate.postForEntity(uri, request, String.class);
-		return null;
+		return ResponseUtil.parseResponse(response);
 	}
 
 	// FOR TESTING ONLY: This method should make the actual call to Lytx and get the
@@ -1475,6 +1268,7 @@ public class GlReportDAO {
 	// ?) and get the vehicles and the vehicleIDs. Request search parameters are
 	// .....
 	// Guna todo: copy the request here (commented) to get the response below;
+	@Deprecated
 	public String getLytxVehicleID_NameResponseJson(String lytxSess, String endpoint) throws RemoteException {
 
 		ISubmissionServiceV5Proxy	pr					= new ISubmissionServiceV5Proxy(endpoint);
@@ -1493,6 +1287,7 @@ public class GlReportDAO {
 	// FOR TESTING ONLY: This method should make the actual call to Lytx and get the
 	// Lytx behavious and their Ids.
 	// Guna todo: copy the request here (commented) to get the response below;
+	@Deprecated
 	public String getLytxBehaviorsResponseJson(String lytxSess, String endpoint) throws RemoteException {
 		ISubmissionServiceV5Proxy	er	= new ISubmissionServiceV5Proxy(endpoint);
 		ExistingSessionRequest		re	= new ExistingSessionRequest();
@@ -1686,7 +1481,7 @@ public class GlReportDAO {
 		reportColumnHeader.add("VehicleName");
 		reportColumnHeader.add("Group");
 		reportColumnHeader.add("Distance");
-		GlReportDAO		da		= new GlReportDAO();
+		GlReportService		da		= new GlReportService();
 		List<String>	gval	= new ArrayList();
 		gval = da.getallbehave(userName, db);
 		for (int j = 0; j < gval.size(); j++) {

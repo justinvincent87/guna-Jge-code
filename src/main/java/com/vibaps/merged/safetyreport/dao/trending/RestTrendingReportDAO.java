@@ -53,14 +53,14 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
-import com.vibaps.merged.safetyreport.dao.gl.GlReportDAO;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
 import com.vibaps.merged.safetyreport.entity.gl.Trip;
+import com.vibaps.merged.safetyreport.service.gl.GlReportService;
 @Repository
 public class RestTrendingReportDAO {
 	
 	@Autowired
-	private GlReportDAO glReportdao;
+	private GlReportService glReportService;
 	@Autowired
 	private CommonGeotabDAO commonGeotabDAO;
 	private Map<Long, String> lytxVehicleList;
@@ -85,7 +85,7 @@ public class RestTrendingReportDAO {
 		String responseJson = "";
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
 		String getVehicleResponseJson = "";
-		List<GlRulelistEntity> getl = glReportdao.getgeodropdown(userName,geotabDatabase);
+		List<GlRulelistEntity> getl = glReportService.getgeodropdown(userName,geotabDatabase);
 		//ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -108,7 +108,7 @@ public class RestTrendingReportDAO {
 		 getVehicleResponseJson=lytexVechileResponce(startDate, endDate, groupId, lytxSessionId, endPoint);
 		
 		
-			String lytxBehaviorsJson = glReportdao.getLytxBehaviorsResponseJson(lytxSessionId, endPoint);
+			String lytxBehaviorsJson = glReportService.getLytxBehaviorsResponseJson(lytxSessionId, endPoint);
 			String sdate="";
 
 	
@@ -244,7 +244,7 @@ public class RestTrendingReportDAO {
 				responseJson=createTrendingResponce(combinedReport,displayColumns);
 				
 
-			glReportdao.updateresponce(userName, responseJson, geotabDatabase);
+			glReportService.updateresponce(userName, responseJson, geotabDatabase);
 		
 
 		return responseJson; 
@@ -477,7 +477,7 @@ public class RestTrendingReportDAO {
 		// TODO: Remaining columns to be populated from database selected columns. using
 		
 		List<String> gval = new ArrayList();
-		gval = glReportdao.getallbehave(userName, db);
+		gval = glReportService.getallbehave(userName, db);
 		for (int j = 0; j < gval.size(); j++) {
 			// System.out.println(j + "-----" + gval.get(j));
 			reportColumnHeader.add(gval.get(j));
@@ -935,7 +935,7 @@ System.out.println(lytxExceptionSummariesJson);
 		Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
 		String getVehicleResponseJson = "";
 		List<Integer> totals = new ArrayList<>();
-		List<GlRulelistEntity> getl = glReportdao.getgeodropdown(userName,geodatabase);
+		List<GlRulelistEntity> getl = glReportService.getgeodropdown(userName,geodatabase);
 		//ArrayList<String> getl = (ArrayList<String>) getgeodropdown;
 		String value = "";
 		Map<String, Map<String, String>> combinedReport = new HashMap<>();
@@ -1105,7 +1105,7 @@ System.out.println(lytxExceptionSummariesJson);
 			
 
 		
-			glReportdao.updateresponce(userName, responseJson, geodatabase);
+			glReportService.updateresponce(userName, responseJson, geodatabase);
 		
 		return responseJson;
 			
@@ -1117,7 +1117,7 @@ System.out.println(lytxExceptionSummariesJson);
 	{
 		String responseJson = "";
 		
-			responseJson = glReportdao.selectresponce(geouname, geodatabase);
+			responseJson = glReportService.selectresponce(geouname, geodatabase);
 		
 
 		/*
@@ -1140,7 +1140,7 @@ System.out.println(lytxExceptionSummariesJson);
 				"/usr/local/apache-tomcat-8.5.51/webapps/GL_Driver_Safety_Report_Template_" + templect + ".xlsx");
 		File dest = new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx");
 		
-			glReportdao.copyFileUsingStream(source, dest);
+			glReportService.copyFileUsingStream(source, dest);
 		
 		Workbook workbook = WorkbookFactory
 				.create(new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx"));
@@ -1199,7 +1199,7 @@ System.out.println(lytxExceptionSummariesJson);
 				cell2.setCellValue("");
 			} else {
 				int D = 0;
-				D = glReportdao.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(), geodatabase);
+				D = glReportService.getwe(geouname, ((String) displayColumns.get(h)).toString().trim(), geodatabase);
 				cell2.setCellValue(D);
 			}
 		}
@@ -1245,7 +1245,7 @@ System.out.println(lytxExceptionSummariesJson);
 		Cell cells = rows.getCell(2);
 		float min = 0.0F;
 		
-			min = glReportdao.getminmiles(geouname, geodatabase);
+			min = glReportService.getminmiles(geouname, geodatabase);
 
 			
 		cells.setCellValue(min);

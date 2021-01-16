@@ -5,21 +5,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.transaction.Transactional;
-
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,18 +21,16 @@ import org.springframework.stereotype.Repository;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.vibaps.merged.safetyreport.api.gl.RestDriverSafetyReport;
 import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
 import com.vibaps.merged.safetyreport.entity.gl.GenDriver;
-import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
 import com.vibaps.merged.safetyreport.repo.gl.CommonGeotabRepository;
-import com.vibaps.merged.safetyreport.repo.gl.UserReportFilterRepository;
+import com.vibaps.merged.safetyreport.service.gl.GlReportService;
 
 @Repository
 public class CommonGeotabDAO  {
 	@Lazy
 	@Autowired
-	private GlReportDAO glReportDAO;
+	private GlReportService glReportService;
 	@Autowired
 	private CommonGeotabRepository commonGeotabRepository;
 	
@@ -208,7 +199,7 @@ private int  getCompanyId(String geotabUserId,String db) {
 			List<GenDriver> driverNameList=new ArrayList<GenDriver> ();
 			
 			
-				driverNameList=glReportDAO.driverName(geouserid,databaseName);
+				driverNameList=glReportService.driverName(geouserid,databaseName);
 				
 				for(int i=0;i<driverNameList.size();i++)
 				{
@@ -217,7 +208,7 @@ private int  getCompanyId(String geotabUserId,String db) {
 			
 			
 			
-				deviceNameList=glReportDAO.deviceName(geouserid,databaseName);
+				deviceNameList=glReportService.deviceName(geouserid,databaseName);
 				for(int i=0;i<deviceNameList.size();i++)
 				{
 					deviceName.put(deviceNameList.get(i).getDeviceId(),deviceNameList.get(i).getDeviceName());
@@ -307,7 +298,7 @@ private int  getCompanyId(String geotabUserId,String db) {
 			List<GenDriver> driverNameList=new ArrayList<GenDriver> ();
 			
 			
-				driverNameList=glReportDAO.driverName(geouserid,databaseName);
+				driverNameList=glReportService.driverName(geouserid,databaseName);
 				
 				for(int i=0;i<driverNameList.size();i++)
 				{
@@ -316,7 +307,7 @@ private int  getCompanyId(String geotabUserId,String db) {
 			
 			
 			
-				deviceNameList=glReportDAO.deviceName(geouserid,databaseName);
+				deviceNameList=glReportService.deviceName(geouserid,databaseName);
 				for(int i=0;i<deviceNameList.size();i++)
 				{
 					deviceName.put(deviceNameList.get(i).getDeviceId(),deviceNameList.get(i).getDeviceName());

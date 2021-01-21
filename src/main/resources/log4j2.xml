@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
     <Properties>
-        <Property name="LOG_ROOT_DIR">/opt/geo-tab/logs</Property>
+        <Property name="LOG_ROOT_DIR">/home/guna/Desktop/</Property>
         <Property name="LOG_FILE_PREFIX">geo-tab-services</Property>
         <Property name="LOG_FILE_SIZE">5000KB</Property>
         <Property name="LOG_LEVEL">debug</Property>

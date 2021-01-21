@@ -63,11 +63,7 @@ public class RestDriverSafetyReportService {
 
 	public Object process(ReportParams reportParams)
 	        throws MalformedURLException, ParseException, IOException {
-		return glReportService.process(reportParams, reportParams.getLytexSessionid(), reportParams.getStartDate(),
-		        reportParams.getEndDate(), reportParams.getGroupId(), reportParams.getGeotabSessionId(),
-		        reportParams.getGeotabGroups(), reportParams.getGeotabUserName(), reportParams.getGeotabDatabase(),
-		        reportParams.getUrl(), reportParams.getFilename(), reportParams.getTemplect(),
-		        reportParams.getEntityType(), reportParams.getEndPoint());
+		return glReportService.process(reportParams);
 	}
 
 	public Object getReportGeo(ReportParams reportParams) throws MalformedURLException, IOException, ParseException {

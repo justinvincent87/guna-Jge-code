@@ -79,6 +79,7 @@ import com.vibaps.merged.safetyreport.services.gl.UserReportFilterService;
 import com.vibaps.merged.safetyreport.util.DateTimeUtil;
 import com.vibaps.merged.safetyreport.util.ResponseUtil;
 
+import jdk.internal.org.jline.utils.Log;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -510,99 +511,87 @@ public class GlReportService {
 	        String geodatabase, String url, String filename, String templect, String enttype)
 	        throws ParseException, MalformedURLException, IOException {
 
-		reportBy = enttype;
-
-		displayReportColumnHeaders = loadReporColumntHeaders(geouname, geodatabase);
-
-		title = "";
-		
-		Map<String, Integer> selectedRules = new LinkedHashMap<String, Integer>();
-		reportRows = new ArrayList<ReportRow>();
-
-		List<String> displayReportColumnHeaders = new ArrayList<String>();
-		vehicleTrips	= new LinkedHashMap<String, List<Trip>>();
-		lytxVehicleList	= new LinkedHashMap<Long, String>();
-		lytxBehaviors	= new LinkedHashMap<Integer, String>();
-		topNRecords		= new ArrayList<Score>();
-		bottomNRecords	= new ArrayList<Score>();
-
-		String groupvalue = "";
-
-		String[] geotabgroupsval = geotabgroups.split(",");
-
-		for (int i = 0; i < geotabgroupsval.length; i++) {
-			if (i != geotabgroupsval.length - 1) {
-				groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroupsval[i] + "\"},";
-			} else {
-				groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroupsval[i] + "\"}";
-			}
-		}
-		if (reportBy.equalsIgnoreCase("Driver")) {
-			// Load Trips data to get driver data corresponding to Vehicles;
-			vehicleTrips = loadVehicleTripsMap(geouname, geodatabase, geosees, url, sdate, edate);
-		}
-
-		int geoRuleCount = 0;
-		geoRuleCount = geoCount(geouname, geodatabase);
-
-		System.out.println("Geoci---" + geoRuleCount);
-
-		if (geoRuleCount > 0) {
-			if (reportBy.equalsIgnoreCase("Driver")) {
-				System.out.println("COMBINED REPORT - DRIVER");
-
-				String geotabDriverExceptionSummariesResponseJson = "{\"result\":"
-				        + getGeotabDriverExceptionSummariesResponseJson(sdate, edate, geouname, groupvalue, geodatabase,
-				                geosees, url, enttype).getAsJsonArray("result").get(0).toString()
-				        + "}";
-
-				extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson, geouname);
-			} else {
-				System.out.println("COMBINED REPORT - VEHICLE");
-				String geotabVechileExceptionSummariesJson = "{\"result\":"
-				        + getGeotabVehicleExceptionSummariesResponseJson(sdate, edate, geouname, groupvalue,
-				                geodatabase, geosees, url, enttype).getAsJsonArray("result").get(0).toString()
-				        + "}";
-
-				extractGeotabVehicleData(geotabVechileExceptionSummariesJson, geouname);
-			}
-		}
-
-		// process GEOTAB exceptions response
-		if (reportBy.equalsIgnoreCase("Driver")) {
-			JsonObject	o											= getGeotabDriverExceptionSummariesResponseJson(
-			        sdate, edate, geouname, geotabgroups, geodatabase, geosees, url, enttype);
-			String		geotabDriverExceptionSummariesResponseJson	= "{\"result\":"
-			        + o.getAsJsonArray("result").get(0).toString() + "}";
-
-			System.out.println("COMBINED REPORT - DRIVER");
-			extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson, geouname);
-		} else {
-			System.out.println("COMBINED REPORT - VEHICLE");
-			JsonObject o = getGeotabVehicleExceptionSummariesResponseJson(sdate, edate, geouname, geotabgroups,
-			        geodatabase, geosees, url, enttype);
-
-			String geotabVehileExceptionSummariesJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString()
-			        + "}";
-
-			extractGeotabVehicleData(geotabVehileExceptionSummariesJson, geouname);
-		}
-
-		String reportResponseJson = createReportReponseJson(geouname);
-
-		updateresponce(geouname, reportResponseJson, geodatabase);
-
-		System.out.println(reportResponseJson);
-		return reportResponseJson;
+		/*
+		 * reportBy = enttype;
+		 * 
+		 * displayReportColumnHeaders = loadReporColumntHeaders(geouname, geodatabase);
+		 * 
+		 * title = "";
+		 * 
+		 * Map<String, Integer> selectedRules = new LinkedHashMap<String, Integer>();
+		 * reportRows = new ArrayList<ReportRow>();
+		 * 
+		 * List<String> displayReportColumnHeaders = new ArrayList<String>();
+		 * vehicleTrips = new LinkedHashMap<String, List<Trip>>(); lytxVehicleList = new
+		 * LinkedHashMap<Long, String>(); lytxBehaviors = new LinkedHashMap<Integer,
+		 * String>(); topNRecords = new ArrayList<Score>(); bottomNRecords = new
+		 * ArrayList<Score>();
+		 * 
+		 * String groupvalue = "";
+		 * 
+		 * String[] geotabgroupsval = geotabgroups.split(",");
+		 * 
+		 * for (int i = 0; i < geotabgroupsval.length; i++) { if (i !=
+		 * geotabgroupsval.length - 1) { groupvalue = groupvalue + "{\"id\":\"" +
+		 * (String) geotabgroupsval[i] + "\"},"; } else { groupvalue = groupvalue +
+		 * "{\"id\":\"" + (String) geotabgroupsval[i] + "\"}"; } } if
+		 * (reportBy.equalsIgnoreCase("Driver")) { // Load Trips data to get driver data
+		 * corresponding to Vehicles; vehicleTrips = loadVehicleTripsMap(geouname,
+		 * geodatabase, geosees, url, sdate, edate); }
+		 * 
+		 * int geoRuleCount = 0; geoRuleCount = geoCount(geouname, geodatabase);
+		 * 
+		 * System.out.println("Geoci---" + geoRuleCount);
+		 * 
+		 * if (geoRuleCount > 0) { if (reportBy.equalsIgnoreCase("Driver")) {
+		 * System.out.println("COMBINED REPORT - DRIVER");
+		 * 
+		 * String geotabDriverExceptionSummariesResponseJson = "{\"result\":" +
+		 * getGeotabDriverExceptionSummariesResponseJson(sdate, edate, geouname,
+		 * groupvalue, geodatabase, geosees, url,
+		 * enttype).getAsJsonArray("result").get(0).toString() + "}";
+		 * 
+		 * extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson,
+		 * geouname); } else { System.out.println("COMBINED REPORT - VEHICLE"); String
+		 * geotabVechileExceptionSummariesJson = "{\"result\":" +
+		 * getGeotabVehicleExceptionSummariesResponseJson(sdate, edate, geouname,
+		 * groupvalue, geodatabase, geosees, url,
+		 * enttype).getAsJsonArray("result").get(0).toString() + "}";
+		 * 
+		 * extractGeotabVehicleData(geotabVechileExceptionSummariesJson, geouname); } }
+		 * 
+		 * // process GEOTAB exceptions response if
+		 * (reportBy.equalsIgnoreCase("Driver")) { JsonObject o =
+		 * getGeotabDriverExceptionSummariesResponseJson( sdate, edate, geouname,
+		 * geotabgroups, geodatabase, geosees, url, enttype); String
+		 * geotabDriverExceptionSummariesResponseJson = "{\"result\":" +
+		 * o.getAsJsonArray("result").get(0).toString() + "}";
+		 * 
+		 * System.out.println("COMBINED REPORT - DRIVER");
+		 * extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson,
+		 * geouname); } else { System.out.println("COMBINED REPORT - VEHICLE");
+		 * JsonObject o = getGeotabVehicleExceptionSummariesResponseJson(sdate, edate,
+		 * geouname, geotabgroups, geodatabase, geosees, url, enttype);
+		 * 
+		 * String geotabVehileExceptionSummariesJson = "{\"result\":" +
+		 * o.getAsJsonArray("result").get(0).toString() + "}";
+		 * 
+		 * extractGeotabVehicleData(geotabVehileExceptionSummariesJson, geouname); }
+		 * 
+		 * String reportResponseJson = createReportReponseJson(geouname);
+		 * 
+		 * updateresponce(geouname, reportResponseJson, geodatabase);
+		 * 
+		 * System.out.println(reportResponseJson);
+		 */
+		return null;
 	}
 
-	public String process(ReportParams reportParams, String sees, String sdate, String edate, String groupid, String geosees, String geotabgroups,
-	        String geouname, String geodatabase, String url, String filename, String templect, String enttype,
-	        String endpoint) throws ParseException, MalformedURLException, IOException {
+	public String process(ReportParams reportParams) throws ParseException, MalformedURLException, IOException {
 
-		reportBy = enttype;
+		reportBy = reportParams.getEntityType();
 
-		displayReportColumnHeaders = loadReporColumntHeaders(geouname, geodatabase);
+		displayReportColumnHeaders = loadReporColumntHeaders(reportParams.getGeotabUserName(),reportParams.getGeotabDatabase());
 
 		title = "";
 		reportRows = new ArrayList<ReportRow>();
@@ -613,59 +602,84 @@ public class GlReportService {
 		topNRecords		= new ArrayList<Score>();
 		bottomNRecords	= new ArrayList<Score>();
 
-		if (EntityType.isDriver(reportParams.getEntityType())) {
-			// Load Trips data to get driver data corresponding to Vehicles;
-			vehicleTrips = loadVehicleTripsMap(geouname, geodatabase, geosees, url, sdate, edate);
-		}
+		/*
+		 * if (EntityType.isDriver(reportParams.getEntityType())) { // Load Trips data
+		 * to get driver data corresponding to Vehicles; vehicleTrips =
+		 * loadVehicleTripsMap(geouname, geodatabase, geosees, url, sdate, edate); }
+		 */
 
 		// process GEOTAB exceptions response
-		String		groupvalue		= "";
-		String[]	geotabgroupsval	= geotabgroups.split(",");
+	
+		int geoRuleCount=0;
+		geoRuleCount=geoCount(reportParams.getGeotabUserName(),reportParams.getGeotabDatabase());
+	
 
-		for (int i = 0; i < geotabgroupsval.length; i++) {
-			if (i != geotabgroupsval.length - 1) {
-				groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroupsval[i] + "\"},";
-			} else {
-				groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroupsval[i] + "\"}";
-			}
-		}
 
-		if (EntityType.isDriver(reportParams.getEntityType())) {
-			JsonObject	o = getGeotabDriverExceptionSummariesResponseJson(
-			        sdate, edate, geouname, groupvalue, geodatabase, geosees, url, enttype);
-			String		geotabDriverExceptionSummariesResponseJson	= "{\"result\":"
-			        + o.getAsJsonArray("result").get(0).toString() + "}";
-
-			System.out.println("COMBINED REPORT - DRIVER");
-			extractGeotabDriverData(geotabDriverExceptionSummariesResponseJson, geouname);
-		} else {
-			log.info("Generate combined vehicle report");
+		if(geoRuleCount > 0)
+		{
 			reportRows = geoTabApiService.getVehicleExceptionSummary(reportParams);
 		}
 
 		// process LYTX exceptions response
 		// Create a Map of lytx vehicleIds to exception map
 
-		if (EntityType.isDriver(reportParams.getEntityType()))
-
-		{
-			System.out.println("Driver-----Lytx");
-			lytxVehicleEventsRecord = extractExceptionDataFromLytxResponseforDriver(
-			        getLytxExceptionSummariesResponseJson(sdate, edate, sees, groupid, endpoint), sees, endpoint);
-		} else {
+		
 			lytxVehicleEventsRecord = lytxProxyService.getLytxExceptionData(reportParams);
+  
+				//log.info("Lytx Responce::{}",lytxVehicleEventsRecord);			
+		
+				// combine Lytx exceptions data with the geotab exception report
+			if(geoRuleCount > 0)
+			{
+				reportRows=updateCombinedReportWithLytxExceptions(lytxVehicleEventsRecord, reportParams.getGeotabUserName(),reportRows);
+			}
+			else
+			{
+				reportRows=createLytxExceptionsReport(lytxVehicleEventsRecord,reportParams.getGeotabUserName(),reportRows);
+			}
+			
+		String reportResponseJson = createReportReponseJson(reportParams.getGeotabUserName(),reportRows);
 
-		}
-
-		// combine Lytx exceptions data with the geotab exception report
-		updateCombinedReportWithLytxExceptions(lytxVehicleEventsRecord, geouname);
-
-		String reportResponseJson = createReportReponseJson(geouname);
-
-		updateresponce(geouname, reportResponseJson, geodatabase);
+		updateresponce(reportParams.getGeotabUserName(), reportResponseJson, reportParams.getGeotabDatabase());
 
 		System.out.println(reportResponseJson);
 		return reportResponseJson;
+	}
+	
+	
+	private List<ReportRow> createLytxExceptionsReport(Map<String, Map<String, Integer>> lytxVehicleEventsRecord,String userName,List<ReportRow> reportRows) {
+		//for every vehicle in lytxVehicleEventsRecord
+		// displayReportColumnHeaders=loadReporColumntHeaders(userName);
+		
+		for (Map.Entry<String, Map<String, Integer>> lytxVehiclesEventsMapEntry : lytxVehicleEventsRecord.entrySet()) {
+			//Get the report row corresponding to that vehicle.
+			String lytxVehicleName = lytxVehiclesEventsMapEntry.getKey();
+			
+			//possible performance issue here.  Better to use Maps.
+			ReportRow reportRow = new ReportRow();
+			reportRow.setDistance(0L);
+			reportRow.setGroup("-");
+		    reportRow.setName(lytxVehicleName);
+			
+
+			Map<String, Integer> lytxVehExceptions = lytxVehiclesEventsMapEntry.getValue();
+			for(int m=EXCEPTIONS_START_COLUMN; m < displayReportColumnHeaders.size(); m++) {
+				if(lytxVehExceptions.get(displayReportColumnHeaders.get(m)) != null) {
+					//System.out.println(lytxVehicleName+"-"+displayReportColumnHeaders.get(m)+"--"+lytxVehExceptions.get(displayReportColumnHeaders.get(m)));
+					
+					reportRow.getSelectedRules().put(displayReportColumnHeaders.get(m),lytxVehExceptions.get(displayReportColumnHeaders.get(m)));
+				}
+				else {
+					if(reportRow.getSelectedRules().get(displayReportColumnHeaders.get(m)) == null){
+						reportRow.getSelectedRules().put(displayReportColumnHeaders.get(m), 0);
+					}	
+				}
+				
+			}
+			reportRows.add(reportRow);
+		}
+		
+		return reportRows;
 	}
 
 	/**
@@ -886,9 +900,10 @@ public class GlReportService {
 	/**
 	 * @param reportRows
 	 * @param lytxVehicleEventsRecord
+	 * @return 
 	 */
-	private void updateCombinedReportWithLytxExceptions(Map<String, Map<String, Integer>> lytxVehicleEventsRecord,
-	        String userName) {
+	private List<ReportRow> updateCombinedReportWithLytxExceptions(Map<String, Map<String, Integer>> lytxVehicleEventsRecord,
+	        String userName,List<ReportRow> reportRows) {
 
 		for (Map.Entry<String, Map<String, Integer>> lytxVehiclesEventsMapEntry : lytxVehicleEventsRecord.entrySet()) {
 			String lytxVehicleName = lytxVehiclesEventsMapEntry.getKey();
@@ -907,9 +922,10 @@ public class GlReportService {
 				}
 			}
 		}
+		return reportRows;
 	}
 
-	public String createReportReponseJson(String userName) {
+	public String createReportReponseJson(String userName,List<ReportRow> reportRows) {
 		// create a json response
 
 		// displayReportColumnHeaders=loadReporColumntHeaders(userName,db);

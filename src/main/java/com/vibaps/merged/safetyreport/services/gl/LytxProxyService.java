@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.StringUtils;
 import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_MessageClasses_Api.EventBehavior;
 import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_MessageClasses_Api_GetEvents_V5.GetEventsResponse;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import com.lytx.dto.Behavior;
@@ -20,11 +22,15 @@ import com.lytx.dto.EventsInfoV5;
 import com.lytx.dto.ExistingSessionRequest;
 import com.lytx.dto.GetBehaviorsResponse;
 import com.lytx.dto.GetEventsByLastUpdateDateRequest;
+import com.lytx.dto.GetUsersRequest;
+import com.lytx.dto.GetUsersResponse;
 import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
+import com.lytx.dto.UserInfo;
 import com.lytx.dto.VehicleInfo;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.common.AppMsg;
+import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.exception.GeoTabException;
 
@@ -41,19 +47,39 @@ public class LytxProxyService {
 	 * @return
 	 */
 	public Map<String, Map<String, Integer>> getLytxExceptionData(ReportParams reportParams) {
-
+		Integer	behaviorCount;
+		Map<Long, String>					vehicles;
 		Map<String, Map<String, Integer>>	lytxVehicleEventsRecord	= new HashMap<>();
 		GetEventsResponse					eventReponse			= getLytxExceptionSummary(reportParams);
-		Map<Long, String>					vehicles				= getLytxVehicleDetailMap(reportParams);
+	if(EntityType.isDriver(reportParams.getEntityType()))
+	{
+		
+		vehicles				= getLytxUserDetailMap(reportParams);
+	}
+	else
+	{
+		vehicles				= getLytxVehicleDetailMap(reportParams);
+	}
 		Map<Long, String>					behaviors				= getLytxBehaviorsMap(reportParams);
 
+		
 		if (log.isDebugEnabled()) {
 			log.debug("Exception data count for Event record: {}, vehicles: {} and behaviors: {}",
 			        eventReponse.getEvents().length, vehicles.size(), behaviors.size());
 		}
 
 		for (EventsInfoV5 event : eventReponse.getEvents()) {
-			String					vehicleName			= vehicles.get(event.getVehicleId());
+			String vehicleName;
+			if(EntityType.isDriver(reportParams.getEntityType()))
+			{
+				
+				vehicleName			= vehicles.get(event.getDriverId());
+			}
+			else
+			{
+				vehicleName			= vehicles.get(event.getVehicleId());
+
+			}
 			Map<String, Integer>	lytxExceptionEvents	= lytxVehicleEventsRecord.get(vehicleName);
 			if (Objects.isNull(lytxExceptionEvents)) {
 				lytxExceptionEvents = new HashMap<String, Integer>();
@@ -62,11 +88,11 @@ public class LytxProxyService {
 
 			for (EventBehavior behavior : event.getBehaviors()) {
 				String	exceptionName	= behaviors.get(behavior.getBehavior());
-				Integer	behaviorCount	= lytxExceptionEvents.get(exceptionName);
+					behaviorCount	= lytxExceptionEvents.get(exceptionName);
 				if (behaviorCount == null) {
 					behaviorCount = 0;
 				}
-				lytxExceptionEvents.put(exceptionName, ++behaviorCount);
+				lytxExceptionEvents.put("L-"+exceptionName, ++behaviorCount);
 			}
 		}
 
@@ -113,9 +139,37 @@ public class LytxProxyService {
 			return Stream.of(response.getVehicles())
 			        .collect(Collectors.toMap(VehicleInfo::getVehicleId, VehicleInfo::getName));
 		}
+		
 		return Collections.emptyMap();
 	}
+	
+	public Map<Long, String> getLytxUserDetailMap(ReportParams reportParams) {
+		Map<Long, String> userMap = new HashMap<>();
+		GetUsersResponse response = getLytxUserDetail(reportParams);
+	
+			
+			
+			JSONObject jsonObject2 = new JSONObject(response);
 
+			
+			  String vechilelytxlist = jsonObject2.toString(); 
+			  JSONObject lytxVechileJO = new JSONObject(vechilelytxlist);
+			 
+					JSONArray lytxVechileArray = jsonObject2.getJSONArray("users");
+					
+					
+					for(int i=0;i<lytxVechileArray.length();i++)
+					{
+						JSONObject lytxObjValue=lytxVechileArray.getJSONObject(i);
+						
+						userMap.put(lytxObjValue.getLong("userId"),lytxObjValue.getString("firstName")+" "+lytxObjValue.getString("lastName"));
+					}
+		
+		
+		return userMap;
+	}
+	
+	
 	/**
 	 * Get all behaviors map from lytx
 	 * 
@@ -147,6 +201,24 @@ public class LytxProxyService {
 			return getProxy(reportParams).getVehicles(getVehiclesRequest);
 		} catch (RemoteException e) {
 			log.error("Error while fetching lytx vehicle", e);
+			throw new GeoTabException(AppMsg.ER002);
+		}
+	}
+	
+	/**
+	 * Get all User from lytx
+	 * 
+	 * @param reportParams
+	 * @return
+	 */
+	public GetUsersResponse getLytxUserDetail(ReportParams reportParams) {
+
+		GetUsersRequest getUserRequest = new GetUsersRequest();
+		getUserRequest.setSessionId(reportParams.getLytexSessionid());
+		try {
+			return getProxy(reportParams).getUsers(getUserRequest);
+		} catch (RemoteException e) {
+			log.error("Error while fetching lytx user", e);
 			throw new GeoTabException(AppMsg.ER002);
 		}
 	}

@@ -642,7 +642,6 @@ public class GlReportService {
 
 		updateresponce(reportParams.getGeotabUserName(), reportResponseJson, reportParams.getGeotabDatabase());
 
-		System.out.println(reportResponseJson);
 		return reportResponseJson;
 	}
 	
@@ -907,6 +906,8 @@ public class GlReportService {
 
 		for (Map.Entry<String, Map<String, Integer>> lytxVehiclesEventsMapEntry : lytxVehicleEventsRecord.entrySet()) {
 			String lytxVehicleName = lytxVehiclesEventsMapEntry.getKey();
+			if(lytxVehicleName !=null)
+			{
 			Optional<ReportRow> reportRow = reportRows.stream()
 										.filter(r -> lytxVehicleName.equalsIgnoreCase(r.getName()))
 										.findFirst();
@@ -921,6 +922,7 @@ public class GlReportService {
 					        lytxVehExceptions.get(displayReportColumnHeaders.get(m)));
 				}
 			}
+		}
 		}
 		return reportRows;
 	}

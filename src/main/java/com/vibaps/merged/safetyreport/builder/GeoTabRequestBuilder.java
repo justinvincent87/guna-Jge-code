@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -44,7 +45,9 @@ public class GeoTabRequestBuilder implements Serializable {
 
 	@JsonIgnore
 	private Params	parentParams;
+	@JsonInclude(Include.NON_NULL)
 	private String	method;
+	@JsonInclude(Include.NON_NULL)
 	private Params	params;
 
 	/**
@@ -127,9 +130,11 @@ public class GeoTabRequestBuilder implements Serializable {
 		@JsonInclude(NON_NULL)
 		private Argument					argument;
 		@JsonInclude(NON_NULL)
-		private Credentials					credentials;
-		@JsonInclude(NON_NULL)
 		private String						typeName;
+		@JsonInclude(NON_NULL)
+		private Search						search;
+		@JsonInclude(NON_NULL)
+		private Credentials					credentials;
 
 		/**
 		 * Create instance with parent instance
@@ -170,6 +175,13 @@ public class GeoTabRequestBuilder implements Serializable {
 			}
 			return credentials;
 		}
+		
+		public Search search() {
+			if (Objects.isNull(search)) {
+				search = new Search(this);
+			}
+			return search;
+		}
 
 		public Params typeName(String typeName) {
 			this.typeName = typeName;
@@ -190,13 +202,89 @@ public class GeoTabRequestBuilder implements Serializable {
 			        + credentials + ", typeName=" + typeName + "]";
 		}
 	}
+	
+	public static class Search {
+		
+		@JsonIgnore
+		private Params	parent;
+		@JsonInclude(NON_NULL)
+		private String id;
+		@JsonInclude(NON_NULL)
+		private DeviceSearch deviceSearch;
+		@JsonInclude(NON_NULL)
+		private String activeFrom;
+		@JsonInclude(NON_NULL)
+		private String activeTo;
+		
+		public Search(Params parent) {
+			this.parent = parent;
+		}
+		
+		public Search id(String id) {
+			this.id = id;
+			return this;
+		}
+		
+		public Search activeFrom(String activeFrom) {
+			this.activeFrom = activeFrom;
+			return this;
+		}
+		
+		public Search activeTo(String activeTo) {
+			this.activeTo = activeTo;
+			return this;
+		}
+		
+		public DeviceSearch deviceSearch() {
+			if (Objects.isNull(deviceSearch)) {
+				deviceSearch = new DeviceSearch(this);
+			}
+			return deviceSearch;
+		}
+		
+		public Params and() {
+			return this.parent;
+		}
+
+		public String build() {
+			return this.parent.build();
+		}
+	}
+	
+	public static class DeviceSearch {
+		
+		@JsonIgnore
+		private Search parent;
+		@JsonInclude(NON_NULL)
+		private String id;
+		
+		public DeviceSearch(Search parent) {
+			this.parent = parent;
+		}
+		
+		public DeviceSearch id(String id) {
+			this.id = id;
+			return this;
+		}
+		
+		public Search and() {
+			return this.parent;
+		}
+
+		public String build() {
+			return this.parent.build();
+		}
+	}
 
 	public static class Credentials {
 
 		@JsonIgnore
 		private Params	parent;
+		@JsonInclude(NON_NULL)
 		private String	database;
+		@JsonInclude(NON_NULL)
 		private String	sessionId;
+		@JsonInclude(NON_NULL)
 		private String	userName;
 
 		public Credentials(Params parent) {
@@ -237,14 +325,23 @@ public class GeoTabRequestBuilder implements Serializable {
 
 		@JsonIgnore
 		private Params		parent;
+		@JsonInclude(NON_NULL)
 		private Integer		runGroupLevel;
+		@JsonInclude(NON_NULL)
 		private Boolean		isNoDrivingActivityHidden;
+		@JsonInclude(NON_NULL)
 		private String		fromUtc;
+		@JsonInclude(NON_NULL)
 		private String		toUtc;
+		@JsonInclude(NON_NULL)
 		private String		entityType;
+		@JsonInclude(NON_NULL)
 		private String		reportArgumentType;
+		@JsonInclude(NON_NULL)
 		private List<Group>	groups;
+		@JsonInclude(NON_NULL)
 		private String		reportSubGroup;
+		@JsonInclude(NON_NULL)
 		private List<Rule>	rules;
 
 		public Argument(Params parent) {

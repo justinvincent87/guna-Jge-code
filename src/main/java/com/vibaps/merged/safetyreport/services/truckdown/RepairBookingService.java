@@ -50,7 +50,11 @@ public Object getTruckTiming(TrackDownEntity entity) throws MalformedURLExceptio
 	return repairBookingDAO.getTruckTiming(entity.getLid());
 }
 
+<<<<<<< HEAD
 public Object getTruckdownservices() throws MalformedURLException, IOException {
+=======
+public Object getTruckdownservices() {
+>>>>>>> feature/truckdown
 	// TODO Auto-generated method stub
 	return repairBookingDAO.getTruckdownservices();
 }

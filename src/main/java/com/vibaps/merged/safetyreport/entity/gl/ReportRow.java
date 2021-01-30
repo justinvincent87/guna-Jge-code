@@ -29,7 +29,24 @@ public class ReportRow {
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
+<<<<<<< HEAD
 	private Long					id;
+=======
+	 long id;
+	@Column(name = "name")
+	String name; //Vehicle or driverName
+	@Column(name = "group")
+	String group;
+	@Column(name = "distance")
+	long distance;
+	
+	@Transient
+	LinkedHashMap<String, Integer> selectedRules=new LinkedHashMap<String, Integer>();
+	 public ReportRow() {
+
+	 }
+	
+>>>>>>> feature/truckdown
 	
 	@Column(name = "name")
 	private String name;

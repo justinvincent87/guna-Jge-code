@@ -80,9 +80,18 @@ public class RepairBookingDAO{
 	        	
 	            
 	            String locationResponce=null;
+<<<<<<< HEAD
 	           
 	            locationResponce=getTruckdownResponce(url);
 	            
+=======
+	            try
+	            {
+	            locationResponce=getTruckdownResponce(url);
+	            }catch (Exception e) {
+					// TODO: handle exception
+				}
+>>>>>>> feature/truckdown
 	            componyResponce="{\"result\":["+locationResponce+"]}";
 	            
 	            
@@ -90,6 +99,7 @@ public class RepairBookingDAO{
 	        	
 	            
 	            String phoneResponce=null;
+<<<<<<< HEAD
 	           
 	            	phoneResponce="{\"result\":["+getTruckdownResponce(url)+"]}";
 	            
@@ -97,6 +107,19 @@ public class RepairBookingDAO{
 	            
 	            
 	         
+=======
+	            try
+	            {
+	            	phoneResponce="{\"result\":["+getTruckdownResponce(url)+"]}";
+	            }catch (Exception e) {
+					// TODO: handle exception
+				}
+	            
+	            
+	            
+	            try
+	            {
+>>>>>>> feature/truckdown
 	            	
 	            JSONObject companyObject = new JSONObject(componyResponce);
 		        JSONArray companyArray = companyObject.getJSONArray("result");
@@ -125,7 +148,14 @@ public class RepairBookingDAO{
 		        	 holeCompany.put(uiResponce);
 		        	 
 		        }
+<<<<<<< HEAD
 	           
+=======
+	            }catch (Exception e) {
+					// TODO: handle exception
+	            	System.out.println(e);
+				}
+>>>>>>> feature/truckdown
 	           
 	            //catch on array
 	           
@@ -153,7 +183,12 @@ public class RepairBookingDAO{
 			
 		 }
 		
+<<<<<<< HEAD
 		
+=======
+		try
+	      {	
+>>>>>>> feature/truckdown
 			serviceResponse=getTruckdownResponce(url);
 			
 			
@@ -181,7 +216,14 @@ public class RepairBookingDAO{
         	holeCompany.put(uiResponce);
         }
         holeResponce.put("company_details",holeCompany);  
+<<<<<<< HEAD
       
+=======
+      }catch (Exception e) {
+		// TODO: handle exception
+    	  System.out.println("-----"+e);
+	} 
+>>>>>>> feature/truckdown
 		
 		return holeResponce.toString();
 	}
@@ -201,16 +243,29 @@ public class RepairBookingDAO{
 			url=truckdoun.get().getBaseUrl()+"location?key="+truckdoun.get().getKey()+"&id="+lid;
 		 }
 		 String locationResponce=null;
+<<<<<<< HEAD
          
          locationResponce=getTruckdownResponce(url);
          
+=======
+         try
+         {
+         locationResponce=getTruckdownResponce(url);
+         }catch (Exception e) {
+				// TODO: handle exception
+			}
+>>>>>>> feature/truckdown
          componyResponce="{\"result\":["+locationResponce+"]}";
          
         
 		return componyResponce.toString();
 	}
 	
+<<<<<<< HEAD
 	public Object getTruckdownservices() throws MalformedURLException, IOException {
+=======
+	public Object getTruckdownservices() {
+>>>>>>> feature/truckdown
 		String url="";
 		
 		 truckdoun=repairBookingService.findById(Long.valueOf(1));
@@ -219,9 +274,18 @@ public class RepairBookingDAO{
     	
         
         String serviceResponce=null;
+<<<<<<< HEAD
         
         	serviceResponce="{\"dropval\":["+getTruckdownResponce(url)+"]}";
         
+=======
+        try
+        {
+        	serviceResponce="{\"dropval\":["+getTruckdownResponce(url)+"]}";
+        }catch (Exception e) {
+				// TODO: handle exception
+			}
+>>>>>>> feature/truckdown
         JSONObject companyphoneObject = new JSONObject(serviceResponce);
         
        
@@ -244,9 +308,18 @@ public class RepairBookingDAO{
      	
          
          String phoneResponce=null;
+<<<<<<< HEAD
         
          	phoneResponce="{\"result\":["+getTruckdownResponce(url)+"]}";
          
+=======
+         try
+         {
+         	phoneResponce="{\"result\":["+getTruckdownResponce(url)+"]}";
+         }catch (Exception e) {
+				// TODO: handle exception
+			}
+>>>>>>> feature/truckdown
          JSONObject companyphoneObject = new JSONObject(phoneResponce);
          
         
@@ -259,7 +332,11 @@ public class RepairBookingDAO{
 		StringBuilder response = new StringBuilder();
 		
 		
+<<<<<<< HEAD
 		
+=======
+		try {
+>>>>>>> feature/truckdown
 		       URL url = new URL(urls);
 		       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
@@ -278,7 +355,15 @@ public class RepairBookingDAO{
 		        response.append('\r');
 		}
 		conn.disconnect();
+<<<<<<< HEAD
 	
+=======
+		} catch (MalformedURLException e) {
+		e.printStackTrace();
+		} catch (IOException e) {
+		e.printStackTrace();
+		}
+>>>>>>> feature/truckdown
 		
 		return response.toString();
 		

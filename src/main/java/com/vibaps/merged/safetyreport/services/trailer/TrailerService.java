@@ -24,39 +24,49 @@ import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
+import com.vibaps.merged.safetyreport.services.gl.GeoTabApiService;
 import com.vibaps.merged.safetyreport.util.ResponseUtil;
 
 import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
+
 public class TrailerService {
 
 	@Autowired
 	private RestTemplate restTemplate;
 	
-	public Object showReport(TrailerParams trailerParams) {
-		// TODO Auto-generated method stub
-		
+    private TrailerResponce trailerResponce;
+	
+	
+	@Autowired
+	private GeoTabApiService geoTabApiService;
+	
+	public TrailerResponce showReport(TrailerParams trailerParams) {
 		List<JsonObject> lisrResponce=new ArrayList<JsonObject>();
 		
 		String deviceId = trailerParams.getDeviceId();
 		
 	    String[] deviceArray = deviceId.split(",");
-	    
-	    int usecase=0;
+	    boolean isAllDevice=deviceArray[0].equalsIgnoreCase("selectalldevice");
+	    int usecase;
 	    
 		String payload =null;
-		if((trailerParams.getActiveFrom() == null) && (trailerParams.getActiveTo() == null) && (deviceArray[0].equalsIgnoreCase("selectalldevice")))
+		if((trailerParams.getActiveFrom() == null) && (trailerParams.getActiveTo() == null))
 		{
-			usecase=101;
+			if(isAllDevice)
+			{
+			usecase=-1;
+			}
+			else
+			{
+				usecase=2;
+			}
 		}
-		else if((trailerParams.getActiveFrom() == null) && (trailerParams.getActiveTo() == null) && (!deviceArray[0].equalsIgnoreCase("selectalldevice")))	
-		{
-			usecase=2;
-		}
-		else if((trailerParams.getActiveFrom() != null) && (trailerParams.getActiveTo() != null) && (deviceArray[0].equalsIgnoreCase("selectalldevice")))	
+		else if((trailerParams.getActiveFrom() != null) && (trailerParams.getActiveTo() != null) && (isAllDevice))	
 		{
 			usecase=3;
 		}
@@ -65,10 +75,10 @@ public class TrailerService {
 			usecase=1;
 		}
 		
-	
-		
-		
-		for(int l=0;l<((deviceArray[0].equalsIgnoreCase("selectalldevice"))?1:deviceArray.length);l++)
+
+		if(!isAllDevice)
+		{
+		for(int l=0;l<=deviceArray.length;l++)
 		{
 			trailerParams.setDeviceId(deviceArray[l]);
 		
@@ -92,24 +102,51 @@ public class TrailerService {
 		
 		lisrResponce.add(parsedResponse);
 		}
+		}
+		else
+		{
+			trailerParams.setDeviceId(deviceArray[0]);
+			
+			payload=getReportRequest(trailerParams,usecase);
+			
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		
+		lisrResponce.add(parsedResponse);
+		}
+		
 		return convertParsedReponseShow(lisrResponce,trailerParams);
 	}
 	
-	private Object convertParsedReponseShow(List<JsonObject> parsedResponse,TrailerParams trailerParams) {
+	private TrailerResponce convertParsedReponseShow(List<JsonObject> parsedResponse,TrailerParams trailerParams) {
 		// TODO Auto-generated method stub
 		String trailerId = trailerParams.getTrailerId();
 		String[] trailerArray = trailerId.split(",");
 		boolean trailerCheck=false;
 		boolean exist=false;
+		//TrailerResponce trailerResponce=null;
 	    
 		if(!trailerArray[0].equalsIgnoreCase("selectalltrailer"))
 		{
 			trailerCheck=true;
 		}
 	    
-		Map<String,String> deviceMap;
-		Map<String,List<Map<String,String>>> fullResponce = new HashMap<String,List<Map<String,String>>>();
-		List<Map<String,String>> responcelist=new ArrayList<>();
+		
+		
+		List<TrailerResponce> responcelist=new ArrayList<TrailerResponce>();
 		
 		for(int t=0;t<parsedResponse.size();t++)
 		{
@@ -119,13 +156,13 @@ public class TrailerService {
 	    
 	    for(int i=0;i<names.size();i++){
 	    	JsonObject device=names.get(i).getAsJsonObject();
-	    	deviceMap=new HashMap<String,String>();
+	    	
 	    	if(!trailerCheck)
 	    	{
-	        deviceMap.put("activeFrom",device.get("activeFrom").getAsString());
-	        deviceMap.put("activeTo",device.get("activeTo").getAsString());
-	        deviceMap.put("trailer_id",device.get("trailer").getAsJsonObject().get("id").getAsString());
-	        deviceMap.put("device_id",device.get("device").getAsJsonObject().get("id").getAsString());
+	    		 trailerResponce=new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),device.get("trailer").getAsJsonObject().get("id").
+		  				  getAsString(),device.get("device").getAsJsonObject().get("id").
+						  getAsString());
+	    		
 	    	}
 	    	else
 	    	{
@@ -133,28 +170,31 @@ public class TrailerService {
 	    		
 	    		if(exist)
 	    		{
-	    		deviceMap.put("activeFrom",device.get("activeFrom").getAsString());
-		        deviceMap.put("activeTo",device.get("activeTo").getAsString());
-		        deviceMap.put("trailer_id",device.get("trailer").getAsJsonObject().get("id").getAsString());
-		        deviceMap.put("device_id",device.get("device").getAsJsonObject().get("id").getAsString());
+	    			
+	    			trailerResponce=new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),device.get("trailer").getAsJsonObject().get("id").
+			  				  getAsString(),device.get("device").getAsJsonObject().get("id").
+							  getAsString());
 	    		}
 	    	}
-	    	if(!deviceMap.isEmpty())
+	    	if(trailerResponce!=null)
 	    	{
-	        responcelist.add(deviceMap);
+	        responcelist.add(trailerResponce);
 	    	}
 	    }
 		}
-	    fullResponce.put("result", responcelist);
-		return fullResponce;
+		
+		
+		return  new TrailerResponce(responcelist);
 	}
 	
+
+
 	@Cacheable("Device")
-	public Object getDevice(TrailerParams trailerParams) {
+	public TrailerResponce getDevice(TrailerParams trailerParams) {
 		// TODO Auto-generated method stub
 		
 		
-		String payload =  getReportRequest(trailerParams,100);
+		String payload =  getReportRequest(trailerParams,-1);
 		if (log.isDebugEnabled()) {
 			log.debug("Get report data payload: {}", payload);
 		}
@@ -174,12 +214,10 @@ public class TrailerService {
 		return convertParsedReponse(parsedResponse);
 	}
 	
-	private Object convertParsedReponse(JsonObject parsedResponse) {
+	private TrailerResponce convertParsedReponse(JsonObject parsedResponse) {
 		// TODO Auto-generated method stub
 		
-		Map<String,String> deviceMap;
-		Map<String,List<Map<String,String>>> fullResponce = new HashMap<String,List<Map<String,String>>>();
-		List<Map<String,String>> responcelist=new ArrayList<>();
+		List<TrailerResponce> responcelist=new ArrayList<>();
 		
 		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
 	    JsonArray names = data .get("result").getAsJsonArray();
@@ -187,24 +225,24 @@ public class TrailerService {
 	    
 	    for(int i=0;i<names.size();i++){
 	    	JsonObject device=names.get(i).getAsJsonObject();
-	    	deviceMap=new HashMap<String,String>();
-	        
-	        deviceMap.put("id",device.get("id").getAsString());
-	        deviceMap.put("name",device.get("name").getAsString());
-	        
-	        responcelist.add(deviceMap);
+	    	
+	       
+	    	trailerResponce=new TrailerResponce(device.get("id").getAsString(),device.get("name").getAsString());
+	    	
+	   
+	        responcelist.add(trailerResponce);
 	        
 	    }
-	    fullResponce.put("result", responcelist);
-		return fullResponce;
+	  
+		return new TrailerResponce(responcelist);
 	}
 
 	@Cacheable("trailer")
-	public Object getTrailer(TrailerParams trailerParams) {
+	public TrailerResponce getTrailer(TrailerParams trailerParams) {
 		// TODO Auto-generated method stub
 		
 		
-		String payload =  getReportRequest(trailerParams,100);
+		String payload =  getReportRequest(trailerParams,-1);
 		if (log.isDebugEnabled()) {
 			log.debug("Get report data payload: {}", payload);
 		}
@@ -230,7 +268,7 @@ public class TrailerService {
 		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
 		builder.method(AppConstants.METHOD_GET);
 		// bind credentials
-		buildCredentials(builder, trailerParams);
+		geoTabApiService.buildCredentials(builder, trailerParams);
 		
 		switch(useCase)
 		{
@@ -255,11 +293,7 @@ public class TrailerService {
 	
 	
 	
-	private void buildCredentials(GeoTabRequestBuilder builder, TrailerParams trailerParams) {
 
-		builder.params().credentials().database(trailerParams.getGeotabDatabase())
-		        .sessionId(trailerParams.getGeotabSessionId()).userName(trailerParams.getGeotabUserName());
-	}
 	
 	
 

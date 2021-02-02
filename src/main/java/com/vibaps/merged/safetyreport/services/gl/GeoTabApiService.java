@@ -295,7 +295,7 @@ public class GeoTabApiService {
 	 * @param builder
 	 * @param reportParams
 	 */
-	private void buildCredentials(GeoTabRequestBuilder builder, ReportParams reportParams) {
+	public void buildCredentials(GeoTabRequestBuilder builder, ReportParams reportParams) {
 
 		builder.params().credentials().database(reportParams.getGeotabDatabase())
 		        .sessionId(reportParams.getGeotabSessionId()).userName(reportParams.getGeotabUserName());

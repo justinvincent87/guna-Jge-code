@@ -283,7 +283,7 @@ public class GeoTabApiService {
 	 * @param reportParams
 	 * @return
 	 */
-	private List<String> getGroupList(ReportParams reportParams) {
+	public List<String> getGroupList(ReportParams reportParams) {
 
 		Assert.isNull(reportParams.getGeotabGroups(), AppMsg.CV001);
 		return Stream.of(reportParams.getGeotabGroups().split(",")).collect(Collectors.toList());

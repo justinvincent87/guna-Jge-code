@@ -135,6 +135,17 @@ public class GeoTabRequestBuilder implements Serializable {
 		private Search						search;
 		@JsonInclude(NON_NULL)
 		private Credentials					credentials;
+		
+		@JsonInclude(NON_NULL)
+		//private Coordinates	coordinates;
+		private List<Coordinates> coordinates;
+		
+	
+		
+		
+		@JsonInclude(NON_NULL)
+		private boolean	movingAddresses;
+		
 
 		/**
 		 * Create instance with parent instance
@@ -153,6 +164,17 @@ public class GeoTabRequestBuilder implements Serializable {
 			calls.add(call);
 			return call;
 		}
+		
+		public Coordinates addcoordinates() {
+			if (Objects.isNull(coordinates)) {
+				coordinates = new ArrayList<>();
+			}
+			Coordinates call = new Coordinates(this);
+			coordinates.add(call);
+			return call;
+		}
+		
+		
 
 		@JsonIgnore
 		public GeoTabRequestBuilder getFirstCall() {
@@ -176,6 +198,8 @@ public class GeoTabRequestBuilder implements Serializable {
 			return credentials;
 		}
 		
+		
+		
 		public Search search() {
 			if (Objects.isNull(search)) {
 				search = new Search(this);
@@ -185,6 +209,10 @@ public class GeoTabRequestBuilder implements Serializable {
 
 		public Params typeName(String typeName) {
 			this.typeName = typeName;
+			return this;
+		}
+		public Params movingAddresses(boolean movingAddresses) {
+			this.movingAddresses = movingAddresses;
 			return this;
 		}
 
@@ -202,6 +230,41 @@ public class GeoTabRequestBuilder implements Serializable {
 			        + credentials + ", typeName=" + typeName + "]";
 		}
 	}
+	public static class Coordinates 
+	{
+		@JsonIgnore
+		private Params	parent;
+		@JsonInclude(NON_NULL)
+		private Double x;
+		@JsonInclude(NON_NULL)
+		private Double y;
+		@JsonInclude(NON_NULL)
+		private List<Coordinates>	addaxis;
+		
+		public Coordinates(Params parent) {
+			this.parent = parent;
+		}
+		
+		public Coordinates x(Double x) {
+			this.x = x;
+			return this;
+		}
+		
+		public Coordinates y(Double y) {
+			this.y = y;
+			return this;
+		}
+		
+		public Params and() {
+			return this.parent;
+		}
+
+		public String build() {
+			return this.parent.build();
+		}
+		
+	}
+	
 	
 	public static class Search {
 		
@@ -215,6 +278,11 @@ public class GeoTabRequestBuilder implements Serializable {
 		private String activeFrom;
 		@JsonInclude(NON_NULL)
 		private String activeTo;
+		
+		@JsonInclude(NON_NULL)
+		private String fromDate;
+		@JsonInclude(NON_NULL)
+		private String toDate;
 		
 		public Search(Params parent) {
 			this.parent = parent;
@@ -232,6 +300,16 @@ public class GeoTabRequestBuilder implements Serializable {
 		
 		public Search activeTo(String activeTo) {
 			this.activeTo = activeTo;
+			return this;
+		}
+		
+		public Search fromDate(String fromDate) {
+			this.fromDate = fromDate;
+			return this;
+		}
+		
+		public Search toDate(String toDate) {
+			this.toDate = toDate;
 			return this;
 		}
 		

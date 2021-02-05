@@ -1074,7 +1074,8 @@ public class GlReportService {
 		 */
 		// THE FOLLOWING METHOD CALL 'loadSampleTrips()' SHOULD BE REPLACED WITH ACTUAL
 		// CALL AND VALUE RETURNED AS STRING ARRAY.
-		ArrayList<String> tripsData = commonGeotabDAO.getTrip(geouserid, databaseName, geosess, url, sdate, edate);
+		ArrayList<String> tripsData=null ;
+				//commonGeotabDAO.getTrip(geouserid, databaseName, geosess, url, sdate, edate);
 		// END METHOD CALL 'loadSampleTrips()'
 
 		Map<String, List<Trip>> vehicleTrips = new HashMap<String, List<Trip>>();

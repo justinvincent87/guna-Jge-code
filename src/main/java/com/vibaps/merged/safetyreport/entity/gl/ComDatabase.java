@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
+import javax.persistence.Transient;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,21 +17,18 @@ import lombok.Setter;
 @Entity
 @Setter
 @NoArgsConstructor
-@Table(name = "gen_device")
-public class GenDevice {
-
+@Table(name = "com_database")
+public class ComDatabase {
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	private Long id;
+	private Long Id;
 
-	@Column(name = "ref_com_database_id")
-	private Long refComDatabaseId;
+	@Column(name = "database_name")
+	private String databaseName;
+	
+	@Transient
+	private String result;
 
-	@Column(name = "device_id")
-	private String deviceId;
-
-	@Column(name = "device_name")
-	private String deviceName;
 }

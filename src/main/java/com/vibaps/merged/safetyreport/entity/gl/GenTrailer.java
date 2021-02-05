@@ -16,9 +16,8 @@ import lombok.Setter;
 @Entity
 @Setter
 @NoArgsConstructor
-@Table(name = "gen_device")
-public class GenDevice {
-
+@Table(name = "gen_trailer")
+public class GenTrailer {
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
@@ -28,9 +27,9 @@ public class GenDevice {
 	@Column(name = "ref_com_database_id")
 	private Long refComDatabaseId;
 
-	@Column(name = "device_id")
-	private String deviceId;
+	@Column(name = "trailer_id")
+	private String trailerId;
 
-	@Column(name = "device_name")
-	private String deviceName;
+	@Column(name = "trailer_name")
+	private String trailerName;
 }

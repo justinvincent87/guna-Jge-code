@@ -8,7 +8,7 @@ public final class AppConstants {
 	public static final String	SLASH				= "/";
 	public static final String	PROTOCOL_SECURE		= "https";
 	public static final String	PROTOCOL_NON_SECURE	= "http";
-
+	public static final String  RESULTS_LIMIT="500";
 	public static final String PATH_VERSION = "/apiv1";
 
 	public static final String	METHOD_EXECUTE_MULTI_CALL	= "ExecuteMultiCall";

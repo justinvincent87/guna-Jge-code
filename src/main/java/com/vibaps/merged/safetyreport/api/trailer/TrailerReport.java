@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vibaps.merged.safetyreport.ExeptionHandler;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
 import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
@@ -25,7 +26,7 @@ public class TrailerReport {
 	private TrailerService trailerService;
 
 @PostMapping(value = "/show-report",produces = MediaType.APPLICATION_JSON_VALUE)
-public TrailerResponce showReport(@RequestBody TrailerParams trailerParams)
+public TrailerResponce showReport(@RequestBody TrailerParams trailerParams) 
 {
 	return trailerService.showReport(trailerParams);
 
@@ -34,6 +35,7 @@ public TrailerResponce showReport(@RequestBody TrailerParams trailerParams)
 @PostMapping(value = "/getDevice",produces = MediaType.APPLICATION_JSON_VALUE)
 public TrailerResponce getDevice(@RequestBody TrailerParams trailerParams)
 {
+	
 	return trailerService.getDevice(trailerParams);
 
 }

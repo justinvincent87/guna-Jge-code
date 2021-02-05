@@ -35,8 +35,8 @@ public class GeoTabRequestBuilder implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private static final ObjectMapper	MAPPER			= new ObjectMapper();
-	private static final String			FROM_TS_SUFFIX	= "T01:00:00.000Z";
-	private static final String			TO_TS_SUFFIX	= "T03:59:59.000Z";
+	public static final String			FROM_TS_SUFFIX	= "T01:00:00.000Z";
+	public static final String			TO_TS_SUFFIX	= "T03:59:59.000Z";
 
 	static {
 		// Added field visibility for this builer class
@@ -137,11 +137,7 @@ public class GeoTabRequestBuilder implements Serializable {
 		private Credentials					credentials;
 		
 		@JsonInclude(NON_NULL)
-		//private Coordinates	coordinates;
 		private List<Coordinates> coordinates;
-		
-	
-		
 		
 		@JsonInclude(NON_NULL)
 		private boolean	movingAddresses;
@@ -283,6 +279,14 @@ public class GeoTabRequestBuilder implements Serializable {
 		private String fromDate;
 		@JsonInclude(NON_NULL)
 		private String toDate;
+		@JsonInclude(NON_NULL)
+		private String resultsLimit;
+		
+		
+		
+		
+		@JsonInclude(NON_NULL)
+		private List<Group>	groups;
 		
 		public Search(Params parent) {
 			this.parent = parent;
@@ -308,6 +312,11 @@ public class GeoTabRequestBuilder implements Serializable {
 			return this;
 		}
 		
+		public Search resultsLimit(String resultsLimit) {
+			this.resultsLimit = resultsLimit;
+			return this;
+		}
+		
 		public Search toDate(String toDate) {
 			this.toDate = toDate;
 			return this;
@@ -326,6 +335,11 @@ public class GeoTabRequestBuilder implements Serializable {
 
 		public String build() {
 			return this.parent.build();
+		}
+		
+		public Search groups(List<String> groups) {
+			this.groups = groups.stream().map(Group::new).collect(Collectors.toList());
+			return this;
 		}
 	}
 	

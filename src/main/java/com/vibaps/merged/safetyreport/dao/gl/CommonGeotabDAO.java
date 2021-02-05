@@ -8,333 +8,167 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import javax.transaction.Transactional;
+
+import org.hibernate.query.criteria.internal.predicate.IsEmptyPredicate;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
+import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
 import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
 import com.vibaps.merged.safetyreport.entity.gl.GenDriver;
+import com.vibaps.merged.safetyreport.entity.gl.GenTrailer;
+import com.vibaps.merged.safetyreport.repo.gl.ComDatabaseRepository;
 import com.vibaps.merged.safetyreport.repo.gl.CommonGeotabRepository;
+import com.vibaps.merged.safetyreport.repo.gl.GenDeviceRepository;
+import com.vibaps.merged.safetyreport.repo.gl.GenTrailerRepository;
 import com.vibaps.merged.safetyreport.service.gl.GlReportService;
+import com.vibaps.merged.safetyreport.services.gl.CommonGeotabService;
+import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
 
-@Repository
+@Component
 public class CommonGeotabDAO  {
-	@Lazy
-	@Autowired
-	private GlReportService glReportService;
+
 	@Autowired
 	private CommonGeotabRepository commonGeotabRepository;
+	@Autowired
+	private ComDatabaseRepository comDatabaseRepository;
+	@Autowired
+	private GenDeviceRepository genDeviceRepository;
+	@Autowired
+	private GenTrailerRepository genTrailereRepository;
+	@Autowired
+	private CommonGeotabService commonGeotabService;
 	
-public Object insertDevice(String geouserid,String databaseName,String geosess,String url) throws IOException {
-		// TODO Auto-generated method stub
-
-int obj=getCompanyId(geouserid,databaseName);
-int result=0;
-		System.out.println(obj+"--fg--"+geouserid);
-		if(obj > 0)
-		{
-   		 String uri = "https://"+url+"/apiv1";
-	      String urlParameters ="{\"method\":\"Get\",\"params\":{\"typeName\":\"Device\",\"credentials\":{\"database\":\""+databaseName+"\",\"sessionId\":\""+geosess+"\",\"userName\":\""+geouserid+"\"}}}";
-	      
-	      String serverurl = uri;
-	      HttpURLConnection con = (HttpURLConnection)(new URL(serverurl)).openConnection();
-	      con.setRequestMethod("POST");
-	      con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
-	      con.setRequestProperty("Content-Language", "en-US");
-	      con.setDoOutput(true);
-	      con.setUseCaches(false);
-	      con.setDoInput(true);
-	      DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-	      wr.writeBytes(urlParameters);
-	      wr.flush();
-	      wr.close();
-	      InputStream is = con.getInputStream();
-	      BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-	      StringBuilder response = new StringBuilder();
-	      String line;
-	      while ((line = rd.readLine()) != null) {
-	        response.append(line);
-	        response.append('\r');
-	      } 
-	      rd.close();
-	      JsonParser parser = new JsonParser();
-	      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
-	      String GeotabDriverResponse = o.toString(); //Responce
-	      
-	    // System.out.println(GeotabDriverResponse); 
-	      JSONObject geotabDriverJO = new JSONObject(GeotabDriverResponse);
-		  JSONArray geotabDeiverJOArray = geotabDriverJO.getJSONArray("result");
-
-		  
-		  
-		  for(int i=0;i<geotabDeiverJOArray.length();i++)
-		  {
-			  
-				  commonGeotabRepository.insertDevice(obj, geotabDeiverJOArray.getJSONObject(i).getString("id"), geotabDeiverJOArray.getJSONObject(i).getString("name"));
-			
-				
-		  }
-  
-		}
-		
-		return "Saved";
-	}
 	
-private int  getCompanyId(String geotabUserId,String db) {
-		
-		int obj = 0;
-		
-			obj=commonGeotabRepository.getCompanyId(geotabUserId, db);
-					
-		return obj;
+	
+	
+	private ComDatabase comDatabase;
+	
+	
+	
+
+@Transactional	
+public ComDatabase insertDevice(TrailerParams reportParams){
+
+	comDatabase=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase());
+	
+	if(comDatabase==null)
+	{  
+		comDatabase=new ComDatabase();
+		comDatabase.setDatabaseName(reportParams.getGeotabDatabase());
+		comDatabase=comDatabaseRepository.save(comDatabase);
 	}
 
-	public Object insertDriver(String geouserid, String databaseName, String geosess, String url) throws IOException {
-		// TODO Auto-generated method stub
-		int obj=getCompanyId(geouserid,databaseName);
-		int result=0;
-				System.out.println(obj+"--fg--"+geouserid);
-				if(obj > 0)
-				{
-		   		 String uri = "https://"+url+"/apiv1";
-			      String urlParameters ="{\"method\":\"Get\",\"params\":{\"typeName\":\"User\",\"credentials\":{\"database\":\""+databaseName+"\",\"sessionId\":\""+geosess+"\",\"userName\":\""+geouserid+"\"}}}";
-			      
-			      String serverurl = uri;
-			      HttpURLConnection con = (HttpURLConnection)(new URL(serverurl)).openConnection();
-			      con.setRequestMethod("POST");
-			      con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
-			      con.setRequestProperty("Content-Language", "en-US");
-			      con.setDoOutput(true);
-			      con.setUseCaches(false);
-			      con.setDoInput(true);
-			      DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-			      wr.writeBytes(urlParameters);
-			      wr.flush();
-			      wr.close();
-			      InputStream is = con.getInputStream();
-			      BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-			      StringBuilder response = new StringBuilder();
-			      String line;
-			      while ((line = rd.readLine()) != null) {
-			        response.append(line);
-			        response.append('\r');
-			      } 
-			      rd.close();
-			      JsonParser parser = new JsonParser();
-			      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
-			      String GeotabDriverResponse = o.toString(); //Responce
-			      
-			    // System.out.println(GeotabDriverResponse); 
-			      JSONObject geotabDriverJO = new JSONObject(GeotabDriverResponse);
-				  JSONArray geotabDeiverJOArray = geotabDriverJO.getJSONArray("result");
-
-				
-				  
-				  for(int i=0;i<geotabDeiverJOArray.length();i++)
-				  {
-					   
-						  commonGeotabRepository.insertDriver(obj, geotabDeiverJOArray.getJSONObject(i).getString("id"), geotabDeiverJOArray.getJSONObject(i).getString("firstName")+" "+geotabDeiverJOArray.getJSONObject(i).getString("lastName"));
-					  
-				  }
-  
-				}
-				
-				return null;
+	return insertGeoTabDevice(comDatabase.getId(),reportParams);
 	}
+
+@Transactional	
+public ComDatabase insertTrailer(TrailerParams reportParams){
+
+	comDatabase=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase());
 	
-	public List<String> getTripRecords(String geouserid, String databaseName, String geosess, String url,String sdate,String edate) throws MalformedURLException, IOException
+	if(comDatabase==null)
+	{  
+		comDatabase=new ComDatabase();
+		comDatabase.setDatabaseName(reportParams.getGeotabDatabase());
+		comDatabase=comDatabaseRepository.save(comDatabase);
+	}
+
+	return insertGeoTabTrailer(comDatabase.getId(),reportParams);
+	}
+
+
+private ComDatabase insertGeoTabDevice(Long id, TrailerParams reportParams)
+{
+
+	TrailerResponce trailerResponce=commonGeotabService.getDevice(reportParams);
+	List<GenDevice> collection=new ArrayList<GenDevice>();
+	for(int i=0;i<trailerResponce.getResult().size();i++)
+	{
+		GenDevice param=new GenDevice();
+		param.setRefComDatabaseId(id);
+		param.setDeviceId(trailerResponce.getResult().get(i).getId());
+		param.setDeviceName(trailerResponce.getResult().get(i).getName());
+		collection.add(param);
+	}
+	genDeviceRepository.saveAll(collection);
+	
+	comDatabase.setResult("Saved");
+	return comDatabase;
+}
+
+public GenDevice insertMissedGeoTabDevice(Long id, TrailerParams reportParams,String deviceId)
+{
+
+	TrailerResponce trailerResponce=commonGeotabService.getMissedDevice(reportParams,deviceId);
+	List<GenDevice> collection=new ArrayList<GenDevice>();
+	GenDevice param=new GenDevice();
+	for(int i=0;i<1;i++)
 	{
 		
-
-		
-		List<String> compaindRecord=new ArrayList<String>();
-		String fromDate=sdate+"T00:00:00.000Z";
-		String toDate=edate+"T10:00:00.000Z";
-		 String uri = "https://"+url+"/apiv1";
-	      String urlParameters ="{\"method\":\"Get\",\"params\":{\"typeName\":\"Trip\",\"search\":{\"fromDate\":\""+fromDate+"\",\"toDate\":\""+toDate+"\"},\"credentials\":{\"database\":\""+databaseName+"\",\"sessionId\":\""+geosess+"\",\"userName\":\""+geouserid+"\"}}}";
-	      String serverurl = uri;
-	      HttpURLConnection con = (HttpURLConnection)(new URL(serverurl)).openConnection();
-	      con.setRequestMethod("POST");
-	      con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
-	      con.setRequestProperty("Content-Language", "en-US");
-	      con.setDoOutput(true);
-	      con.setUseCaches(false);
-	      con.setDoInput(true);
-	      DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-	      wr.writeBytes(urlParameters);
-	      wr.flush();
-	      wr.close();
-	      InputStream is = con.getInputStream();
-	      BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-	      StringBuilder response = new StringBuilder();
-	      String line;
-	      while ((line = rd.readLine()) != null) {
-	        response.append(line);
-	        response.append('\r');
-	      } 
-	      rd.close();
-	      JsonParser parser = new JsonParser();
-	      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
-	      String GeotabDriverResponse = o.toString(); //Responce
-	      
-	      JSONObject geotabEventsJO = new JSONObject(GeotabDriverResponse);
-			JSONArray geotabEventsJOArray = geotabEventsJO.getJSONArray("result");
-			
-			
-		
-			
-			Map<String,String> deviceName=new LinkedHashMap<String,String>();
-			Map<String,String> driverName=new LinkedHashMap<String,String>();
-			
-			List<GenDevice> deviceNameList=new ArrayList<GenDevice>();
-			List<GenDriver> driverNameList=new ArrayList<GenDriver> ();
-			
-			
-				driverNameList=glReportService.driverName(geouserid,databaseName);
-				
-				for(int i=0;i<driverNameList.size();i++)
-				{
-					driverName.put(driverNameList.get(i).getDriverId(),driverNameList.get(i).getDriverName());
-				}
-			
-			
-			
-				deviceNameList=glReportService.deviceName(geouserid,databaseName);
-				for(int i=0;i<deviceNameList.size();i++)
-				{
-					deviceName.put(deviceNameList.get(i).getDeviceId(),deviceNameList.get(i).getDeviceName());
-				}
-			
-			
-			for (int i = 0; i < geotabEventsJOArray.length(); i++) 
-			{
-				
-				
-				  JSONObject resultsChild = geotabEventsJOArray.getJSONObject(i);
-				    JSONObject driverIdJO = resultsChild.getJSONObject("driver");
-				    JSONObject deviceIdJO = resultsChild.getJSONObject("device");
-				    //vehicleName
-				    long dataCallsStart=System.currentTimeMillis();
-
-				    //String driverName = GL_Report_DAO.driverName(geouserid, driverIdJO.getString("id").toString());
-				    //String deviceName = GL_Report_DAO.deviceName(geouserid, deviceIdJO.getString("id").toString()); 
-				    
-				 
-				    
-
-				    
-				    String start=resultsChild.getString("start");
-				    String stop=resultsChild.getString("stop");
-				    compaindRecord.add(deviceName.get(deviceIdJO.getString("id").toString())+"|"+driverName.get(driverIdJO.getString("id").toString())+"|"+start+"|"+stop);
-		
-				
-			}
-			
-			
-			
-
-	      
-	   	return compaindRecord;
-
+		param.setRefComDatabaseId(id);
+		param.setDeviceId(trailerResponce.getResult().get(i).getId());
+		param.setDeviceName(trailerResponce.getResult().get(i).getName());
+		param=genDeviceRepository.save(param);
+		//collection.add(param);
 	}
 	
-	public ArrayList<String> getTrip(String geouserid, String databaseName, String geosess, String url,String sdate,String edate) throws MalformedURLException, IOException
+	
+	
+	return param;
+}
+
+public GenTrailer insertGeoTabMissedTrailer(Long id, TrailerParams reportParams,String trailerId) 
+{
+
+	TrailerResponce trailerResponce=commonGeotabService.getMissedTrailer(reportParams,trailerId);
+	GenTrailer param=new GenTrailer();
+	for(int i=0;i<1;i++)
 	{
-		
-		ArrayList<String> compaindRecord = new ArrayList<String>();
-		
-		
-		String fromDate=sdate+"T00:00:00.000Z";
-		String toDate=edate+"T10:00:00.000Z";
-		 String uri = "https://"+url+"/apiv1";
-	      String urlParameters ="{\"method\":\"Get\",\"params\":{\"typeName\":\"Trip\",\"search\":{\"fromDate\":\""+fromDate+"\",\"toDate\":\""+toDate+"\"},\"credentials\":{\"database\":\""+databaseName+"\",\"sessionId\":\""+geosess+"\",\"userName\":\""+geouserid+"\"}}}";
-	      String serverurl = uri;
-	      
-	      System.out.println(urlParameters);
-	      
-	      HttpURLConnection con = (HttpURLConnection)(new URL(serverurl)).openConnection();
-	      con.setRequestMethod("POST");
-	      con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
-	      con.setRequestProperty("Content-Language", "en-US");
-	      con.setDoOutput(true);
-	      con.setUseCaches(false);
-	      con.setDoInput(true);
-	      DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-	      wr.writeBytes(urlParameters);
-	      wr.flush();
-	      wr.close();
-	      InputStream is = con.getInputStream();
-	      BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-	      StringBuilder response = new StringBuilder();
-	      String line;
-	      while ((line = rd.readLine()) != null) {
-	        response.append(line);
-	        response.append('\r');
-	      } 
-	      rd.close();
-	      JsonParser parser = new JsonParser();
-	      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
-	      String GeotabDriverResponse = o.toString(); //Responce
-
-	      JSONObject geotabEventsJO = new JSONObject(GeotabDriverResponse);
-			JSONArray geotabEventsJOArray = geotabEventsJO.getJSONArray("result");
-			
-			
-		
-			
-			Map<String,String> deviceName=new LinkedHashMap<String,String>();
-			Map<String,String> driverName=new LinkedHashMap<String,String>();
-			
-			List<GenDevice> deviceNameList=new ArrayList<GenDevice>();
-			List<GenDriver> driverNameList=new ArrayList<GenDriver> ();
-			
-			
-				driverNameList=glReportService.driverName(geouserid,databaseName);
-				
-				for(int i=0;i<driverNameList.size();i++)
-				{
-					driverName.put(driverNameList.get(i).getDriverId(),driverNameList.get(i).getDriverName());
-				}
-			
-			
-			
-				deviceNameList=glReportService.deviceName(geouserid,databaseName);
-				for(int i=0;i<deviceNameList.size();i++)
-				{
-					deviceName.put(deviceNameList.get(i).getDeviceId(),deviceNameList.get(i).getDeviceName());
-				}
-			
-			for (int i = 0; i < geotabEventsJOArray.length(); i++) 
-			{
-				
-				
-				  JSONObject resultsChild = geotabEventsJOArray.getJSONObject(i);
-				    JSONObject driverIdJO = resultsChild.getJSONObject("driver");
-				    JSONObject deviceIdJO = resultsChild.getJSONObject("device");
-				    //vehicleName
-				    long dataCallsStart=System.currentTimeMillis();
- 
-				    String start=resultsChild.getString("start");
-				    String stop=resultsChild.getString("stop");
-				    compaindRecord.add(deviceName.get(deviceIdJO.getString("id").toString())+"|"+driverName.get(driverIdJO.getString("id").toString())+"|"+start+"|"+stop);
-		
-				
-			}
-			
-			
-	      
-	   	return compaindRecord;
-
+		param.setRefComDatabaseId(id);
+		param.setTrailerId(trailerResponce.getResult().get(i).getId());
+		param.setTrailerName(trailerResponce.getResult().get(i).getName());
+		param=genTrailereRepository.save(param);
 	}
 	
+	return param;
+}
+
+private ComDatabase insertGeoTabTrailer(Long id, TrailerParams reportParams) 
+{
+
+	TrailerResponce trailerResponce=commonGeotabService.getTrailer(reportParams);
+	List<GenTrailer> collection=new ArrayList<GenTrailer>();
+	for(int i=0;i<trailerResponce.getResult().size();i++)
+	{
+		GenTrailer param=new GenTrailer();
+		param.setRefComDatabaseId(id);
+		param.setTrailerId(trailerResponce.getResult().get(i).getId());
+		param.setTrailerName(trailerResponce.getResult().get(i).getName());
+		collection.add(param);
+	}
+	genTrailereRepository.saveAll(collection);
+	
+	comDatabase.setResult("Saved");
+	return comDatabase;
+}
+
 
 }

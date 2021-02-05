@@ -2,35 +2,210 @@ package com.vibaps.merged.safetyreport.services.gl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.sql.SQLException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.RestTemplate;
 
+import com.google.gson.JsonObject;
+import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
+import com.vibaps.merged.safetyreport.builder.Uri;
+import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
+import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
+import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
+import com.vibaps.merged.safetyreport.util.ResponseUtil;
+
+import lombok.extern.log4j.Log4j2;
 @Service
+@Log4j2
 public class CommonGeotabService {
 	
      @Autowired
 	private CommonGeotabDAO dao;
+     
+     @Autowired
+ 	private GeoTabApiService geoTabApiService;
+     
+     @Autowired
+ 	private RestTemplate restTemplate;
+     
+     @Autowired
+     private TrailerService trailerService;
 
-	public Object insertDriver(ReportParams reportParams) throws IOException {
+	public ComDatabase insertDevice(TrailerParams reportParams) throws SQLException
+	{
+		return dao.insertDevice(reportParams);
+	}
+	
+	public ComDatabase insertTrailer(TrailerParams reportParams) throws SQLException
+	{
+		return dao.insertTrailer(reportParams);
+	}
+	
+	public TrailerResponce getDevice(TrailerParams trailerParams) 
+	{
 		// TODO Auto-generated method stub
+		
+		
+		String payload =  getReportRequestDevice(trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
 
-			return dao.insertDriver(reportParams.getGeotabUserName(),reportParams.getGeotabDatabase(),reportParams.getGeotabSessionId(),reportParams.getUrl());
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return trailerService.convertParsedReponse(parsedResponse);
+	}
+	
+	public TrailerResponce getTrailer(TrailerParams trailerParams) 
+	{
+		// TODO Auto-generated method stub
+		
+		
+		String payload =  getReportRequestTrailer(trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return trailerService.convertParsedReponse(parsedResponse);
+	}
+	
+	public TrailerResponce getMissedTrailer(TrailerParams trailerParams,String trailerId) 
+	{
+		// TODO Auto-generated method stub
+		
+		
+		String payload =  getReportRequestMissedTrailer(trailerParams,trailerId);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return trailerService.convertParsedReponse(parsedResponse);
+	}
+	
+	
+	private String getReportRequestDevice(TrailerParams trailerParams)  
+	{
+		
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		 return builder.params().typeName("Device")
+				.build();
+		
+	}
+	
+	public TrailerResponce getMissedDevice(TrailerParams trailerParams,String deviseId) 
+	{
+		// TODO Auto-generated method stub
+		
+		
+		String payload =  getReportRequestMissedDevice(trailerParams,deviseId);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return trailerService.convertParsedReponse(parsedResponse);
+	}
+	private String getReportRequestMissedDevice(TrailerParams trailerParams,String deviceId)  
+	{
+		
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		 return builder.params().typeName("Device").search().id(deviceId)
+				.build();
+		
+	}
+	
+	private String getReportRequestTrailer(TrailerParams trailerParams)  
+	{
+		
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		 return builder.params().typeName("Trailer")
+				.build();
+		
+	}
+	
+	private String getReportRequestMissedTrailer(TrailerParams trailerParams,String trailerId)  
+	{
+		
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		 return builder.params().typeName("Trailer").search().id(trailerId)
+				.build();
 		
 	}
 
-	public Object insertDevice(ReportParams reportParams) throws IOException {
-		// TODO Auto-generated method stub
-		return dao.insertDevice(reportParams.getGeotabUserName(),reportParams.getGeotabDatabase(),reportParams.getGeotabSessionId(),reportParams.getUrl());
-	}
 
-	public Object getTripRecords(@RequestBody ReportParams reportParams) throws MalformedURLException, IOException {
-		// TODO Auto-generated method stub
-		return dao.getTripRecords(reportParams.getGeotabUserName(),reportParams.getGeotabDatabase(),reportParams.getGeotabSessionId(),reportParams.getUrl(),reportParams.getStartDate(),reportParams.getEndDate());
-	}
 	
 
 

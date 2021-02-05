@@ -11,7 +11,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @NoArgsConstructor
-public class ReportParams {
+public class ReportParams{
 
 	private List<String>	rules;
 	private List<Integer>	weight;

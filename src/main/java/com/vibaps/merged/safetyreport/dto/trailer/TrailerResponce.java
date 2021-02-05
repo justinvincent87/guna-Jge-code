@@ -7,6 +7,9 @@ import java.util.Map;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -24,21 +27,23 @@ private String id;
 private String name;
 private String activeFrom;
 private String activeTo;
-private String trailer_id;
-private String device_id;
+private String trailerId;
+private String deviceId;
 private List<TrailerResponce> result;
+@JsonInclude(Include.NON_NULL)
 private Double latitude;
+@JsonInclude(Include.NON_NULL)
 private Double longitude;
 private String formattedAddress;
 private String attachedLocation;
 private String detachedLocation;
 
-public TrailerResponce(String activeFrom,String activeTo,String trailer_id,String device_id,String attachedLocation,String detachedLocation)
+public TrailerResponce(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation)
 {
 	this.activeFrom=activeFrom;
 	this.activeTo=activeTo;
-	this.trailer_id=trailer_id;
-	this.device_id=device_id;
+	this.trailerId=trailerId;
+	this.deviceId=deviceId;
 	
 	this.attachedLocation=attachedLocation;
 	this.detachedLocation=detachedLocation;

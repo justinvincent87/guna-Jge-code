@@ -133,13 +133,16 @@ public class RestTrendingReportDAO {
 					String[] lytxBehaviorsArray = new String[lytxBehaviors.size()];
 					int bCount = 0;
 
-					if (enttype.equalsIgnoreCase("Driver")) {
-						// Load Trips data to get driver data from Vehicles;
-
-						
-							vehicleTrips = loadVehicleTripsMap(enttype, userName, geotabDatabase,geotabSessionId, url,startDateStr, endDateStr);
-						
-					}
+					/*
+					 * if (enttype.equalsIgnoreCase("Driver")) { // Load Trips data to get driver
+					 * data from Vehicles;
+					 * 
+					 * 
+					 * vehicleTrips = loadVehicleTripsMap(enttype, userName,
+					 * geotabDatabase,geotabSessionId, url,startDateStr, endDateStr);
+					 * 
+					 * }
+					 */
 				}
 				boolean trending = true;
 
@@ -438,34 +441,29 @@ public class RestTrendingReportDAO {
 		return lBehaviors;
 	}
 	
-	public Map<String, List<Trip>> loadVehicleTripsMap(String entity, String geouname, String geodatabase,
-			String geosees, String url, String fromDate, String toDate) throws MalformedURLException, IOException {
-		// THE FOLLOWING METHOD CALL 'loadSampleTrips()' SHOULD BE REPLACED WITH ACTUAL
-		// CALL AND VALUE RETURNED AS STRING ARRAY.
-
-		ArrayList<String> tripsData = commonGeotabDAO.getTrip(geouname, geodatabase, geosees, url, fromDate, toDate);
-
-		for (String tripData : tripsData) {
-			String[] tripVars = tripData.split("\\|");
-			String vehicleName = tripVars[0];
-			String driverName[] = tripVars[1].split(" "); // ASSUMPTION: NO SPACES IN FIRSTNAME AND LASTNAMES. THE
-															// DRIVER NAME WILL HAVE ONLY ONE SPACE BETWEEN FIRST AND
-															// LAST NAMES.
-			String driverFirstName = driverName[0];
-			String driverLastName = driverName[1];
-			LocalDateTime tripStartDate = convertToLocalDateTime(tripVars[2]);
-			LocalDateTime tripEndDate = convertToLocalDateTime(tripVars[3]);
-			Trip trip = new Trip(vehicleName, driverFirstName, driverLastName, tripStartDate, tripEndDate);
-			List<Trip> trips = vehicleTrips.get(vehicleName);
-			if (trips == null) {
-				trips = new ArrayList<Trip>();
-				vehicleTrips.put(vehicleName, trips);
-			}
-			trips.add(trip);
-		}
-		return vehicleTrips;
-	}
-	
+	/*
+	 * public Map<String, List<Trip>> loadVehicleTripsMap(String entity, String
+	 * geouname, String geodatabase, String geosees, String url, String fromDate,
+	 * String toDate) throws MalformedURLException, IOException { // THE FOLLOWING
+	 * METHOD CALL 'loadSampleTrips()' SHOULD BE REPLACED WITH ACTUAL // CALL AND
+	 * VALUE RETURNED AS STRING ARRAY.
+	 * 
+	 * ArrayList<String> tripsData = commonGeotabDAO.getTrip(geouname, geodatabase,
+	 * geosees, url, fromDate, toDate);
+	 * 
+	 * for (String tripData : tripsData) { String[] tripVars =
+	 * tripData.split("\\|"); String vehicleName = tripVars[0]; String driverName[]
+	 * = tripVars[1].split(" "); // ASSUMPTION: NO SPACES IN FIRSTNAME AND
+	 * LASTNAMES. THE // DRIVER NAME WILL HAVE ONLY ONE SPACE BETWEEN FIRST AND //
+	 * LAST NAMES. String driverFirstName = driverName[0]; String driverLastName =
+	 * driverName[1]; LocalDateTime tripStartDate =
+	 * convertToLocalDateTime(tripVars[2]); LocalDateTime tripEndDate =
+	 * convertToLocalDateTime(tripVars[3]); Trip trip = new Trip(vehicleName,
+	 * driverFirstName, driverLastName, tripStartDate, tripEndDate); List<Trip>
+	 * trips = vehicleTrips.get(vehicleName); if (trips == null) { trips = new
+	 * ArrayList<Trip>(); vehicleTrips.put(vehicleName, trips); } trips.add(trip); }
+	 * return vehicleTrips; }
+	 */
 	public List<String> loadTrendingReporColumntHeaders(String userName, String db) {
 		List<String> reportColumnHeader = new ArrayList<String>();
 		reportColumnHeader.add("VehicleName");

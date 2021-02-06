@@ -118,11 +118,12 @@ public class TrailerService {
 		String[] trailerArray = trailerId.split(",");
 		Long comDatabaseId;
 		
-		try
+		if(comDatabaseRepository.countdatabaseName(trailerParams.getGeotabDatabase()) > 0)
 		{
 		 comDatabaseId=comDatabaseRepository.findBydatabaseName(trailerParams.getGeotabDatabase()).getId();
-		}catch (NullPointerException e) {
-			log.debug("Exeption :: {}",e);
+		}else
+		{
+		
 			comDatabaseId=insertDeviceandTrailer(trailerParams);
 		}
 		
@@ -179,26 +180,28 @@ public class TrailerService {
 	    			
 	    		}
 	    		
-	    		try
+	    		if(genDeviceRepository.countdeviceIdAndrefComDatabaseId(device.get("device").getAsJsonObject().get("id").
+						  getAsString(),comDatabaseId) > 0)
+	    		
 	    		{
 	    		  deviceName=genDeviceRepository.findBydeviceIdAndrefComDatabaseId(device.get("device").getAsJsonObject().get("id").
 						  getAsString(),comDatabaseId).getDeviceName();
-	    		}catch (NullPointerException e) 
+	    		}else
 	    		{
-	    			log.debug("deviceId :: {}",device.get("device").getAsJsonObject().get("id").
-							  getAsString());
+
 	    			deviceName=	commonGeotabDAO.insertMissedGeoTabDevice(comDatabaseId, trailerParams, device.get("device").getAsJsonObject().get("id").
 							  getAsString()).getDeviceName();
 				}
 	    		
-	    		try
+	    		if(genTrailerRepository.counttrailerIdAndrefComDatabaseId(device.get("trailer").getAsJsonObject().get("id").
+		  				  getAsString(),comDatabaseId) > 0)
 	    		{
 	    		  trailerName=genTrailerRepository.findBytrailerIdAndrefComDatabaseId(device.get("trailer").getAsJsonObject().get("id").
 		  				  getAsString(),comDatabaseId).getTrailerName();
 	    		}
-	    		catch (NullPointerException e) {
-	    			log.debug("deviceId :: {}",device.get("trailer").getAsJsonObject().get("id").
-			  				  getAsString());
+	    		else 
+	    		{
+	    			
 	    			trailerName=commonGeotabDAO.insertGeoTabMissedTrailer(comDatabaseId, trailerParams, device.get("trailer").getAsJsonObject().get("id").
 			  				  getAsString()).getTrailerName();
 				}
@@ -232,24 +235,28 @@ public class TrailerService {
 		    		}
 		    		
 		    		
-		    		try
+		    		if(genDeviceRepository.countdeviceIdAndrefComDatabaseId(device.get("device").getAsJsonObject().get("id").
+							  getAsString(),comDatabaseId) > 0)
+		    		
 		    		{
 		    		  deviceName=genDeviceRepository.findBydeviceIdAndrefComDatabaseId(device.get("device").getAsJsonObject().get("id").
 							  getAsString(),comDatabaseId).getDeviceName();
-		    		}catch (NullPointerException e) 
+		    		}else
 		    		{
+
 		    			deviceName=	commonGeotabDAO.insertMissedGeoTabDevice(comDatabaseId, trailerParams, device.get("device").getAsJsonObject().get("id").
 								  getAsString()).getDeviceName();
 					}
 		    		
-		    		try
+		    		if(genTrailerRepository.counttrailerIdAndrefComDatabaseId(device.get("trailer").getAsJsonObject().get("id").
+			  				  getAsString(),comDatabaseId) > 0)
 		    		{
 		    		  trailerName=genTrailerRepository.findBytrailerIdAndrefComDatabaseId(device.get("trailer").getAsJsonObject().get("id").
 			  				  getAsString(),comDatabaseId).getTrailerName();
 		    		}
-		    		catch (NullPointerException e) {
-		    			log.debug("deviceId :: {}",device.get("trailer").getAsJsonObject().get("id").
-				  				  getAsString());
+		    		else 
+		    		{
+		    			
 		    			trailerName=commonGeotabDAO.insertGeoTabMissedTrailer(comDatabaseId, trailerParams, device.get("trailer").getAsJsonObject().get("id").
 				  				  getAsString()).getTrailerName();
 					}

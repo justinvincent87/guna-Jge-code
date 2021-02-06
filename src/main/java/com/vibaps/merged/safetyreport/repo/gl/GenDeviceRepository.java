@@ -13,4 +13,7 @@ public interface GenDeviceRepository extends JpaRepository<GenDevice,Long>{
 
 	@Query("select d from GenDevice d where d.deviceId=:deviceId and d.refComDatabaseId=:refComDatabaseId")
 	GenDevice findBydeviceIdAndrefComDatabaseId(String deviceId,Long refComDatabaseId);
+	
+	@Query("select count(d.id) from GenDevice d where d.deviceId=:deviceId and d.refComDatabaseId=:refComDatabaseId")
+	Long countdeviceIdAndrefComDatabaseId(String deviceId,Long refComDatabaseId);
 }

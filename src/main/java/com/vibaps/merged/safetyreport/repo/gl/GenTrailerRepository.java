@@ -11,5 +11,8 @@ public interface GenTrailerRepository extends JpaRepository<GenTrailer,Long>{
 	
 	@Query("select d from GenTrailer d where d.trailerId=:trailerId and d.refComDatabaseId=:refComDatabaseId")
 	GenTrailer findBytrailerIdAndrefComDatabaseId(String trailerId,Long refComDatabaseId);
+	
+	@Query("select count(d.id) from GenTrailer d where d.trailerId=:trailerId and d.refComDatabaseId=:refComDatabaseId")
+	Long counttrailerIdAndrefComDatabaseId(String trailerId,Long refComDatabaseId);
 
 }

@@ -8,7 +8,10 @@
 package com.lytx.dto;
 
 public class EventsInfoV5  extends com.lytx.dto.EventsInfoV4  implements java.io.Serializable {
-    private java.lang.String eventLink2;
+	
+	private static final long serialVersionUID = 1L;
+	
+	private java.lang.String eventLink2;
 
     public EventsInfoV5() {
     }
@@ -114,7 +117,8 @@ public class EventsInfoV5  extends com.lytx.dto.EventsInfoV4  implements java.io
     }
 
     private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
+    @SuppressWarnings("unused")
+	public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof EventsInfoV5)) return false;
         EventsInfoV5 other = (EventsInfoV5) obj;
         if (obj == null) return false;
@@ -171,7 +175,8 @@ public class EventsInfoV5  extends com.lytx.dto.EventsInfoV4  implements java.io
     /**
      * Get Custom Serializer
      */
-    public static org.apache.axis.encoding.Serializer getSerializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Serializer getSerializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
@@ -183,9 +188,10 @@ public class EventsInfoV5  extends com.lytx.dto.EventsInfoV4  implements java.io
     /**
      * Get Custom Deserializer
      */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Deserializer getDeserializer(
            java.lang.String mechType, 
-           java.lang.Class _javaType,  
+	        java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
         return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(

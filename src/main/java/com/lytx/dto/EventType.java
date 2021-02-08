@@ -7,188 +7,179 @@
 
 package com.lytx.dto;
 
-public class EventType  implements java.io.Serializable {
-    private java.util.Calendar creationDate;
+public class EventType implements java.io.Serializable {
 
-    private java.lang.String description;
+	private static final long serialVersionUID = 1L;
 
-    private java.lang.Long eventTypeId;
+	private java.util.Calendar creationDate;
 
-    public EventType() {
-    }
+	private java.lang.String description;
 
-    public EventType(
-           java.util.Calendar creationDate,
-           java.lang.String description,
-           java.lang.Long eventTypeId) {
-           this.creationDate = creationDate;
-           this.description = description;
-           this.eventTypeId = eventTypeId;
-    }
+	private java.lang.Long eventTypeId;
 
+	public EventType() {
+	}
 
-    /**
-     * Gets the creationDate value for this EventType.
-     * 
-     * @return creationDate
-     */
-    public java.util.Calendar getCreationDate() {
-        return creationDate;
-    }
+	public EventType(java.util.Calendar creationDate, java.lang.String description, java.lang.Long eventTypeId) {
+		this.creationDate	= creationDate;
+		this.description	= description;
+		this.eventTypeId	= eventTypeId;
+	}
 
+	/**
+	 * Gets the creationDate value for this EventType.
+	 * 
+	 * @return creationDate
+	 */
+	public java.util.Calendar getCreationDate() {
+		return creationDate;
+	}
 
-    /**
-     * Sets the creationDate value for this EventType.
-     * 
-     * @param creationDate
-     */
-    public void setCreationDate(java.util.Calendar creationDate) {
-        this.creationDate = creationDate;
-    }
+	/**
+	 * Sets the creationDate value for this EventType.
+	 * 
+	 * @param creationDate
+	 */
+	public void setCreationDate(java.util.Calendar creationDate) {
+		this.creationDate = creationDate;
+	}
 
+	/**
+	 * Gets the description value for this EventType.
+	 * 
+	 * @return description
+	 */
+	public java.lang.String getDescription() {
+		return description;
+	}
 
-    /**
-     * Gets the description value for this EventType.
-     * 
-     * @return description
-     */
-    public java.lang.String getDescription() {
-        return description;
-    }
+	/**
+	 * Sets the description value for this EventType.
+	 * 
+	 * @param description
+	 */
+	public void setDescription(java.lang.String description) {
+		this.description = description;
+	}
 
+	/**
+	 * Gets the eventTypeId value for this EventType.
+	 * 
+	 * @return eventTypeId
+	 */
+	public java.lang.Long getEventTypeId() {
+		return eventTypeId;
+	}
 
-    /**
-     * Sets the description value for this EventType.
-     * 
-     * @param description
-     */
-    public void setDescription(java.lang.String description) {
-        this.description = description;
-    }
+	/**
+	 * Sets the eventTypeId value for this EventType.
+	 * 
+	 * @param eventTypeId
+	 */
+	public void setEventTypeId(java.lang.Long eventTypeId) {
+		this.eventTypeId = eventTypeId;
+	}
 
+	private java.lang.Object __equalsCalc = null;
 
-    /**
-     * Gets the eventTypeId value for this EventType.
-     * 
-     * @return eventTypeId
-     */
-    public java.lang.Long getEventTypeId() {
-        return eventTypeId;
-    }
+	@SuppressWarnings("unused")
+	public synchronized boolean equals(java.lang.Object obj) {
+		if (!(obj instanceof EventType))
+			return false;
+		EventType other = (EventType) obj;
+		if (obj == null)
+			return false;
+		if (this == obj)
+			return true;
+		if (__equalsCalc != null) {
+			return (__equalsCalc == obj);
+		}
+		__equalsCalc = obj;
+		boolean _equals;
+		_equals			= true
+		        && ((this.creationDate == null && other.getCreationDate() == null)
+		                || (this.creationDate != null && this.creationDate.equals(other.getCreationDate())))
+		        && ((this.description == null && other.getDescription() == null)
+		                || (this.description != null && this.description.equals(other.getDescription())))
+		        && ((this.eventTypeId == null && other.getEventTypeId() == null)
+		                || (this.eventTypeId != null && this.eventTypeId.equals(other.getEventTypeId())));
+		__equalsCalc	= null;
+		return _equals;
+	}
 
+	private boolean __hashCodeCalc = false;
 
-    /**
-     * Sets the eventTypeId value for this EventType.
-     * 
-     * @param eventTypeId
-     */
-    public void setEventTypeId(java.lang.Long eventTypeId) {
-        this.eventTypeId = eventTypeId;
-    }
+	public synchronized int hashCode() {
+		if (__hashCodeCalc) {
+			return 0;
+		}
+		__hashCodeCalc = true;
+		int _hashCode = 1;
+		if (getCreationDate() != null) {
+			_hashCode += getCreationDate().hashCode();
+		}
+		if (getDescription() != null) {
+			_hashCode += getDescription().hashCode();
+		}
+		if (getEventTypeId() != null) {
+			_hashCode += getEventTypeId().hashCode();
+		}
+		__hashCodeCalc = false;
+		return _hashCode;
+	}
 
-    private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
-        if (!(obj instanceof EventType)) return false;
-        EventType other = (EventType) obj;
-        if (obj == null) return false;
-        if (this == obj) return true;
-        if (__equalsCalc != null) {
-            return (__equalsCalc == obj);
-        }
-        __equalsCalc = obj;
-        boolean _equals;
-        _equals = true && 
-            ((this.creationDate==null && other.getCreationDate()==null) || 
-             (this.creationDate!=null &&
-              this.creationDate.equals(other.getCreationDate()))) &&
-            ((this.description==null && other.getDescription()==null) || 
-             (this.description!=null &&
-              this.description.equals(other.getDescription()))) &&
-            ((this.eventTypeId==null && other.getEventTypeId()==null) || 
-             (this.eventTypeId!=null &&
-              this.eventTypeId.equals(other.getEventTypeId())));
-        __equalsCalc = null;
-        return _equals;
-    }
+	// Type metadata
+	private static org.apache.axis.description.TypeDesc typeDesc = new org.apache.axis.description.TypeDesc(
+	        EventType.class, true);
 
-    private boolean __hashCodeCalc = false;
-    public synchronized int hashCode() {
-        if (__hashCodeCalc) {
-            return 0;
-        }
-        __hashCodeCalc = true;
-        int _hashCode = 1;
-        if (getCreationDate() != null) {
-            _hashCode += getCreationDate().hashCode();
-        }
-        if (getDescription() != null) {
-            _hashCode += getDescription().hashCode();
-        }
-        if (getEventTypeId() != null) {
-            _hashCode += getEventTypeId().hashCode();
-        }
-        __hashCodeCalc = false;
-        return _hashCode;
-    }
+	static {
+		typeDesc.setXmlType(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "EventType"));
+		org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+		elemField.setFieldName("creationDate");
+		elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "CreationDate"));
+		elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "dateTime"));
+		elemField.setMinOccurs(0);
+		elemField.setNillable(false);
+		typeDesc.addFieldDesc(elemField);
+		elemField = new org.apache.axis.description.ElementDesc();
+		elemField.setFieldName("description");
+		elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "Description"));
+		elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+		elemField.setMinOccurs(0);
+		elemField.setNillable(true);
+		typeDesc.addFieldDesc(elemField);
+		elemField = new org.apache.axis.description.ElementDesc();
+		elemField.setFieldName("eventTypeId");
+		elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "EventTypeId"));
+		elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "long"));
+		elemField.setMinOccurs(0);
+		elemField.setNillable(false);
+		typeDesc.addFieldDesc(elemField);
+	}
 
-    // Type metadata
-    private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(EventType.class, true);
+	/**
+	 * Return type metadata object
+	 */
+	public static org.apache.axis.description.TypeDesc getTypeDesc() {
+		return typeDesc;
+	}
 
-    static {
-        typeDesc.setXmlType(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "EventType"));
-        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("creationDate");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "CreationDate"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "dateTime"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(false);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("description");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "Description"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(true);
-        typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("eventTypeId");
-        elemField.setXmlName(new javax.xml.namespace.QName("http://DriveCam.com/Classes", "EventTypeId"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "long"));
-        elemField.setMinOccurs(0);
-        elemField.setNillable(false);
-        typeDesc.addFieldDesc(elemField);
-    }
+	/**
+	 * Get Custom Serializer
+	 */
+	@SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Serializer getSerializer(java.lang.String mechType,
+	        java.lang.Class _javaType, javax.xml.namespace.QName _xmlType) {
+		return new org.apache.axis.encoding.ser.BeanSerializer(_javaType, _xmlType, typeDesc);
+	}
 
-    /**
-     * Return type metadata object
-     */
-    public static org.apache.axis.description.TypeDesc getTypeDesc() {
-        return typeDesc;
-    }
-
-    /**
-     * Get Custom Serializer
-     */
-    public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanSerializer(
-            _javaType, _xmlType, typeDesc);
-    }
-
-    /**
-     * Get Custom Deserializer
-     */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanDeserializer(
-            _javaType, _xmlType, typeDesc);
-    }
+	/**
+	 * Get Custom Deserializer
+	 */
+	@SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Deserializer getDeserializer(java.lang.String mechType,
+	        java.lang.Class _javaType, javax.xml.namespace.QName _xmlType) {
+		return new org.apache.axis.encoding.ser.BeanDeserializer(_javaType, _xmlType, typeDesc);
+	}
 
 }

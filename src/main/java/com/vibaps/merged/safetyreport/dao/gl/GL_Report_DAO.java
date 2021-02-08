@@ -42,6 +42,8 @@ import com.google.gson.JsonParser;
 import com.lytx.dto.ExistingSessionRequest;
 import com.lytx.dto.GetBehaviorsResponse;
 import com.lytx.dto.GetEventsByLastUpdateDateRequest;
+import com.lytx.dto.GetUsersRequest;
+import com.lytx.dto.GetUsersResponse;
 import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
@@ -56,6 +58,9 @@ import com.vibaps.merged.safetyreport.entity.gl.Trip;
 import com.vibaps.merged.safetyreport.services.gl.GL_Report_SER;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -90,6 +95,8 @@ public class GL_Report_DAO {
     static List<Score> bottomNRecords;
     static Integer N_TOP_BOTTOM_RECORDS = 10;
     static List<Map.Entry<String, Integer>> loadSelectedRuleNames;
+    String vechilelytxlist; 
+    Map<Long,String> vechilemap;
 	public static Object view(String geouserid,String db) {
 		Map<String, Object> result = new HashMap<>();
 		List<Gl_RulelistEntity> obj = null;
@@ -130,7 +137,7 @@ public class GL_Report_DAO {
 						try {
 							Session session1 = HibernateUtil.getsession();
 							Transaction transaction1 = session1.beginTransaction();
-							obj1 = session1.createSQLQuery("SELECT gen_rulelist_id,status,weight FROM gl_selectedvalues where gen_user_id=1 order by gen_rulelist_id").list();
+							obj1 = session1.createSQLQuery("SELECT a.gen_rulelist_id,a.status,a.weight FROM gl_selectedvalues a ,gl_rulelist b,gen_user c WHERE a.gen_user_id=c.id AND b.db=c.db AND b.db=:db GROUP BY a.gen_rulelist_id").setParameter("db",db).list();
 							transaction1.commit();
 							
 							Iterator it = obj1.iterator();
@@ -162,7 +169,7 @@ public class GL_Report_DAO {
 		try {
 			Session session = HibernateUtil.getsession();
 			Transaction transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id order by value) as value order by value.status desc").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
+			obj = session.createSQLQuery("select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.db=:db order by value) as value order by value.status desc").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
 			transaction.commit();
 		} catch (Exception exception) {}
 		return obj;
@@ -176,13 +183,13 @@ public class GL_Report_DAO {
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id order by value) as value order by value.value").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
+			obj = session.createSQLQuery("select * from (select a.id,CONCAT(a.rulecompany,'-',a.rulename) as value,rulevalue,a.rulecompany,b.status,b.weight,d.minmiles from gl_rulelist a,gl_selectedvalues b,gen_user c,gl_minmiles d where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and d.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.db=:db order by value) as value order by value.value").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
 			transaction.commit();
 		} catch (Exception exception) {}
 		return obj;
 	}
 	
-	public Object getgeodropdown(String geouserid) {
+	public Object getgeodropdown(String geouserid,String db) {
 		Map<String, Object> result = new HashMap<>();
 		Session session = null;
 		List<Gl_RulelistEntity> obj = null;
@@ -190,7 +197,7 @@ public class GL_Report_DAO {
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.rulecompany='G'").setParameter("userid", geouserid).list();
+			obj = session.createSQLQuery("select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.rulecompany='G' and a.db=:db").setParameter("userid", geouserid).setParameter("db",db).list();
 			transaction.commit();
 		} catch (Exception exception) {}
 		return obj;
@@ -204,7 +211,7 @@ public class GL_Report_DAO {
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.rulecompany='L'").setParameter("userid", geouserid).setParameter("db", db).list();
+			obj = session.createSQLQuery("select a.rulevalue from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.db=:db and a.id=b.gen_rulelist_id and a.rulecompany='L'").setParameter("userid", geouserid).setParameter("db", db).list();
 			transaction.commit();
 		} catch (Exception exception) {}
 		return obj;
@@ -217,7 +224,7 @@ public class GL_Report_DAO {
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = (ArrayList)session.createSQLQuery("select CONCAT(a.rulecompany,'-',a.rulename) as value from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 order by value").setParameter("db", db).setParameter("userid", geouserid).list();
+			obj = (ArrayList)session.createSQLQuery("select CONCAT(a.rulecompany,'-',a.rulename) as value from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.db=:db order by value").setParameter("db", db).setParameter("userid", geouserid).list();
 			transaction.commit();
 		} catch (Exception exception) {}
 		return obj;
@@ -230,7 +237,7 @@ public class GL_Report_DAO {
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = (ArrayList)session.createSQLQuery("select CONCAT(a.rulecompany,'-',a.rulename) as value,b.weight from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 order by value").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
+			obj = (ArrayList)session.createSQLQuery("select CONCAT(a.rulecompany,'-',a.rulename) as value,b.weight from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.db=:db order by value").setParameter("userid", geouserid).setParameter("db", db).setResultTransformer((ResultTransformer)Transformers.ALIAS_TO_ENTITY_MAP).list();
 			transaction.commit();
 		} catch (Exception exception) {}
 		return obj;
@@ -245,7 +252,7 @@ public class GL_Report_DAO {
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = session.createSQLQuery("select concat(b.rulecompany,'-',b.rulename) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).list();
+			obj = session.createSQLQuery("select concat(b.rulecompany,'-',b.rulename) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and b.db=:db and a.status= 1 and a.gen_user_id=c.id and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).list();
 			transaction.commit();
 		} catch (Exception exception) {}
 		
@@ -258,28 +265,30 @@ public class GL_Report_DAO {
 	
 	public static int geoCount(String geouserid,String db) {
 		Session session = null;
-		int obj = 0;
+		BigInteger obj = null;
 		Transaction transaction = null;
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = ((Integer) session.createSQLQuery("select count(b.id) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).intValue();
+			obj = ((BigInteger) session.createSQLQuery("select count(b.id) from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and b.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id").setParameter("userid", geouserid).setParameter("db", db).uniqueResult());
 			transaction.commit();
-		} catch (Exception exception) {}
-		return obj;
+		} catch (Exception exception) {
+			System.out.println(exception+"exe");
+		}
+		return obj.intValue();
 	}
 	
 	public static int lyCount(String geouserid,String db) {
 		Session session = null;
-		int obj = 0;
+		BigInteger obj = null;
 		Transaction transaction = null;
 		try {
 			session = HibernateUtil.getsession();
 			transaction = session.beginTransaction();
-			obj = ((Integer) session.createSQLQuery("select count(b.id) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='L' and a.gen_rulelist_id=b.id order by val").setParameter("userid", geouserid).setParameter("db", db).uniqueResult()).intValue();
+			obj = ((BigInteger) session.createSQLQuery("select count(b.id) from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='L' and a.gen_rulelist_id=b.id").setParameter("userid", geouserid).setParameter("db", db).uniqueResult());
 			transaction.commit();
 		} catch (Exception exception) {}
-		return obj;
+		return obj.intValue();
 	}
 	
 	public static int getwe(String geouserid, String rule,String db) {
@@ -349,12 +358,11 @@ public class GL_Report_DAO {
 			transaction.commit();
 		} catch (Exception exception) {}
 		int j = 0;
-		if (i > 0)
 			try {
 				for (int d = 0; d < v.size(); d++) {
 					session = HibernateUtil.getsession();
 					transaction = session.beginTransaction();
-					j = session.createSQLQuery("update gl_rulelist a,gl_selectedvalues b,gen_user c set b.status=1,b.weight=:we where  c.companyid=:companyid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.rulevalue=:rval").setParameter("we", Integer.valueOf(((Gl_RulelistEntity)v.get(d)).getWeight())).setParameter("companyid", companyid).setParameter("db", db).setParameter("rval", ((Gl_RulelistEntity)v.get(d)).getRulevalue()).executeUpdate();
+					j = session.createSQLQuery("update gl_rulelist a,gl_selectedvalues b,gen_user c set b.status=1,b.weight=:we where  c.companyid=:companyid and c.db=:db and a.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and a.id=:rval").setParameter("we", Integer.valueOf(((Gl_RulelistEntity)v.get(d)).getWeight())).setParameter("companyid", companyid).setParameter("db", db).setParameter("rval", ((Gl_RulelistEntity)v.get(d)).getId()).executeUpdate();
 					transaction.commit();
 					result.put("result", "Rules list saved");
 				} 
@@ -428,7 +436,7 @@ while(it.hasNext()){
 	
 	
 	
-	public String processforNonLytx(String sdate, String edate, String geosees, ArrayList<String> geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype) throws ParseException, MalformedURLException, IOException {
+	public String processforNonLytx(String sdate, String edate, String geosees, String geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype) throws ParseException, MalformedURLException, IOException {
 		
 		reportBy=enttype;
 
@@ -495,10 +503,10 @@ bottomNRecords=new ArrayList<Score>();
 		return reportResponseJson;
 	}
 	
-
+	
 	
 		
-		public String process(String sees, String sdate, String edate, String groupid, String geosees, ArrayList<String> geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype,String endpoint) throws ParseException, MalformedURLException, IOException {
+		public String process(String sees, String sdate, String edate, String groupid, String geosees, String geotabgroups, String geouname, String geodatabase, String url, String filename, String templect, String enttype,String endpoint) throws ParseException, MalformedURLException, IOException {
 			
 			reportBy=enttype;
 
@@ -517,16 +525,24 @@ reportRows = new ArrayList<ReportRow>();
  lytxBehaviors=new LinkedHashMap<Integer, String>();  
  topNRecords=new ArrayList<Score>();
  bottomNRecords=new ArrayList<Score>();
- 
+
 
 			if(reportBy.equalsIgnoreCase("Driver")) {
 				//Load Trips data to get driver data corresponding to Vehicles;
 				vehicleTrips = loadVehicleTripsMap(geouname,geodatabase,geosees,url,sdate,edate);
+				
+				
 			}
 			
 			//process GEOTAB exceptions response
+	
+			int geoRuleCount=0;
+			geoRuleCount=geoCount(geouname, geodatabase);
 			
+			System.out.println("Geoci---"+geoRuleCount);
 			
+			if(geoRuleCount > 0)
+			{
 			if(reportBy.equalsIgnoreCase("Driver")) {
 				System.out.println("COMBINED REPORT - DRIVER");
 				extractGeotabDriverData(getGeotabDriverExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype),geouname);
@@ -534,16 +550,32 @@ reportRows = new ArrayList<ReportRow>();
 				System.out.println("COMBINED REPORT - VEHICLE");
 				extractGeotabVehicleData(getGeotabVehicleExceptionSummariesResponseJson(sdate,edate,geouname,geotabgroups,geodatabase,geosees,url,enttype),geouname);
 			}
+			}
 			
 			//process LYTX exceptions response
 			//Create a Map of lytx vehicleIds to exception map
-	       lytxVehicleEventsRecord = extractExceptionDataFromLytxResponse(getLytxExceptionSummariesResponseJson(sdate,edate,sees,groupid,endpoint),sees,endpoint);
-	        
+			if(reportBy.equalsIgnoreCase("Driver")) 
+			{
+				System.out.println("Driver-----Lytx");
+	       lytxVehicleEventsRecord = extractExceptionDataFromLytxResponseforDriver(getLytxExceptionSummariesResponseJson(sdate,edate,sees,groupid,endpoint),sees,endpoint);
+			}
+			else
+			{
+          lytxVehicleEventsRecord = extractExceptionDataFromLytxResponse(getLytxExceptionSummariesResponseJson(sdate,edate,sees,groupid,endpoint),sees,endpoint);
+
+			}
 	     //  System.out.println(lytxVehicleEventsRecord+"----");
 	        
 	        //combine Lytx exceptions data with the geotab exception report
+	       if(geoRuleCount > 0)
+			{
 	        updateCombinedReportWithLytxExceptions(lytxVehicleEventsRecord,geouname);
-
+			}
+	       else
+	       {
+		        createLytxExceptionsReport(lytxVehicleEventsRecord,geouname);
+ 
+	       }
 		/*
 		 * calculateTopBottomNRecords(); //Print the top scores for(int i = 0; i <
 		 * topNRecords.size(); i++) { System.out.println("Top " + (i+1)+" - " +
@@ -804,6 +836,81 @@ reportRows = new ArrayList<ReportRow>();
 			return lytxVehicleEventsRecord;
 		}
 
+		
+		private Map<String, Map<String, Integer>> extractExceptionDataFromLytxResponseforDriver(String getLytxExceptionSummariesResponseJson,String lytxSess,String endpoint) throws RemoteException {
+			//Load Lytx vehicle map with vehicleId and names
+			
+			lytxBehaviors=null;
+			vechilelytxlist=null;
+			if(vechilelytxlist == null) {
+				vechilemap=new LinkedHashMap<Long, String>();
+				ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
+				  GetUsersResponse vr=new GetUsersResponse();
+				  GetUsersRequest getusersrequest=new GetUsersRequest();
+				  getusersrequest.setSessionId(lytxSess);
+					  vr=er.getUsers(getusersrequest);
+					JSONObject jsonObject2 = new JSONObject(vr);
+
+			
+			  vechilelytxlist=jsonObject2.toString(); 
+			  JSONObject lytxVechileJO = new JSONObject(vechilelytxlist);
+			 
+					JSONArray lytxVechileArray = jsonObject2.getJSONArray("users");
+					
+					
+					for(int i=0;i<lytxVechileArray.length();i++)
+					{
+						JSONObject lytxObjValue=lytxVechileArray.getJSONObject(i);
+						
+						//System.out.println(lytxObjValue.getLong("userId")+"-"+lytxObjValue.getString("firstName")+"-"+lytxObjValue.getString("lastName"));
+						
+						vechilemap.put(lytxObjValue.getLong("userId"),lytxObjValue.getString("firstName")+" "+lytxObjValue.getString("lastName"));
+					}
+				 
+		        //lytxVehicleList = loadLytxVehicleID_NameMap(getLytxVehicleID_NameResponseJson(lytxSess,endpoint));
+			}
+	 		//Load Lytx Behaviours map
+			if(lytxBehaviors == null) {
+				lytxBehaviors=new LinkedHashMap<Integer, String>();
+				lytxBehaviors = loadLytxBehaviors(getLytxBehaviorsResponseJson(lytxSess,endpoint));  
+
+			}
+			//Process lytxExceptionSummariesJson
+			lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
+		
+			
+			JSONObject lytxEventsJO = new JSONObject(getLytxExceptionSummariesResponseJson);
+			JSONArray lytxEventsArray = lytxEventsJO.getJSONArray("events");
+			for (int i = 0; i < lytxEventsArray.length(); i++) {
+			    Long driverId = lytxEventsArray.getJSONObject(i).getLong("driverId");
+			    String vehicleName = vechilemap.get(driverId);
+			    
+			    
+			    Map<String, Integer> lytxExceptionEvents = lytxVehicleEventsRecord.get(vehicleName);
+			    if(lytxExceptionEvents == null) {
+			    	lytxExceptionEvents = new HashMap<String, Integer>();
+			    	
+			    	lytxVehicleEventsRecord.put(vehicleName, lytxExceptionEvents);
+			    	
+
+			    }
+				JSONArray lytxBehavioursArray = lytxEventsArray.getJSONObject(i).getJSONArray("behaviors");
+				for(int j = 0; j < lytxBehavioursArray.length(); j++) {
+					int behavior = lytxBehavioursArray.getJSONObject(j).getInt("behavior");
+					String exceptionName = lytxBehaviors.get(behavior);
+					Integer behaviorCount = lytxExceptionEvents.get(exceptionName); 
+					if(behaviorCount == null) {
+						behaviorCount = 0;
+					}
+					
+
+					
+					lytxExceptionEvents.put(exceptionName, ++behaviorCount);
+				}
+			}
+			return lytxVehicleEventsRecord;
+		}
+
 
 		/**
 		 * @param reportRows
@@ -839,6 +946,40 @@ reportRows = new ArrayList<ReportRow>();
 				}
 			}
 		}
+		
+		private void createLytxExceptionsReport(Map<String, Map<String, Integer>> lytxVehicleEventsRecord,String userName) {
+			//for every vehicle in lytxVehicleEventsRecord
+			// displayReportColumnHeaders=loadReporColumntHeaders(userName);
+			
+			for (Map.Entry<String, Map<String, Integer>> lytxVehiclesEventsMapEntry : lytxVehicleEventsRecord.entrySet()) {
+				//Get the report row corresponding to that vehicle.
+				String lytxVehicleName = lytxVehiclesEventsMapEntry.getKey();
+				
+				//possible performance issue here.  Better to use Maps.
+				ReportRow reportRow = new ReportRow();
+				reportRow.setDistance(0);
+				reportRow.setGroup("-");
+			    reportRow.setName(lytxVehicleName);
+				
+	
+				Map<String, Integer> lytxVehExceptions = lytxVehiclesEventsMapEntry.getValue();
+				for(int m=EXCEPTIONS_START_COLUMN; m < displayReportColumnHeaders.size(); m++) {
+					if(lytxVehExceptions.get(displayReportColumnHeaders.get(m)) != null) {
+						//System.out.println(lytxVehicleName+"-"+displayReportColumnHeaders.get(m)+"--"+lytxVehExceptions.get(displayReportColumnHeaders.get(m)));
+						
+						reportRow.getSelectedRules().put(displayReportColumnHeaders.get(m),lytxVehExceptions.get(displayReportColumnHeaders.get(m)));
+					}
+					else {
+						if(reportRow.getSelectedRules().get(displayReportColumnHeaders.get(m)) == null){
+							reportRow.getSelectedRules().put(displayReportColumnHeaders.get(m), 0);
+						}	
+					}
+					
+				}
+				reportRows.add(reportRow);
+			}
+		}
+
 
 		public String createReportReponseJson(String userName) {
 	        //create a json response
@@ -1152,9 +1293,9 @@ reportRows = new ArrayList<ReportRow>();
 
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
-		public String getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
+		public String getGeotabDriverExceptionSummariesResponseJson(String sdate,String edate,String geouname,String geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
 		
-			  Object getgeodropdown = this.ser.getgeodropdown(geouname);
+			  Object getgeodropdown = this.ser.getgeodropdown(geouname,geodatabase);
 			    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		      String sDate = sdate;
@@ -1170,11 +1311,14 @@ reportRows = new ArrayList<ReportRow>();
 		        } 
 		      } 
 		      String groupvalue = "";
-		      for (int i = 0; i < geotabgroups.size(); i++) {
-		        if (i != geotabgroups.size() - 1) {
-		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroups.get(i) + "\"},";
+		      
+				String[] geotabgroupsval = geotabgroups.split(",");
+		      
+		      for (int i = 0; i < geotabgroupsval.length; i++) {
+		        if (i != geotabgroupsval.length - 1) {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"},";
 		        } else {
-		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroups.get(i) + "\"}";
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"}";
 		        } 
 		      } 
 		      String uri = "https://" + url + "/apiv1";
@@ -1217,8 +1361,8 @@ reportRows = new ArrayList<ReportRow>();
 
 		//FOR TESTING ONLY:  This method should make the actual call to Geotab and get the exceptionSummariesJson
 		//Guna todo: copy the request here (commented) to get the response below;
-		public String getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,ArrayList<String> geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
-			Object getgeodropdown = this.ser.getgeodropdown(geouname);
+		public String getGeotabVehicleExceptionSummariesResponseJson(String sdate,String edate,String geouname,String geotabgroups,String geodatabase,String geosees,String url,String enttype) throws ParseException, MalformedURLException, IOException {
+			Object getgeodropdown = this.ser.getgeodropdown(geouname,geodatabase);
 		    ArrayList<String> getl = (ArrayList<String>)getgeodropdown;
 			String gvalue = "";
 			for (int j = 0; j < getl.size(); j++) {
@@ -1229,13 +1373,15 @@ reportRows = new ArrayList<ReportRow>();
 				}
 			}
 			String groupvalue = "";
-			for (int i = 0; i < geotabgroups.size(); i++) {
-				if (i != geotabgroups.size() - 1) {
-					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"},";
-				} else {
-					groupvalue = groupvalue + "{\"id\":\"" + (String) geotabgroups.get(i) + "\"}";
-				}
-			}
+			String[] geotabgroupsval = geotabgroups.split(",");
+		      
+		      for (int i = 0; i < geotabgroupsval.length; i++) {
+		        if (i != geotabgroupsval.length - 1) {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"},";
+		        } else {
+		          groupvalue = groupvalue + "{\"id\":\"" + (String)geotabgroupsval[i] + "\"}";
+		        } 
+		      } 
 			String uri = "https://" + url + "/apiv1";
 			String urlParameters = "{\"method\":\"ExecuteMultiCall\",\"params\":{\"calls\":[{\"method\":\"GetReportData\",\"params\":{\"argument\":{\"runGroupLevel\":-1,\"isNoDrivingActivityHidden\":true,\"fromUtc\":\""
 					+ sdate + "T01:00:00.000Z\",\"toUtc\":\"" + edate
@@ -1245,7 +1391,7 @@ reportRows = new ArrayList<ReportRow>();
 					+ geodatabase + "\",\"sessionId\":\"" + geosees + "\",\"userName\":\"" + geouname + "\"}}}";
 			String serverurl = uri;
 			
-			//System.out.println(url+"-"+urlParameters);
+			System.out.println(url+"-"+urlParameters);
 			HttpURLConnection con = (HttpURLConnection) (new URL(serverurl)).openConnection();
 			con.setRequestMethod("POST");
 			con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
@@ -1268,6 +1414,7 @@ reportRows = new ArrayList<ReportRow>();
 			rd.close();
 			  JsonParser parser = new JsonParser();
 		      JsonObject o = parser.parse(response.toString()).getAsJsonObject();
+		      
 		      
 		      String geotabDriverExceptionSummariesJson = "{\"result\":" + o.getAsJsonArray("result").get(0).toString() + "}";
 		
@@ -1307,7 +1454,6 @@ reportRows = new ArrayList<ReportRow>();
 			JSONObject jsonObject3 = new JSONObject(qr);
 			String lytxExceptionSummariesResponseJson = toStringValue(jsonObject3);
 			
-
 			return lytxExceptionSummariesResponseJson;
 		}
 		

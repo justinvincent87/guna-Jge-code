@@ -2,6 +2,9 @@ package com.vibaps.merged.safetyreport.services.gl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.gson.JsonObject;
 import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
@@ -203,6 +207,23 @@ public class CommonGeotabService {
 		 return builder.params().typeName("Trailer").search().id(trailerId)
 				.build();
 		
+	}
+
+	public String uploadFile(MultipartFile file,String filePath) throws IOException {
+		// TODO Auto-generated method stub
+		byte[] bytes = file.getBytes();
+        Path path = Paths.get(filePath+file.getOriginalFilename());
+        Files.write(path, bytes);
+
+    
+		return "You successfully uploaded '" + file.getOriginalFilename();
+	}
+
+	public ResponseEntity<String> apiCallUsingURL(String url) {
+		
+		ResponseEntity<String> response = restTemplate.postForEntity(url,null, String.class);
+		
+		return response;
 	}
 
 

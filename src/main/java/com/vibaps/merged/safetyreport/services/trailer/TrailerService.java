@@ -75,6 +75,16 @@ public class TrailerService {
 	    int usecase;
 	    
 		String payload =null;
+		Long comDatabaseId;
+		
+		if(comDatabaseRepository.countdatabaseName(trailerParams.getGeotabDatabase()) > 0)
+		{
+		 comDatabaseId=comDatabaseRepository.findBydatabaseName(trailerParams.getGeotabDatabase()).getId();
+		}else
+		{
+		
+			comDatabaseId=insertDeviceandTrailer(trailerParams);
+		}
 		
 		
 		
@@ -104,40 +114,26 @@ public class TrailerService {
 		lisrResponce.add(parsedResponse);
 		}
 
-		return convertParsedReponseShow(lisrResponce,trailerParams);
+		return convertParsedReponseShow(lisrResponce,trailerParams,comDatabaseId);
 	}
 	
-	private TrailerResponce convertParsedReponseShow(List<JsonObject> parsedResponse,TrailerParams trailerParams) 
+	private TrailerResponce convertParsedReponseShow(List<JsonObject> parsedResponse,TrailerParams trailerParams,Long comDatabaseId) 
 	{
 		// TODO Auto-generated method stub
-		
+		 TrailerResponce trailerResponceReturn = null;
 		
 		String deviceName;
 		String trailerName;
 		String trailerId = trailerParams.getTrailerId();
 		String[] trailerArray = trailerId.split(",");
-		Long comDatabaseId;
-		
-		if(comDatabaseRepository.countdatabaseName(trailerParams.getGeotabDatabase()) > 0)
-		{
-		 comDatabaseId=comDatabaseRepository.findBydatabaseName(trailerParams.getGeotabDatabase()).getId();
-		}else
-		{
-		
-			comDatabaseId=insertDeviceandTrailer(trailerParams);
-		}
 		
 		
 
-		boolean trailerCheck=false;
 		boolean exist=false;
 		TrailerResponce latlngFrom,latlngTo,addresFrom,addresTo;
 		//TrailerResponce trailerResponce=null;
 	    
-		if(!trailerArray[0].equalsIgnoreCase("selectalltrailer"))
-		{
-			trailerCheck=true;
-		}
+		
 	    
 		
 		
@@ -151,65 +147,7 @@ public class TrailerService {
 	    
 	    for(int i=0;i<names.size();i++){
 	    	JsonObject device=names.get(i).getAsJsonObject();
-	    	
-	    	if(!trailerCheck)
-	    	{
-	    		 latlngFrom= getAddresslat(device.get("activeFrom").getAsString(), trailerParams,device.get("device").getAsJsonObject().get("id").
-						  getAsString());
-	    		
-	    		 latlngTo= getAddresslat(device.get("activeTo").getAsString(), trailerParams,device.get("device").getAsJsonObject().get("id").
-						  getAsString());
-	    	
-	    		
-					/*
-					 * log.debug("latlngFrom : {}",
-					 * latlngFrom.getLatitude()+"-"+latlngFrom.getLongitude());
-					 * log.debug("latlngTo : {}",
-					 * latlngTo.getLatitude()+"-"+latlngTo.getLongitude());
-					 */
-	    		 
-	    		 
-	    		if(latlngFrom.getLatitude().equals(latlngTo.getLatitude()) && latlngFrom.getLongitude().equals(latlngTo.getLongitude()))
-	    		{
-	    		 addresFrom=getAddress(latlngFrom, trailerParams);
-	    		 addresTo=addresFrom;
-	    		}else
-	    		{
-	    			 addresFrom=getAddress(latlngFrom, trailerParams);
-		    		 addresTo=getAddress(latlngTo, trailerParams);
-	    			
-	    		}
-	    		
-	    		if(genDeviceRepository.countdeviceIdAndrefComDatabaseId(device.get("device").getAsJsonObject().get("id").
-						  getAsString(),comDatabaseId) > 0)
-	    		
-	    		{
-	    		  deviceName=genDeviceRepository.findBydeviceIdAndrefComDatabaseId(device.get("device").getAsJsonObject().get("id").
-						  getAsString(),comDatabaseId).getDeviceName();
-	    		}else
-	    		{
 
-	    			deviceName=	commonGeotabDAO.insertMissedGeoTabDevice(comDatabaseId, trailerParams, device.get("device").getAsJsonObject().get("id").
-							  getAsString()).getDeviceName();
-				}
-	    		
-	    		if(genTrailerRepository.counttrailerIdAndrefComDatabaseId(device.get("trailer").getAsJsonObject().get("id").
-		  				  getAsString(),comDatabaseId) > 0)
-	    		{
-	    		  trailerName=genTrailerRepository.findBytrailerIdAndrefComDatabaseId(device.get("trailer").getAsJsonObject().get("id").
-		  				  getAsString(),comDatabaseId).getTrailerName();
-	    		}
-	    		else 
-	    		{
-	    			
-	    			trailerName=commonGeotabDAO.insertGeoTabMissedTrailer(comDatabaseId, trailerParams, device.get("trailer").getAsJsonObject().get("id").
-			  				  getAsString()).getTrailerName();
-				}
-	    		 trailerResponce=new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),trailerName,deviceName,addresFrom.getFormattedAddress(),addresTo.getFormattedAddress());
-	    		
-	    	}
-	    	else
-	    	{
 	    		 exist = Arrays.stream(trailerArray).anyMatch(device.get("trailer").getAsJsonObject().get("id").getAsString()::equals);
 	    		
 	    		if(exist)
@@ -261,16 +199,21 @@ public class TrailerService {
 				  				  getAsString()).getTrailerName();
 					}
 		    		
-		    		 trailerResponce=new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),trailerName,deviceName,addresFrom.getFormattedAddress(),addresTo.getFormattedAddress());
+		    		trailerResponceReturn=new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),trailerName,deviceName,addresFrom.getFormattedAddress(),addresTo.getFormattedAddress());
 		    		
 		    		
-		    			
+		    		if(trailerResponceReturn!=null)
+			    	{
+			        responcelist.add(trailerResponceReturn);
+			    	}
+		    		
 	    		}
-	    	}
-	    	if(trailerResponce!=null)
-	    	{
-	        responcelist.add(trailerResponce);
-	    	}
+	    		else
+	    		{
+	    			System.out.println("IDSssss"+device.get("trailer").getAsJsonObject().get("id").getAsString());
+	    		}
+	    	
+	    	
 	    }
 		}
 		

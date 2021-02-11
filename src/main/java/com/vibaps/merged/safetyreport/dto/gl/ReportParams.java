@@ -2,6 +2,8 @@ package com.vibaps.merged.safetyreport.dto.gl;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,4 +34,6 @@ public class ReportParams{
 	private String			endPoint;
 	private String			period;
 	private List<Integer>	ruleId;
+	private String 			filePath;
+	private MultipartFile  	file;
 }

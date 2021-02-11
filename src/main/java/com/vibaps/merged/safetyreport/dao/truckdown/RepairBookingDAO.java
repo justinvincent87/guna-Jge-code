@@ -8,6 +8,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -45,26 +48,35 @@ public class RepairBookingDAO{
 		
 		
 		
-		 truckdoun=repairBookingService.findById(Long.valueOf(1));
-		 String serviceResponse="";
+		 truckdoun=repairBookingService.findById(1L);
+		 List<String> serviceResponse=new ArrayList<String>();
 		 String componyResponce="";
 		 String url="";
+		 
 		if(truckdoun.isPresent())
 		 {
+			String[] serviceArray = serviceType.split(",");
+			
+			for(int i=0;i<serviceArray.length;i++)
+			{
+				serviceType=serviceArray[i];
 			 url=truckdoun.get().getBaseUrl()+"search?key="+truckdoun.get().getKey()+"&service="+serviceType+"&lng="+lng+"&lat="+lat;
 			
-		 }
-		System.out.println(url);
-		
-		serviceResponse=getTruckdownResponce(url);
+				System.out.println(url);
+				
+				serviceResponse.add(getTruckdownResponce(url));
+			}
+	     }
+	
 			
-		
-		 JSONObject serviceObject = new JSONObject(serviceResponse);
+		for(int t=0;t<serviceResponse.size();t++)
+		{
+		 JSONObject serviceObject = new JSONObject(serviceResponse.get(t));
 	        JSONArray serviceArray = serviceObject.getJSONArray("ls");
 	        
 	        for (int i = 0; i < serviceArray.length(); i++) 
 	        {
-	        	JSONObject uiResponce = new JSONObject();
+	        	
 
 	    		
 	    		JSONArray indujualCompany=new JSONArray();
@@ -103,25 +115,16 @@ public class RepairBookingDAO{
 		        
 		        for (int j = 0; j < companyArray.length(); j++) 
 		        {
+		        	
 		        	JSONObject companyJO = companyArray.getJSONObject(j);
-		        	JSONObject timing = companyJO.getJSONObject("hours");
-		        	JSONObject entries= timing.getJSONObject("entries");
-		        	JSONObject dayentries= entries.getJSONObject(day);
+		        	JSONObject uiResponce = new JSONObject();
 		        	uiResponce.put("company_name",servicecJO.getString("n"));
 		        	uiResponce.put("website",servicecJO.getString("wa"));
 		        	uiResponce.put("company_address",servicecJO.getJSONObject("a"));
-		        	uiResponce.put("company_timing",dayentries);
+		        	
 		        	JSONObject companyphoneObject = new JSONObject(phoneResponce);
 		        	uiResponce.put("company_phone",companyphoneObject.getJSONArray("result").get(0));
-		        	
-					/*
-					 * JSONArray dayentriesvalue= dayentries.getJSONArray("entries");
-					 * 
-					 * for(int k=0;k<dayentriesvalue.length();k++) { JSONObject dayJO =
-					 * dayentriesvalue.getJSONObject(k); String startTime = dayJO.getString("st");
-					 * String endTime = dayJO.getString("et"); String openstatus =
-					 * dayJO.getString("t"); System.out.println(startTime +"----"+ endTime); }
-					 */
+		        
 		        	 holeCompany.put(uiResponce);
 		        	 
 		        }
@@ -132,38 +135,61 @@ public class RepairBookingDAO{
 	        }
 	        holeResponce.put("company_details",holeCompany);   
 		System.out.println("{\"company_details\":"+holeCompany+"}");
-		
+		}
 
 		return "{\"company_details\":"+holeCompany+"}";
 	}
-	
+	private boolean duplicateCheck(List<String> delarArray,String ids)
+	{
+		boolean status=false;
+		
+		for (String idCheck : delarArray)
+		  {
+		   if (idCheck==ids)
+		   {
+		    status=true;
+		   }
+		  }
+			/*
+			 * System.out.println(ids+"--"+delarArray.size());
+			 * System.out.println(status+"----");
+			 */
+		return status;
+	}
 	public Object getTruckdowndealer(Double lat, Double lng,String serviceType) throws MalformedURLException, IOException
 	{
 		JSONObject holeResponce = new JSONObject();
 		JSONArray holeCompany=new JSONArray();
 		
+		List<String> duplicateRemove =new ArrayList<String>();
 		
 		 truckdoun=repairBookingService.findById(Long.valueOf(1));
-		 String serviceResponse="";
+		 List<String> serviceResponse=new ArrayList<String>();
 		 String componyResponce="";
 		 String url="";
 		if(truckdoun.isPresent())
 		 {
-			 url=truckdoun.get().getBaseUrl()+"search?key="+truckdoun.get().getKey()+"&service="+serviceType+"&lng="+lng+"&lat="+lat;
+String[] serviceArray = serviceType.split(",");
 			
+			for(int i=0;i<serviceArray.length;i++)
+			{
+				serviceType=serviceArray[i];
+			 url=truckdoun.get().getBaseUrl()+"search?key="+truckdoun.get().getKey()+"&service="+serviceType+"&lng="+lng+"&lat="+lat;
+			 serviceResponse.add(getTruckdownResponce(url));
+			}
 		 }
 		
 		
-			serviceResponse=getTruckdownResponce(url);
 			
 			
-			
-		JSONObject serviceObject = new JSONObject(serviceResponse);
+		for(int t=0;t<serviceResponse.size();t++)	
+		{
+		JSONObject serviceObject = new JSONObject(serviceResponse.get(t));
         JSONArray serviceArray = serviceObject.getJSONArray("ls");
       
         for (int i = 0; i < serviceArray.length(); i++) 
         {
-        	JSONObject uiResponce = new JSONObject();
+        	
 
     		
         	
@@ -172,16 +198,23 @@ public class RepairBookingDAO{
             Long lid = servicecJO.getLong("lid");
             String ids = servicecJO.getString("_id");
             
+         
+    		
+    		if(duplicateRemove.isEmpty() || !duplicateCheck(duplicateRemove,ids))
+    		{
+    			JSONObject uiResponce = new JSONObject();
             uiResponce.put("company_name",servicecJO.getString("n"));
         	uiResponce.put("website",servicecJO.getString("wa"));
         	uiResponce.put("company_address",servicecJO.getJSONObject("a"));
         	uiResponce.put("lid",lid);
         	uiResponce.put("id",ids);
-        	
+        	duplicateRemove.add(ids);
         	holeCompany.put(uiResponce);
+
+    		}
         }
         holeResponce.put("company_details",holeCompany);  
-      
+		}
 		
 		return holeResponce.toString();
 	}

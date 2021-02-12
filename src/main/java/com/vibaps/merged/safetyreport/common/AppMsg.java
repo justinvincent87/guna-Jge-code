@@ -10,7 +10,8 @@ public enum AppMsg {
 	ER001("ER001", "Empty response from geo tab service", HttpStatus.NO_CONTENT),
 	ER002("ER002", "Problem with external service", HttpStatus.INTERNAL_SERVER_ERROR),
 	ER003("ER003", "Error while parse response", HttpStatus.INTERNAL_SERVER_ERROR),
-
+	SUCCESS("SUCCESS","Success Responce",HttpStatus.OK),
+	CV002("CV002", "Invalid parameters", HttpStatus.OK),
 	;
 
 	private String		code;

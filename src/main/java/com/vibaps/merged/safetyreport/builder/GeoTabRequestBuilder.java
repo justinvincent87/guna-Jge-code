@@ -35,8 +35,8 @@ public class GeoTabRequestBuilder implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private static final ObjectMapper	MAPPER			= new ObjectMapper();
-	public static final String			FROM_TS_SUFFIX	= "T01:00:00.000Z";
-	public static final String			TO_TS_SUFFIX	= "T03:59:59.000Z";
+	public static final String			FROM_TS_SUFFIX	= "T00:00:01.000Z";
+	public static final String			TO_TS_SUFFIX	= "T23:59:59.000Z";
 
 	static {
 		// Added field visibility for this builer class
@@ -298,12 +298,12 @@ public class GeoTabRequestBuilder implements Serializable {
 		}
 		
 		public Search activeFrom(String activeFrom) {
-			this.activeFrom = activeFrom;
+			this.activeFrom = activeFrom+FROM_TS_SUFFIX;
 			return this;
 		}
 		
 		public Search activeTo(String activeTo) {
-			this.activeTo = activeTo;
+			this.activeTo = activeTo+TO_TS_SUFFIX;
 			return this;
 		}
 		

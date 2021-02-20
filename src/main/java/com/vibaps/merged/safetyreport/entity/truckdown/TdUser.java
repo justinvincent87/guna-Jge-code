@@ -41,5 +41,14 @@ public class TdUser {
 	@Column(name="base_url")
 	private String baseUrl;
 	
+	@Column(name="token")
+	private String token;
+	
+	@Column(name="grant_type")
+	private String grantType;
+	
+	@Column(name="access_token")
+	private String accessToken;
+	
 	
 }

@@ -284,7 +284,7 @@ public class TrailerService {
 		// TODO Auto-generated method stub
 		
 		
-		String payload =  getReportRequest(trailerParams,-1);
+		String payload =  getReportRequest(trailerParams,5);
 		if (log.isDebugEnabled()) {
 			log.debug("Get report data payload: {}", payload);
 		}
@@ -332,6 +332,9 @@ public class TrailerService {
 		case 4 : return builder.params().typeName(trailerParams.getTypeName())
 				.search().groups(geoTabApiService.getGroupList(trailerParams))
 				.fromDate(trailerParams.getFromDate()+builder.FROM_TS_SUFFIX).resultsLimit(AppConstants.RESULTS_LIMIT)
+				.build();
+		case 5 : return builder.params().typeName(trailerParams.getTypeName())
+				.search().groups(geoTabApiService.getGroupList(trailerParams))
 				.build();
 		default : return builder.params().typeName(trailerParams.getTypeName()).build();
 				

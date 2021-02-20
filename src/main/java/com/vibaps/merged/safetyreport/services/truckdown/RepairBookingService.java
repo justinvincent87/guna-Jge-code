@@ -39,6 +39,12 @@ public Object getTruckdowndealer(TrackDownEntity entity) throws MalformedURLExce
 }
 
 @Transactional
+public int getoath() throws MalformedURLException, IOException {
+	// TODO Auto-generated method stub
+	return repairBookingDAO.getTruckdownOauthResponce();
+}
+
+@Transactional
 public Object getTruckPhone(TrackDownEntity entity) throws MalformedURLException, IOException {
 	// TODO Auto-generated method stub
 	return repairBookingDAO.getTruckPhone(entity.getIds());

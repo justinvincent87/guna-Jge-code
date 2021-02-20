@@ -17,11 +17,14 @@ import javax.transaction.Transactional;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sun.mail.handlers.text_plain;
 import com.vibaps.merged.safetyreport.entity.truckdown.TdUser;
+import com.vibaps.merged.safetyreport.repo.truckdown.TdUserRepo;
 import com.vibaps.merged.safetyreport.services.truckdown.RepairBookingService;
 import com.vibaps.merged.safetyreport.services.truckdown.TdUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.apache.tomcat.util.json.JSONParser;
@@ -38,6 +41,9 @@ public class RepairBookingDAO{
 	
 	@Autowired
 	Optional<TdUser> truckdoun;
+	
+	@Autowired
+	TdUserRepo tdUserRepo;
 	
 	
 	public Object view(Double lat, Double lng,String serviceType,String day) throws MalformedURLException, IOException {
@@ -218,6 +224,9 @@ String[] serviceArray = serviceType.split(",");
 		
 		return holeResponce.toString();
 	}
+
+
+	
 	
 	public Object getTruckTiming(Long lid) throws MalformedURLException, IOException
 	{
@@ -286,17 +295,20 @@ String[] serviceArray = serviceType.split(",");
 		return companyphoneObject.getJSONArray("result").get(0).toString();
 	}
 	
-
+	
 	public String getTruckdownResponce(String urls) throws MalformedURLException, IOException
 	{
+		
 		StringBuilder response = new StringBuilder();
 		
+		Optional<TdUser> truckdoun=repairBookingService.findById(1L);
 		
 		
 		       URL url = new URL(urls);
 		       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("GET");
 		conn.setRequestProperty("Accept", "application/json");
+		conn.setRequestProperty("Authorization","Bearer "+truckdoun.get().getAccessToken());
 		if (conn.getResponseCode() != 200) {
 		       throw new RuntimeException("Failed : HTTP error code : "
 		                     + conn.getResponseCode());
@@ -317,6 +329,58 @@ String[] serviceArray = serviceType.split(",");
 		
 	}
 
+	
+	@Transactional
+	@Scheduled(cron = "0 0/45 * * * ?")
+	public int getTruckdownOauthResponce() throws MalformedURLException, IOException
+	{
+		Optional<TdUser> truckdoun=repairBookingService.findById(1L);
+		
+		
+		       String serverurl = "https://www.truckdown.com/apiv2/oauth2/token?key="+truckdoun.get().getKey();
+		       
+		      String urlParameters="{\n"
+		      		+ "\"api_key\": \""+truckdoun.get().getKey()+"\",\n"
+		      		+ "\"api_secret\":\""+truckdoun.get().getSecretKey()+"\",\n"
+		      		+ "\"token\": \""+truckdoun.get().getToken()+"\",\n"
+		      		+ "\"grant_type\": \""+truckdoun.get().getGrantType()+"\"\n"
+		      		+ "}";
+		       
+				
+				HttpURLConnection con = (HttpURLConnection) (new URL(serverurl)).openConnection();
+				con.setRequestMethod("POST");
+				con.setRequestProperty("Content-Type", " application/json; charset=utf-8");
+				con.setRequestProperty("Content-Language", "en-US");
+		        con.setRequestProperty("Authorization","Bearer "+truckdoun.get().getAccessToken());
+				con.setDoOutput(true);
+				con.setUseCaches(false);
+				con.setDoInput(true);
+				DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+				wr.writeBytes(urlParameters);
+				wr.flush();
+				wr.close();
+				InputStream is = con.getInputStream();
+				BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+				StringBuilder response = new StringBuilder();
+				String line;
+				while ((line = rd.readLine()) != null) {
+					response.append(line);
+					response.append('\r');
+				}
+				rd.close();
+			
+				
+				JSONObject res=new JSONObject(response.toString());
+		return updatetoken(res);
+		
+	}
+	
+	@Transactional
+	public int updatetoken(JSONObject oauthresponce)
+	{
+		return tdUserRepo.update(oauthresponce.getString("refresh_token").toString(),"refresh_token",oauthresponce.getString("access_token").toString(),1L);
+	}
+	
 	
 	
 

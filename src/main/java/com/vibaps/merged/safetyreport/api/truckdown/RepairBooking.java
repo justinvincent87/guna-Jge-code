@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vibaps.merged.safetyreport.entity.truckdown.TdUser;
 import com.vibaps.merged.safetyreport.entity.truckdown.TrackDownEntity;
 import com.vibaps.merged.safetyreport.services.truckdown.RepairBookingService;
 
@@ -53,6 +54,12 @@ public class RepairBooking {
 	public Object getTruckdowndealer(@RequestBody TrackDownEntity entity) throws IOException {
 		
 		return repairBookingService.getTruckdowndealer(entity);
+	}
+	
+	@PostMapping(value="/getTruckDownOauth")
+	public int getTruckdownOath() throws IOException {
+		
+		return repairBookingService.getoath();
 	}
 	
 	@PostMapping(value="/getTruckDownService")

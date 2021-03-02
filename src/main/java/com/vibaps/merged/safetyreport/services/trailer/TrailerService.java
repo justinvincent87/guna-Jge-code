@@ -1,12 +1,22 @@
 package com.vibaps.merged.safetyreport.services.trailer;
 
+import java.math.RoundingMode;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,13 +75,12 @@ public class TrailerService {
 	private GeoTabApiService geoTabApiService;
 	
 	public TrailerResponce showReport(TrailerParams trailerParams)  {
-		List<JsonObject> lisrResponce=new ArrayList<JsonObject>();
+		List<TrailerResponce> lisrResponce=new ArrayList<TrailerResponce>();
 		
 		String deviceId = trailerParams.getDeviceId();
 		
 		
 	    String[] deviceArray = deviceId.split(",");
-	    boolean isAllDevice=deviceArray[0].equalsIgnoreCase("selectalldevice");
 	    int usecase;
 	    
 		String payload =null;
@@ -111,16 +120,37 @@ public class TrailerService {
 
 		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
 		
-		lisrResponce.add(parsedResponse);
+		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
+	    JsonArray names = data.get("result").getAsJsonArray();
+	    
+	    for(int i=0;i<names.size();i++)
+	    {
+	    	JsonObject device=names.get(i).getAsJsonObject();
+	    
+		lisrResponce.add(new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),device.get("trailer").getAsJsonObject().get("id").
+				  getAsString(),device.get("device").getAsJsonObject().get("id").
+				  getAsString()));
+
+	    }
 		}
 
 		return convertParsedReponseShow(lisrResponce,trailerParams,comDatabaseId);
 	}
 	
-	private TrailerResponce convertParsedReponseShow(List<JsonObject> parsedResponse,TrailerParams trailerParams,Long comDatabaseId) 
+	private TrailerResponce convertParsedReponseShow(List<TrailerResponce> parsedResponse,TrailerParams trailerParams,Long comDatabaseId) 
 	{
+		DecimalFormat df = new DecimalFormat("###.###");
+		df.setRoundingMode(RoundingMode.DOWN);
+		List<TrailerResponce> getAddressFromAndToResponce=new ArrayList<TrailerResponce>();
+		
+		String getZoneId=getZoneId(trailerParams);
+		
+		
 		// TODO Auto-generated method stub
 		 TrailerResponce trailerResponceReturn = null;
+		 List<TrailerResponce> latlongResponce = null;
+		 
+		 
 		
 		String deviceName;
 		String trailerName;
@@ -141,65 +171,71 @@ public class TrailerService {
 		
 		for(int t=0;t<parsedResponse.size();t++)
 		{
-		JsonObject data = new Gson().fromJson(parsedResponse.get(t), JsonObject.class);
+/*		JsonObject data = new Gson().fromJson(parsedResponse.get(t), JsonObject.class);
 	    JsonArray names = data.get("result").getAsJsonArray();
 	    
 	    
 	    for(int i=0;i<names.size();i++){
-	    	JsonObject device=names.get(i).getAsJsonObject();
+	    	JsonObject device=names.get(i).getAsJsonObject();*/
 
-	    		 exist = Arrays.stream(trailerArray).anyMatch(device.get("trailer").getAsJsonObject().get("id").getAsString()::equals);
+	    		 exist = Arrays.stream(trailerArray).anyMatch(parsedResponse.get(t).getTrailerId()::equals);
 	    		
 	    		if(exist)
 	    		{
 	    			
-	    			latlngFrom= getAddresslat(device.get("activeFrom").getAsString(), trailerParams,device.get("device").getAsJsonObject().get("id").
-							  getAsString());
+//	    			latlngFrom= getAddresslat(parsedResponse.get(t).getActiveFrom(), trailerParams,parsedResponse.get(t).getDeviceId());
+//		    		latlngTo= getAddresslat(parsedResponse.get(t).getActiveTo(),trailerParams,parsedResponse.get(t).getDeviceId());
+//		    		 
+		    		latlongResponce=getAddresslatlng(parsedResponse.get(t).getActiveFrom(),parsedResponse.get(t).getActiveTo(), trailerParams,parsedResponse.get(t).getDeviceId());	
 		    		
-		    		 latlngTo= getAddresslat(device.get("activeTo").getAsString(), trailerParams,device.get("device").getAsJsonObject().get("id").
-							  getAsString());
+		    		latlngFrom=latlongResponce.get(0);
+		    		latlngTo=latlongResponce.get(1);
 		    		 
-		    		 
-		    		 
-		    		if(latlngFrom.getLatitude().equals(latlngTo.getLatitude()) && latlngFrom.getLongitude().equals(latlngTo.getLongitude()))
+		    		if(df.format(latlngFrom.getLatitude()).equals(df.format(latlngTo.getLatitude())) && df.format(latlngFrom.getLongitude()).equals(df.format(latlngTo.getLongitude())))
 		    		{
 		    		 addresFrom=getAddress(latlngFrom, trailerParams);
 		    		 addresTo=addresFrom;
 		    		}else
 		    		{
-		    			 addresFrom=getAddress(latlngFrom, trailerParams);
-			    		 addresTo=getAddress(latlngTo, trailerParams);
+						/*
+						 * addresFrom=getAddress(latlngFrom, trailerParams);
+						 * addresTo=getAddress(latlngTo, trailerParams);
+						 */
+		    			 getAddressFromAndToResponce=getAddressFromAndTo(latlngFrom,latlngTo,trailerParams);
+		    			addresFrom=getAddressFromAndToResponce.get(0);
+		    			addresTo=getAddressFromAndToResponce.get(1);
 		    			
 		    		}
 		    		
 		    		
-		    		if(genDeviceRepository.countdeviceIdAndrefComDatabaseId(device.get("device").getAsJsonObject().get("id").
-							  getAsString(),comDatabaseId) > 0)
+		    		if(genDeviceRepository.countdeviceIdAndrefComDatabaseId(parsedResponse.get(t).getDeviceId(),comDatabaseId) > 0)
 		    		
 		    		{
-		    		  deviceName=genDeviceRepository.findBydeviceIdAndrefComDatabaseId(device.get("device").getAsJsonObject().get("id").
-							  getAsString(),comDatabaseId).getDeviceName();
+		    		  deviceName=genDeviceRepository.findBydeviceIdAndrefComDatabaseId(parsedResponse.get(t).getDeviceId(),comDatabaseId).getDeviceName();
 		    		}else
 		    		{
 
-		    			deviceName=	commonGeotabDAO.insertMissedGeoTabDevice(comDatabaseId, trailerParams, device.get("device").getAsJsonObject().get("id").
-								  getAsString()).getDeviceName();
+		    			deviceName=	commonGeotabDAO.insertMissedGeoTabDevice(comDatabaseId, trailerParams, parsedResponse.get(t).getDeviceId()).getDeviceName();
 					}
 		    		
-		    		if(genTrailerRepository.counttrailerIdAndrefComDatabaseId(device.get("trailer").getAsJsonObject().get("id").
-			  				  getAsString(),comDatabaseId) > 0)
+		    		if(genTrailerRepository.counttrailerIdAndrefComDatabaseId(parsedResponse.get(t).getTrailerId(),comDatabaseId) > 0)
 		    		{
-		    		  trailerName=genTrailerRepository.findBytrailerIdAndrefComDatabaseId(device.get("trailer").getAsJsonObject().get("id").
-			  				  getAsString(),comDatabaseId).getTrailerName();
+		    		  trailerName=genTrailerRepository.findBytrailerIdAndrefComDatabaseId(parsedResponse.get(t).getTrailerId(),comDatabaseId).getTrailerName();
 		    		}
 		    		else 
 		    		{
 		    			
-		    			trailerName=commonGeotabDAO.insertGeoTabMissedTrailer(comDatabaseId, trailerParams, device.get("trailer").getAsJsonObject().get("id").
-				  				  getAsString()).getTrailerName();
+		    			trailerName=commonGeotabDAO.insertGeoTabMissedTrailer(comDatabaseId, trailerParams, parsedResponse.get(t).getTrailerId()).getTrailerName();
 					}
 		    		
-		    		trailerResponceReturn=new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),trailerName,deviceName,addresFrom.getFormattedAddress(),addresTo.getFormattedAddress());
+		    		String totime=getZoneTime(getZoneId,parsedResponse.get(t).getActiveTo());
+		    		String toaddress="-";
+		    		if(!totime.equals("-"))
+		    		{
+		    			toaddress=addresTo.getFormattedAddress();	
+		    		}
+		    		
+		    		trailerResponceReturn=new TrailerResponce(getZoneTime(getZoneId,parsedResponse.get(t).getActiveFrom()),totime,trailerName,deviceName,addresFrom.getFormattedAddress(),toaddress);
 		    		
 		    		
 		    		if(trailerResponceReturn!=null)
@@ -208,20 +244,97 @@ public class TrailerService {
 			    	}
 		    		
 	    		}
-	    		else
-	    		{
-	    			System.out.println("IDSssss"+device.get("trailer").getAsJsonObject().get("id").getAsString());
-	    		}
+	    		
 	    	
 	    	
 	    }
-		}
+		/* } */
 		
 		//System.out.println(responcelist);
 		return  new TrailerResponce(responcelist);
 	}
 	
+	@Cacheable(value = "getAddresslatlng", unless = "#ts0=='getAddresslatlng'")
+	public List<TrailerResponce> getAddresslatlng(String activeFrom,String activeTo,TrailerParams trailerParams,String deviceid) 
+	{
+		// TODO Auto-generated method stub
+		
+		
+		String payload =  getLogPayloadFromTo(activeFrom,activeTo,trailerParams,deviceid);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
 
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return convertParsedReponseLatLngnew(parsedResponse);
+		}
+	
+	
+	@Cacheable(value = "getZoneTime", unless = "#ts1=='getZoneTime'")
+	private String getZoneTime(String timeZoneId,String utcTime)
+	{
+		
+	    DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+	    DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd/MM/yyyy hh.mm a");
+
+	    
+	     ZonedDateTime parsed = ZonedDateTime.parse(utcTime, formatter.withZone(ZoneId.of(timeZoneId)));
+	     if(parsed.getYear()>Calendar.getInstance().get(Calendar.YEAR))
+	     {
+	    	 return "-";
+	     }
+	     return  parsed.format(formatter1);
+	}
+	
+	
+	private String getZoneId(TrailerParams trailerParams)
+	{
+		String payload =  getReportRequest(trailerParams,6);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		
+		
+		
+		return  parsezoneId(parsedResponse);
+	}
+
+	public String parsezoneId(JsonObject parsedResponse) 
+	{
+		
+		List<TrailerResponce> responcelist=new ArrayList<>();
+		
+		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
+	    JsonArray names = data .get("result").getAsJsonArray();
+	    
+	    String zoneId=names.get(0).getAsJsonObject().get("timeZoneId").getAsString();
+	    	  
+		return zoneId;
+	}
+	
 
 	
 	private Long insertDeviceandTrailer(TrailerParams trailerParams) {
@@ -336,6 +449,9 @@ public class TrailerService {
 		case 5 : return builder.params().typeName(trailerParams.getTypeName())
 				.search().groups(geoTabApiService.getGroupList(trailerParams))
 				.build();
+		case 6 : return builder.params().typeName("User")
+				.search().name(trailerParams.getGeotabUserName())
+				.build();
 		default : return builder.params().typeName(trailerParams.getTypeName()).build();
 				
 		}
@@ -365,6 +481,7 @@ public class TrailerService {
 		return convertParsedReponseLatLng(parsedResponse);
 		}
 	
+		@Cacheable(value = "getAddress", unless = "#ts2=='getAddress'")
 		public TrailerResponce getAddress(TrailerResponce latlng,TrailerParams trailerParams) 
 		{
 		
@@ -390,14 +507,52 @@ public class TrailerService {
 		
 		
 	}
+		
+		@Cacheable(value = "getAddressFromAndTo", unless = "#ts3=='getAddressFromAndTo'")
+		public List<TrailerResponce> getAddressFromAndTo(TrailerResponce fromlatlng,TrailerResponce tolatlng,TrailerParams trailerParams) 
+		{
+		
+			String payload =  getAddressPayloadFromAndTo(fromlatlng,tolatlng,trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		 
+		
+		return convertParsedReponseAddressFromAndTo(parsedResponse);
+		
+		
+	}	
 	
 	private TrailerResponce convertParsedReponseLatLng(JsonObject parsedResponse) {		
 		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
 	    JsonArray names = data .get("result").getAsJsonArray();
-	    JsonObject device=names.get(0).getAsJsonObject();      
-	    trailerResponce=new TrailerResponce(device.get("latitude").getAsDouble(),device.get("longitude").getAsDouble());
+	    JsonObject device=names.get(0).getAsJsonObject(); 
+	   return new TrailerResponce(names.get(0).getAsJsonObject().get("latitude").getAsDouble(),names.get(0).getAsJsonObject().get("longitude").getAsDouble());
+	}
+	
+	private List<TrailerResponce> convertParsedReponseLatLngnew(JsonObject parsedResponse) {		
+		List<TrailerResponce> responce=new ArrayList<TrailerResponce>();
+		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
+	    JsonArray names = data .get("result").getAsJsonArray();
+	    
+	    responce.add(new TrailerResponce(names.get(0).getAsJsonArray().get(0).getAsJsonObject().get("latitude").getAsDouble(),names.get(0).getAsJsonArray().get(0).getAsJsonObject().get("longitude").getAsDouble()));
+	    responce.add(new TrailerResponce(names.get(1).getAsJsonArray().get(0).getAsJsonObject().get("latitude").getAsDouble(),names.get(1).getAsJsonArray().get(0).getAsJsonObject().get("longitude").getAsDouble()));
 
-		return trailerResponce;
+	    
+	    
+		return responce;
 	}
 	
 	private TrailerResponce convertParsedReponseAddress(JsonObject parsedResponse) {		
@@ -407,6 +562,16 @@ public class TrailerService {
 	    trailerResponce=new TrailerResponce(device.get("formattedAddress").getAsString());
 
 		return trailerResponce;
+	}
+	
+	private List<TrailerResponce> convertParsedReponseAddressFromAndTo(JsonObject parsedResponse) {		
+		List<TrailerResponce> address=new ArrayList<TrailerResponce>();
+		
+		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
+	    JsonArray names = data .get("result").getAsJsonArray();
+	    address.add(new TrailerResponce(names.get(0).getAsJsonObject().get("formattedAddress").getAsString()));
+	    address.add(new TrailerResponce(names.get(0).getAsJsonObject().get("formattedAddress").getAsString()));
+		return address;
 	}
 	
 	
@@ -423,6 +588,21 @@ public class TrailerService {
 		
 	}
 	
+	private String getLogPayloadFromTo(String activeFrom,String activeTo,TrailerParams trailerParams,String deviceId) 
+	{
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_EXECUTE_MULTI_CALL);
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		return builder.params().addCalls().method(AppConstants.METHOD_GET).params().typeName("LogRecord").search().fromDate(activeFrom).toDate(activeFrom)
+				.deviceSearch()
+				.id(deviceId).and().and().and().done().addCalls().method(AppConstants.METHOD_GET).params().typeName("LogRecord").search().fromDate(activeTo).toDate(activeTo)
+				.deviceSearch()
+				.id(deviceId)
+				.build();
+		
+	}
+	
 	private String getAddressPayload(TrailerResponce latlng,TrailerParams trailerParams) 
 	{
 		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
@@ -431,6 +611,20 @@ public class TrailerService {
 		return builder.params().movingAddresses(true).addcoordinates().
 				x(latlng.getLongitude()).
 				y(latlng.getLatitude())
+				.build();
+		
+	}
+	
+	private String getAddressPayloadFromAndTo(TrailerResponce fromLatlng,TrailerResponce toLatlng,TrailerParams trailerParams) 
+	{
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method("GetAddresses");
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		return builder.params().movingAddresses(true).addcoordinates()
+				.x(fromLatlng.getLongitude())
+				.y(fromLatlng.getLatitude()).and().addcoordinates()
+				.x(toLatlng.getLongitude())
+				.y(toLatlng.getLatitude())
 				.build();
 		
 	}

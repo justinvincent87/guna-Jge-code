@@ -31,6 +31,8 @@ private String trailerId;
 private String deviceId;
 private List<TrailerResponce> result;
 @JsonInclude(Include.NON_NULL)
+private List<TrailerResponce> parsetrailercall;
+private List<TrailerResponce> parseaddressresponce;
 private Double latitude;
 @JsonInclude(Include.NON_NULL)
 private Double longitude;
@@ -50,6 +52,14 @@ public TrailerResponce(String activeFrom,String activeTo,String trailerId,String
 
 }
 
+
+public TrailerResponce(String activeFrom,String activeTo,String trailerId,String deviceId)
+{
+	this.activeFrom=activeFrom;
+	this.activeTo=activeTo;
+	this.trailerId=trailerId;
+	this.deviceId=deviceId;
+}
 
 public TrailerResponce(List<TrailerResponce> result)
 {
@@ -72,6 +82,8 @@ public TrailerResponce(String formattedAddress) {
 	this.formattedAddress=formattedAddress;
 	
 }
+
+
 
 
 

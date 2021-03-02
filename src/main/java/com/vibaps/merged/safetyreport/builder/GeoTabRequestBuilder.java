@@ -276,6 +276,9 @@ public class GeoTabRequestBuilder implements Serializable {
 		private String activeTo;
 		
 		@JsonInclude(NON_NULL)
+		private String name;
+		
+		@JsonInclude(NON_NULL)
 		private String fromDate;
 		@JsonInclude(NON_NULL)
 		private String toDate;
@@ -294,6 +297,11 @@ public class GeoTabRequestBuilder implements Serializable {
 		
 		public Search id(String id) {
 			this.id = id;
+			return this;
+		}
+		
+		public Search name(String name) {
+			this.name = name;
 			return this;
 		}
 		

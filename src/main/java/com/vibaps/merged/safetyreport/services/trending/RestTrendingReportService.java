@@ -20,7 +20,7 @@ public class RestTrendingReportService {
 	
 	public Object getReportGeo(ReportParams reportParams) throws ParseException, MalformedURLException, IOException
 	{
-		return restTrendingReportDao.getReportGeo(reportParams.getGroupId(),reportParams.getStartDate(),reportParams.getEndDate(),reportParams.getLytexSessionid(),reportParams.getGeotabSessionId(),reportParams.getGeotabGroups(),reportParams.getGeotabUserName(),reportParams.getGeotabDatabase(),reportParams.getUrl(),reportParams.getEntityType(),reportParams.getPeriod(),reportParams.getEndPoint());
+		return restTrendingReportDao.getReportGeo(reportParams);
 	}
 	
 	public Object getReportGeoLytx(ReportParams reportParams) throws MalformedURLException, IOException

@@ -39,7 +39,6 @@ public final class ResponseUtil {
 		
 		//Parse response object
 		JsonElement parsedResponse = JsonParser.parseString(response.getBody());
-		System.out.println(parsedResponse);
 		Assert.isNull(parsedResponse, AppMsg.ER003);
 		return parsedResponse.getAsJsonObject();
 	}

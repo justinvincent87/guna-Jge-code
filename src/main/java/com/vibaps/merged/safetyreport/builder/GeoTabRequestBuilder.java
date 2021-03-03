@@ -357,9 +357,14 @@ public class GeoTabRequestBuilder implements Serializable {
 		private Search parent;
 		@JsonInclude(NON_NULL)
 		private String id;
+		private List<Group>	groups;
 		
 		public DeviceSearch(Search parent) {
 			this.parent = parent;
+		}
+		public DeviceSearch groups(List<String> groups) {
+			this.groups = groups.stream().map(Group::new).collect(Collectors.toList());
+			return this;
 		}
 		
 		public DeviceSearch id(String id) {

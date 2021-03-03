@@ -12,10 +12,10 @@ import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
 @Repository
 public interface ComDatabaseRepository  extends JpaRepository<ComDatabase,Long>
 {	
-    @Cacheable(value = "comdatabase", unless = "#cd0=='comdatabase'")
+    @Cacheable(value = "comdatabase")
 	ComDatabase findBydatabaseName(String database);
 	
-    @Cacheable(value = "comdatabasecount", unless = "#cd1=='comdatabase'")
+    @Cacheable(value = "comdatabasecount")
 	@Query("select count(p.id) from ComDatabase p where databaseName=:database")
 	Long countdatabaseName(String database);
 }

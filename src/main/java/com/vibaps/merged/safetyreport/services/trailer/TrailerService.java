@@ -78,7 +78,12 @@ public class TrailerService {
 		List<TrailerResponce> lisrResponce=new ArrayList<TrailerResponce>();
 		
 		String deviceId = trailerParams.getDeviceId();
+		String trailerId = trailerParams.getTrailerId();
+		String[] trailerArray = trailerId.split(",");
 		
+		
+
+		boolean exist=false;
 		
 	    String[] deviceArray = deviceId.split(",");
 	    int usecase;
@@ -125,11 +130,14 @@ public class TrailerService {
 	    for(int i=0;i<names.size();i++)
 	    {
 	    	JsonObject device=names.get(i).getAsJsonObject();
-	    
+	    	exist = Arrays.stream(trailerArray).anyMatch(device.get("trailer").getAsJsonObject().get("id").
+					  getAsString()::equals);
+    		if(exist)
+    		{
 		lisrResponce.add(new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),device.get("trailer").getAsJsonObject().get("id").
 				  getAsString(),device.get("device").getAsJsonObject().get("id").
 				  getAsString()));
-
+    		}
 	    }
 		
 	}
@@ -138,6 +146,8 @@ public class TrailerService {
 	
 	private TrailerResponce convertParsedReponseShow(List<TrailerResponce> parsedResponse,TrailerParams trailerParams,Long comDatabaseId) 
 	{
+		log.debug("Responce Size: {}", parsedResponse.size());
+		
 		Map<String, String> addressMap=new HashMap<String, String>();
 		
 		DecimalFormat df = new DecimalFormat("###.###");
@@ -155,12 +165,12 @@ public class TrailerService {
 		
 		String deviceName;
 		String trailerName;
-		String trailerId = trailerParams.getTrailerId();
-		String[] trailerArray = trailerId.split(",");
+		//String trailerId = trailerParams.getTrailerId();
+		//String[] trailerArray = trailerId.split(",");
 		
 		
 
-		boolean exist=false;
+		//boolean exist=false;
 		TrailerResponce latlngFrom,latlngTo;
 		String addresFrom,addresTo;
 		//TrailerResponce trailerResponce=null;
@@ -175,10 +185,11 @@ public class TrailerService {
 		{
 
 
-	    		 exist = Arrays.stream(trailerArray).anyMatch(parsedResponse.get(t).getTrailerId()::equals);
+	    		 //exist = Arrays.stream(trailerArray).anyMatch(parsedResponse.get(t).getTrailerId()::equals);
 	    		
-	    		if(exist)
-	    		{
+					/*
+					 * if(exist) {
+					 */
 	    			
 			
 		    		latlongResponce=getAddresslatlng(parsedResponse.get(t).getActiveFrom(),parsedResponse.get(t).getActiveTo(), trailerParams,parsedResponse.get(t).getDeviceId());	
@@ -272,7 +283,7 @@ public class TrailerService {
 			        responcelist.add(trailerResponceReturn);
 			    	}
 		    		
-	    		}
+	    		/*}*/
 	    		
 	    	
 	    	

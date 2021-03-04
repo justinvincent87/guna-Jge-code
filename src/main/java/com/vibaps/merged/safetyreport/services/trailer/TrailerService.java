@@ -16,7 +16,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +72,10 @@ public class TrailerService {
 	private CommonGeotabDAO commonGeotabDAO;
 	
     private TrailerResponce trailerResponce;
+    
+    private Map<String, String> addressMap=new HashMap<String, String>();
+
+
 	
 	
 	@Autowired
@@ -106,192 +113,184 @@ public class TrailerService {
 			
 				trailerParams.setDeviceId(deviceArray[l]);
 		
-			payload=getReportRequest(trailerParams,1);
+				payload=getReportRequest(trailerParams,1);
 			
-		if (log.isDebugEnabled()) {
-			log.debug("Get report data payload: {}", payload);
+			if (log.isDebugEnabled()) {
+				log.debug("Get report data payload: {}", payload);
+			}
+	
+			String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+			if (log.isDebugEnabled()) {
+				log.debug("Get report data uri: {}", uri);
+			}
+	
+			ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+			if (log.isDebugEnabled()) {
+				log.debug("Get report data response code: {}", response.getStatusCodeValue());
+			}
+	
+			JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+			
+			JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
+		    JsonArray names = data.get("result").getAsJsonArray();
+		    
+		    for(int i=0;i<names.size();i++)
+		    {
+			    	JsonObject device=names.get(i).getAsJsonObject();
+			    	exist = Arrays.stream(trailerArray).anyMatch(device.get("trailer").getAsJsonObject().get("id").
+							  getAsString()::equals);
+		    		if(exist)
+		    		{
+		    			lisrResponce.add(new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),device.get("trailer").getAsJsonObject().get("id").
+						  getAsString(),device.get("device").getAsJsonObject().get("id").
+						  getAsString()));
+		    		}
+		    }
+			
 		}
-
-		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
-		if (log.isDebugEnabled()) {
-			log.debug("Get report data uri: {}", uri);
-		}
-
-		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
-		if (log.isDebugEnabled()) {
-			log.debug("Get report data response code: {}", response.getStatusCodeValue());
-		}
-
-		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
-		
-		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
-	    JsonArray names = data.get("result").getAsJsonArray();
-	    
-	    for(int i=0;i<names.size();i++)
-	    {
-	    	JsonObject device=names.get(i).getAsJsonObject();
-	    	exist = Arrays.stream(trailerArray).anyMatch(device.get("trailer").getAsJsonObject().get("id").
-					  getAsString()::equals);
-    		if(exist)
-    		{
-		lisrResponce.add(new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),device.get("trailer").getAsJsonObject().get("id").
-				  getAsString(),device.get("device").getAsJsonObject().get("id").
-				  getAsString()));
-    		}
-	    }
-		
-	}
 		return convertParsedReponseShow(lisrResponce,trailerParams,comDatabaseId);
 	}
 	
+	
 	private TrailerResponce convertParsedReponseShow(List<TrailerResponce> parsedResponse,TrailerParams trailerParams,Long comDatabaseId) 
 	{
-		log.debug("Responce Size: {}", parsedResponse.size());
+		List<TrailerResponce> responseList=new ArrayList<TrailerResponce>();
+		List<CompletableFuture<TrailerResponce>> futureList=new ArrayList<>();  
+		parsedResponse.parallelStream().forEach(t->{
+			
+			CompletableFuture<TrailerResponce> future= CompletableFuture.supplyAsync(() -> getResponseList(t, trailerParams, comDatabaseId));
+			futureList.add(future);
+		});
+		CompletableFuture<?> combined = CompletableFuture.allOf(futureList.toArray(new CompletableFuture<?>[0]));
+		try
+		{
+			combined.get();
+			futureList.parallelStream().forEach(r->{
+				try {
+					TrailerResponce response = r.get();
+					if(Objects.nonNull(response))
+					{
+					responseList.add(response);
+					}
+				} catch (InterruptedException e) {
+					
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					
+					e.printStackTrace();
+				}
+			});
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 		
-		Map<String, String> addressMap=new HashMap<String, String>();
-		
+		return  new TrailerResponce(responseList);
+	}
+	
+	private TrailerResponce getResponseList(TrailerResponce parsedResponse,TrailerParams trailerParams,Long comDatabaseId)
+	{
+	    
 		DecimalFormat df = new DecimalFormat("###.###");
 		df.setRoundingMode(RoundingMode.DOWN);
 		List<TrailerResponce> getAddressFromAndToResponce=new ArrayList<TrailerResponce>();
-		
 		String getZoneId=getZoneId(trailerParams);
-		
-		
-		// TODO Auto-generated method stub
-		 TrailerResponce trailerResponceReturn = null;
-		 List<TrailerResponce> latlongResponce = null;
-		 
-		 
-		
+		TrailerResponce trailerResponceReturn = null;
+		List<TrailerResponce> latlongResponce = null;
 		String deviceName;
 		String trailerName;
-		//String trailerId = trailerParams.getTrailerId();
-		//String[] trailerArray = trailerId.split(",");
-		
-		
-
-		//boolean exist=false;
 		TrailerResponce latlngFrom,latlngTo;
-		String addresFrom,addresTo;
-		//TrailerResponce trailerResponce=null;
+		String addresFrom,addressTo;
 	    
 		
-	    
+		latlongResponce=getAddresslatlng(parsedResponse.getActiveFrom(),parsedResponse.getActiveTo(), trailerParams,parsedResponse.getDeviceId());	
 		
-		
-		List<TrailerResponce> responcelist=new ArrayList<TrailerResponce>();
-		
-		for(int t=0;t<parsedResponse.size();t++)
+		latlngFrom=latlongResponce.get(0);
+		latlngTo=latlongResponce.get(1);
+		 
+		if(df.format(latlngFrom.getLatitude()).equals(df.format(latlngTo.getLatitude())) && df.format(latlngFrom.getLongitude()).equals(df.format(latlngTo.getLongitude())))
 		{
-
-
-	    		 //exist = Arrays.stream(trailerArray).anyMatch(parsedResponse.get(t).getTrailerId()::equals);
-	    		
-					/*
-					 * if(exist) {
-					 */
-	    			
+			if(addressMap.get(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()))!=null)
+			{
+				addresFrom=	addressMap.get(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()));
+				log.debug("MAP From Address: {}", addresFrom);
+			}
+			else
+			{
+				 addresFrom=getAddress(Double.valueOf(df.format(latlngFrom.getLatitude())),Double.valueOf(df.format(latlngFrom.getLongitude())), trailerParams).getFormattedAddress();
+				 addressMap.put(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()), addresFrom);
+		    		
+				 log.debug("From Address: {}", addresFrom);
+			}
+		   
+			addressTo=addresFrom;
+		 
+		 
+		}
+		else
+		{
 			
-		    		latlongResponce=getAddresslatlng(parsedResponse.get(t).getActiveFrom(),parsedResponse.get(t).getActiveTo(), trailerParams,parsedResponse.get(t).getDeviceId());	
-		    		
-		    		latlngFrom=latlongResponce.get(0);
-		    		latlngTo=latlongResponce.get(1);
-		    		 
-		    		if(df.format(latlngFrom.getLatitude()).equals(df.format(latlngTo.getLatitude())) && df.format(latlngFrom.getLongitude()).equals(df.format(latlngTo.getLongitude())))
-		    		{
-		    			if(addressMap.get(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()))!=null)
-		    			{
-		    				addresFrom=	addressMap.get(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()));
-		    				log.debug("MAP From Address: {}", addresFrom);
-		    			}
-		    			else
-		    			{
-		    				 addresFrom=getAddress(Double.valueOf(df.format(latlngFrom.getLatitude())),Double.valueOf(df.format(latlngFrom.getLongitude())), trailerParams).getFormattedAddress();
-		    				 addressMap.put(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()), addresFrom);
-		 		    		
-		    				 log.debug("From Address: {}", addresFrom);
-		    			}
-		    		 addresTo=addresFrom;
-		    		 
-		    		 
-		    		}else
-		    		{
-						
-		    			if(addressMap.get(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()))!=null)
-		    			{
-		    				addresFrom=addressMap.get(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()));
-		    			}
-		    			else
-		    			{
-		    				
-			    			addresFrom=getAddress(Double.valueOf(df.format(latlngFrom.getLatitude())),Double.valueOf(df.format(latlngFrom.getLongitude())),trailerParams).getFormattedAddress();
-			    			addressMap.put(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()), addresFrom);
-			    			
-		    			}
-		    			
-		    			if(addressMap.get(df.format(latlngTo.getLatitude())+"&"+df.format(latlngTo.getLongitude()))!=null)
-		    			{
-		    				addresTo=addressMap.get(df.format(latlngTo.getLatitude())+"&"+df.format(latlngTo.getLongitude()));
-		    				log.debug("MAP To Address: {}", addresTo);
-		    			}
-		    			else
-		    			{
-		    				addresTo=getAddress(Double.valueOf(df.format(latlngTo.getLatitude())),Double.valueOf(df.format(latlngTo.getLongitude())),trailerParams).getFormattedAddress();
-			    			addressMap.put(df.format(latlngTo.getLatitude())+"&"+df.format(latlngTo.getLongitude()), addresTo);
-			    			log.debug("To Address: {}", addresTo);
-		    			}
-		    			
-		    			
-		    			
-		    		}
-		    		
-		    		
-		    		if(genDeviceRepository.countdeviceIdAndrefComDatabaseId(parsedResponse.get(t).getDeviceId(),comDatabaseId) > 0)
-		    		
-		    		{
-		    		  deviceName=genDeviceRepository.findBydeviceIdAndrefComDatabaseId(parsedResponse.get(t).getDeviceId(),comDatabaseId).getDeviceName();
-		    		}else
-		    		{
-
-		    			deviceName=	commonGeotabDAO.insertMissedGeoTabDevice(comDatabaseId, trailerParams, parsedResponse.get(t).getDeviceId()).getDeviceName();
-					}
-		    		
-		    		if(genTrailerRepository.counttrailerIdAndrefComDatabaseId(parsedResponse.get(t).getTrailerId(),comDatabaseId) > 0)
-		    		{
-		    			
-		    		  trailerName=genTrailerRepository.findBytrailerIdAndrefComDatabaseId(parsedResponse.get(t).getTrailerId(),comDatabaseId).getTrailerName();
-		    		
-		    		}
-		    		else 
-		    		{
-		    			
-		    			trailerName=commonGeotabDAO.insertGeoTabMissedTrailer(comDatabaseId, trailerParams, parsedResponse.get(t).getTrailerId()).getTrailerName();
-					}
-		    		
-		    		String totime=getZoneTime(getZoneId,parsedResponse.get(t).getActiveTo());
-		    		String toaddress="-";
-		    		if(!totime.equals("-"))
-		    		{
-		    			toaddress=addresTo;	
-		    		}
-		    		
-		    		trailerResponceReturn=new TrailerResponce(getZoneTime(getZoneId,parsedResponse.get(t).getActiveFrom()),totime,trailerName,deviceName,addresFrom,toaddress);
-		    		
-		    		
-		    		if(trailerResponceReturn!=null)
-			    	{
-			        responcelist.add(trailerResponceReturn);
-			    	}
-		    		
-	    		/*}*/
-	    		
-	    	
-	    	
-	    }
-		/* } */
+			if(addressMap.get(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()))!=null)
+			{
+				addresFrom=addressMap.get(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()));
+			}
+			else
+			{
+				
+    			addresFrom=getAddress(Double.valueOf(df.format(latlngFrom.getLatitude())),Double.valueOf(df.format(latlngFrom.getLongitude())),trailerParams).getFormattedAddress();
+    			addressMap.put(df.format(latlngFrom.getLatitude())+"&"+df.format(latlngFrom.getLongitude()), addresFrom);
+    			
+			}
+			
+			if(addressMap.get(df.format(latlngTo.getLatitude())+"&"+df.format(latlngTo.getLongitude()))!=null)
+			{
+				addressTo=addressMap.get(df.format(latlngTo.getLatitude())+"&"+df.format(latlngTo.getLongitude()));
+				log.debug("MAP To Address: {}", addressTo);
+			}
+			else
+			{
+				addressTo=getAddress(Double.valueOf(df.format(latlngTo.getLatitude())),Double.valueOf(df.format(latlngTo.getLongitude())),trailerParams).getFormattedAddress();
+    			addressMap.put(df.format(latlngTo.getLatitude())+"&"+df.format(latlngTo.getLongitude()), addressTo);
+    			log.debug("To Address: {}", addressTo);
+			}
+			
+			
+			
+		}
 		
-		//System.out.println(responcelist);
-		return  new TrailerResponce(responcelist);
+		
+		if(genDeviceRepository.countdeviceIdAndrefComDatabaseId(parsedResponse.getDeviceId(),comDatabaseId) > 0)
+		
+		{
+		  deviceName=genDeviceRepository.findBydeviceIdAndrefComDatabaseId(parsedResponse.getDeviceId(),comDatabaseId).getDeviceName();
+		}
+		else
+		{
+			deviceName=	commonGeotabDAO.insertMissedGeoTabDevice(comDatabaseId, trailerParams, parsedResponse.getDeviceId()).getDeviceName();
+		}
+		
+		if(genTrailerRepository.counttrailerIdAndrefComDatabaseId(parsedResponse.getTrailerId(),comDatabaseId) > 0)
+		{
+			
+		  trailerName=genTrailerRepository.findBytrailerIdAndrefComDatabaseId(parsedResponse.getTrailerId(),comDatabaseId).getTrailerName();
+		
+		}
+		else 
+		{
+			trailerName=commonGeotabDAO.insertGeoTabMissedTrailer(comDatabaseId, trailerParams, parsedResponse.getTrailerId()).getTrailerName();
+		}
+		
+		String totime=getZoneTime(getZoneId,parsedResponse.getActiveTo());
+		String toaddress="-";
+		if(!totime.equals("-"))
+		{
+			toaddress=addressTo;	
+		}
+		
+		return new TrailerResponce(getZoneTime(getZoneId,parsedResponse.getActiveFrom()),totime,trailerName,deviceName,addresFrom,toaddress);
+		
+		
+
 	}
 	
 	@Cacheable(value = "getAddresslatlng")

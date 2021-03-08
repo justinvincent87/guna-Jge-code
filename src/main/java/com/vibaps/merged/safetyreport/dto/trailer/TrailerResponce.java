@@ -39,6 +39,7 @@ private Double longitude;
 private String formattedAddress;
 private String attachedLocation;
 private String detachedLocation;
+private String trailerattachedId;
 
 public TrailerResponce(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation)
 {
@@ -52,6 +53,18 @@ public TrailerResponce(String activeFrom,String activeTo,String trailerId,String
 
 }
 
+public TrailerResponce(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation,String trailerattachedId)
+{
+	this.activeFrom=activeFrom;
+	this.activeTo=activeTo;
+	this.trailerId=trailerId;
+	this.deviceId=deviceId;
+	
+	this.attachedLocation=attachedLocation;
+	this.detachedLocation=detachedLocation;
+	this.trailerattachedId = trailerattachedId;
+
+}
 
 public TrailerResponce(String activeFrom,String activeTo,String trailerId,String deviceId)
 {
@@ -60,6 +73,17 @@ public TrailerResponce(String activeFrom,String activeTo,String trailerId,String
 	this.trailerId=trailerId;
 	this.deviceId=deviceId;
 }
+
+public TrailerResponce(String activeFrom, String activeTo, String trailerId, String deviceId,
+		String trailerattachedId) {
+	this.activeFrom = activeFrom;
+	this.activeTo = activeTo;
+	this.trailerId = trailerId;
+	this.deviceId = deviceId;
+	this.trailerattachedId = trailerattachedId;
+}
+
+
 
 public TrailerResponce(List<TrailerResponce> result)
 {
@@ -82,6 +106,8 @@ public TrailerResponce(String formattedAddress) {
 	this.formattedAddress=formattedAddress;
 	
 }
+
+
 
 
 

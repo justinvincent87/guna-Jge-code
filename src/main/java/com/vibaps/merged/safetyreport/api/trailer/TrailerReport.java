@@ -1,5 +1,6 @@
 package com.vibaps.merged.safetyreport.api.trailer;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Gunalan A
@@ -145,6 +146,28 @@ public ResponseEntity<GeoTabReponse> getTrailer(@RequestBody TrailerParams trail
 
 }
 
+@PostMapping(value = "/show-report-page",produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<GeoTabReponse> showReportPageWise(@RequestBody TrailerParams trailerParams)
+{
+
+			GeoTabException ex=new GeoTabException(AppMsg.SUCCESS);
+			 appMsg = ex.getAppMsg();
+			 responseBody = GeoTabReponse.builder()
+			.isSuccess(true)
+			.isError(false)
+			.trailerResponce(trailerService.convertParsedReponseShow(trailerParams).getResult())
+			.build();
+	
+	return new ResponseEntity<GeoTabReponse>(responseBody, appMsg.getHttpStatus());
+
+}
+
+
+@PostMapping(value = "/get-trailer-attachement",produces = MediaType.APPLICATION_JSON_VALUE)
+public  List<TrailerResponce> getTrailerAttachementData(@RequestBody TrailerParams trailerParams)
+{
+return  trailerService.getTrailerAttachementData(trailerParams).getResult();
+}
 
 	
 }

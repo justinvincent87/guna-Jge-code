@@ -16,9 +16,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.gson.JsonObject;
+import com.vibaps.merged.safetyreport.common.AppMsg;
+import com.vibaps.merged.safetyreport.dto.gl.GeoTabReponse;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
+import com.vibaps.merged.safetyreport.exception.GeoTabException;
 import com.vibaps.merged.safetyreport.services.gl.CommonGeotabService;
 import com.vibaps.merged.safetyreport.util.FileUtil;
 
@@ -30,6 +34,8 @@ public class CommonGeotabAPI {
 @Autowired
 private CommonGeotabService commonGeotabService;
 
+private GeoTabReponse responseBody;
+private AppMsg appMsg;
 
 
 
@@ -51,10 +57,32 @@ public String uploadFile(@RequestParam("file") MultipartFile file,@RequestParam 
 }
 
 @PostMapping(value = "/apiCallUsingURL")
-public ResponseEntity<String> uploadFile(@RequestParam String url) {
+public ResponseEntity<String> apiCallUsingURL(@RequestParam String url) {
 	
 	return commonGeotabService.apiCallUsingURL(url);
 }
+
+@PostMapping(value = "/geotab-data-base-type")
+public ResponseEntity<String> getGeotabDataBasedType(@RequestBody TrailerParams reportParams) {
+	
+	return commonGeotabService.getGeotabDataBasedType(reportParams);
+}
+
+@PostMapping(value = "/get-DB-Id")
+public ResponseEntity<GeoTabReponse> getdatabaceid(@RequestBody TrailerParams reportParams) {
+	
+	GeoTabException ex=new GeoTabException(AppMsg.SUCCESS);
+	 appMsg = ex.getAppMsg();
+	 responseBody = GeoTabReponse.builder()
+	.isSuccess(true)
+	.isError(false)
+	.data(commonGeotabService.getdatabaceid(reportParams))
+	.build();
+	 
+	 
+		return new ResponseEntity<GeoTabReponse>(responseBody, appMsg.getHttpStatus());
+}
+
 
 
 

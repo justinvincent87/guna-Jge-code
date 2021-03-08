@@ -36,4 +36,5 @@ public class ReportParams{
 	private List<Integer>	ruleId;
 	private String 			filePath;
 	private MultipartFile  	file;
+	
 }

@@ -24,5 +24,7 @@ public class TrailerParams extends ReportParams {
 	private String 			typeName;
 	private String 			fromDate;
 	private String 			toDate;
+	
+	private List<TrailerResponce> trailerParsedInput; 
 
 }

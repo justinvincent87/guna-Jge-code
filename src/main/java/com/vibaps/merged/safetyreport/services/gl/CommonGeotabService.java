@@ -23,6 +23,7 @@ import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
 import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
+import com.vibaps.merged.safetyreport.repo.gl.ComDatabaseRepository;
 import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
 import com.vibaps.merged.safetyreport.util.ResponseUtil;
 
@@ -42,6 +43,9 @@ public class CommonGeotabService {
      
      @Autowired
      private TrailerService trailerService;
+     
+     @Autowired
+ 	private ComDatabaseRepository comDatabaseRepository;
 
 	public ComDatabase insertDevice(TrailerParams reportParams) throws SQLException
 	{
@@ -226,6 +230,48 @@ public class CommonGeotabService {
 		return response;
 	}
 
+	public ResponseEntity<String> getGeotabDataBasedType(TrailerParams reportParams) {
+		String payload =  getpayloadGeotabResponceUsingTypeName(reportParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(reportParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		//JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return response;
+	}
+
+	private String getpayloadGeotabResponceUsingTypeName(TrailerParams reportParams)  
+	{
+		
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, reportParams);
+		
+		 return builder.params().typeName(reportParams.getTypeName())
+				.build();
+		
+	}
+
+	public Long getdatabaceid(TrailerParams reportParams) {
+		// TODO Auto-generated method stub
+		
+		Long dbCount=comDatabaseRepository.getDatabaseId(reportParams.getGeotabDatabase());
+		
+		return dbCount;
+	}
 
 	
 

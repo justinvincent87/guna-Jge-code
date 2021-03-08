@@ -42,7 +42,10 @@ import com.vibaps.merged.safetyreport.service.gl.GlReportService;
 import com.vibaps.merged.safetyreport.services.gl.CommonGeotabService;
 import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
 
+import lombok.extern.log4j.Log4j2;
+
 @Component
+@Log4j2
 public class CommonGeotabDAO  {
 
 	@Autowired
@@ -139,14 +142,16 @@ public GenTrailer insertGeoTabMissedTrailer(Long id, TrailerParams reportParams,
 {
 
 	TrailerResponce trailerResponce=commonGeotabService.getMissedTrailer(reportParams,trailerId);
-	GenTrailer param=new GenTrailer();
-	for(int i=0;i<1;i++)
-	{
+	
+		GenTrailer param=new GenTrailer();
 		param.setRefComDatabaseId(id);
-		param.setTrailerId(trailerResponce.getResult().get(i).getId());
-		param.setTrailerName(trailerResponce.getResult().get(i).getName());
+		param.setTrailerId(trailerResponce.getResult().get(0).getId());
+		param.setTrailerName(trailerResponce.getResult().get(0).getName());
+		
+		log.info("Trailer Insert Info {}",id+" - "+trailerResponce.getResult().get(0).getId()+" - "+trailerResponce.getResult().get(0).getName());
+		
 		param=genTrailereRepository.save(param);
-	}
+	
 	
 	return param;
 }

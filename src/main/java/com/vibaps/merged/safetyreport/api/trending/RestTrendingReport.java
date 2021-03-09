@@ -35,12 +35,12 @@ public class RestTrendingReport {
 		
 	}
 
-	@PostMapping(value ="/getTrendingReportNonLytx")
-	public Object getReportGeoLytx(@RequestBody ReportParams reportParams)
-			throws EncryptedDocumentException, InvalidFormatException, IOException 
-	{
-		return restTrendingReportService.getReportGeoLytx(reportParams);	
-	}
+	/*
+	 * @PostMapping(value ="/getTrendingReportNonLytx") public Object
+	 * getReportGeoLytx(@RequestBody ReportParams reportParams) throws
+	 * EncryptedDocumentException, InvalidFormatException, IOException { return
+	 * restTrendingReportService.getReportGeoLytx(reportParams); }
+	 */
 	
 	@PostMapping(value ="/createExcelTrendingReport")
 	private String createExcelReport(@RequestBody ReportParams reportParams)

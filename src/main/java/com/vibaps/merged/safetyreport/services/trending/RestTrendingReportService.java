@@ -23,11 +23,15 @@ public class RestTrendingReportService {
 		return restTrendingReportDao.getReportGeo(reportParams);
 	}
 	
-	public Object getReportGeoLytx(ReportParams reportParams) throws MalformedURLException, IOException
-	{
-		return restTrendingReportDao.getReportGeoLytx(reportParams.getStartDate(),reportParams.getEndDate(),reportParams.getGeotabSessionId(),reportParams.getGeotabGroups(),reportParams.getGeotabUserName(),
-				reportParams.getGeotabDatabase(),reportParams.getUrl(),reportParams.getEntityType(),reportParams.getPeriod());
-	}
+	/*
+	 * public Object getReportGeoLytx(ReportParams reportParams) throws
+	 * MalformedURLException, IOException { return
+	 * restTrendingReportDao.getReportGeoLytx(reportParams.getStartDate(),
+	 * reportParams.getEndDate(),reportParams.getGeotabSessionId(),reportParams.
+	 * getGeotabGroups(),reportParams.getGeotabUserName(),
+	 * reportParams.getGeotabDatabase(),reportParams.getUrl(),reportParams.
+	 * getEntityType(),reportParams.getPeriod()); }
+	 */
 	
 	public String createExcelReport(ReportParams reportParams) throws EncryptedDocumentException, IOException
 	{

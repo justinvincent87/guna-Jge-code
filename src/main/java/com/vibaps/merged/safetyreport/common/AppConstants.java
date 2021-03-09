@@ -18,6 +18,7 @@ public final class AppConstants {
 	public static final String	PARAM_NONE					= "None";
 	public static final String	PARAM_DEVICE				= "Device";
 	public static final String	PARAM_SYSTEM_SETTINGS		= "SystemSettings";
-	
+	public static final String START_UTC="T01:00:00";
+	public static final String END_UTC="T59:59:59";
 	public static final String[]	DEFAULT_HEADERS		= {"Vehicle Name", "Group", "Distance"};
 }

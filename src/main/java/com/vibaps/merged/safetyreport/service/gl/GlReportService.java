@@ -62,6 +62,7 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
+import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.gl.Behave;
@@ -1673,8 +1674,7 @@ public class GlReportService {
 
 		List<String> displayColumns = loadReporColumntHeaders(geouname, geodatabase);
 
-		File	source	= new File(
-		        "/usr/local/apache-tomcat-8.5.51/webapps/GL_Driver_Safety_Report_Template_" + templect + ".xlsx");
+		File	source	= new File(AppConstants.SOURCE_FILE_NORMAL_REPORT);
 		File	dest	= new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx");
 		try {
 			copyFileUsingStream(source, dest);
@@ -1769,23 +1769,11 @@ public class GlReportService {
 		cells.setCellValue(min);
 		int statrpoint = s + 7;
 
-		String[] formulas = { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)", "Data!E@", "Data!F@",
-		        "Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@", "Data!N@",
-		        "IFERROR((E#*E$6)/($C#/100),0)", "IFERROR((F#*F$6)/($C#/100),0)", "IFERROR((G#*G$6)/($C#/100),0)",
-		        "IFERROR((H#*H$6)/($C#/100),0)", "IFERROR((I#*I$6)/($C#/100),0)", "IFERROR((J#*J$6)/($C#/100),0)",
-		        "IFERROR((K#*K$6)/($C#/100),0)", "IFERROR((L#*L$6)/($C#/100),0)", "IFERROR((M#*M$6)/($C#/100),0)",
-		        "IFERROR((N#*N$6)/($C#/100),0)", "AVERAGE(OFFSET($O#,0,0,1,$Y$5))" };
-		// String[] formulas =
-		// {"Data!A@","Data!B@","Data!C@","IF(C#>$C$6,TRUE,FALSE)","Data!E@","Data!F@","Data!G@","Data!H@","Data!I@","Data!J@","Data!K@","Data!L@","Data!M@","Data!N@","IFERROR((E#*E$6)/($C8/100),0)","IFERROR((F#*F$6)/($C8/100),0)","IFERROR((G#*G$6)/($C8/100),0)","IFERROR((H#*H$6)/($C8/100),0)","IFERROR((I#*I$6)/($C8/100),0)","IFERROR((J#*J$6)/($C8/100),0)","IFERROR((K#*K$6)/($C8/100),0)","IFERROR((L#*L$6)/($C8/100),0)","IFERROR((M#*M$6)/($C8/100),0)","IFERROR((N#*N$6)/($C8/100),0)","AVERAGE(OFFSET($O#,0,0,1,$Y$5))"};
-		// String[] formulas =
-		// {"Data!A@","Data!B@","Data!C@","IF(C#>$C$6,TRUE,FALSE)","Data!E@","Data!F@","Data!G@","Data!H@","Data!I@","Data!J@","Data!K@","Data!L@","Data!M@","Data!N@","Data!O@","Data!P@","Data!Q@","Data!R@","Data!S@","Data!T@","Data!U@","Data!V@","Data!W@","Data!X@","IFERROR((E#*E$6)/($C8/100),0)","IFERROR((F#*F$6)/($C8/100),0)","IFERROR((G#*G$6)/($C8/100),0)","IFERROR((H#*H$6)/($C8/100),0)","IFERROR((I#*I$6)/($C8/100),0)","IFERROR((J#*J$6)/($C8/100),0)","IFERROR((K#*K$6)/($C8/100),0)","IFERROR((L#*L$6)/($C8/100),0)","IFERROR((M#*M$6)/($C8/100),0)","IFERROR((N#*N$6)/($C8/100),0)","IFERROR((O#*O$6)/($C8/100),0)","IFERROR((P#*P$6)/($C8/100),0)","IFERROR((Q#*Q$6)/($C8/100),0)","IFERROR((R#*R$6)/($C8/100),0)","IFERROR((S#*S$6)/($C8/100),0)","IFERROR((T#*T$6)/($C8/100),0)","IFERROR((U#*U$6)/($C8/100),0)","IFERROR((V#*V$6)/($C8/100),0)","IFERROR((W#*W$6)/($C8/100),0)","IFERROR((X#*X$6)/($C8/100),0)","AVERAGE(OFFSET($Y#,0,0,1,$AS$5))"};
+		String[] formulas =AppConstants.NORMAL_REPORT_FORMULA;
+	
+		
 		updateFormulaForReport(report, FORMULA_START_ROW, s, ROW_OFFSET, formulas);
-//				
 
-		/*
-		 * for (int i = statrpoint; i < Integer.parseInt(templect); i++) { try { Row row
-		 * = report.getRow(i); report.removeRow(row); } catch (Exception exception) {} }
-		 */
 
 		String			newAllDataNamedRange	= "Report!$A$7:$Y$" + statrpoint;
 		XSSFWorkbook	glDSRWorkbook			= (XSSFWorkbook) workbook;
@@ -1793,10 +1781,7 @@ public class GlReportService {
 		XSSFName		allDataNamedRange		= glDSRWorkbook.getName("AllData");
 		allDataNamedRange.setRefersToFormula(newAllDataNamedRange);
 
-		/*
-		 * try { dao.calculateTopBottomNRecords(geouname, responseJson,workbook); }catch
-		 * (Exception e) { // TODO: handle exception }
-		 */
+
 
 		try (FileOutputStream outputStream = new FileOutputStream(
 		        "/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/" + filename + ".xlsx")) {

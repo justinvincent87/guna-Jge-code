@@ -42,4 +42,12 @@ public final class ResponseUtil {
 		Assert.isNull(parsedResponse, AppMsg.ER003);
 		return parsedResponse.getAsJsonObject();
 	}
+	
+	/**
+	 * Parse response string as json Array if startus code is 200
+	 * 
+	 * @param response
+	 * @return
+	 */
+	
 }

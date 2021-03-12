@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.mail.handlers.text_plain;
@@ -100,20 +101,21 @@ String[] serviceArray = serviceType.split(",");
 		
 		for(int t=0;t<serviceResponse.size();t++)	
 		{
-		JSONObject serviceObject = new JSONObject(serviceResponse.get(t));
-        JSONArray serviceArray = serviceObject.getJSONArray("ls");
+		JsonObject serviceObject = serviceResponse.get(t);
+        JsonArray serviceArray = serviceObject.getAsJsonArray("ls");
       
-        for (int i = 0; i < serviceArray.length(); i++) 
+        for (int i = 0; i < serviceArray.size(); i++) 
         {
-        	JSONObject servicecJO = serviceArray.getJSONObject(i);
-            Long lid = servicecJO.getLong("lid");
-            String ids = servicecJO.getString("_id");
+        	JsonObject servicecJO = serviceArray.get(i).getAsJsonObject();
+            Long lid = servicecJO.get("lid").getAsLong();
+            String ids = servicecJO.get("_id").getAsString();
             
          
     		
     		if(duplicateRemove.isEmpty() || !duplicateCheck(duplicateRemove,ids))
     		{
-    		TruckDownResponce uiResponce = new TruckDownResponce(servicecJO.getString("n"), servicecJO.getString("wa"), servicecJO.getJSONObject("a"), lid, ids);
+    		
+    		TruckDownResponce uiResponce = new TruckDownResponce(servicecJO.get("n").getAsString(), servicecJO.get("wa").getAsString(), servicecJO.get("a").getAsJsonObject().toString(), lid, ids);
             duplicateRemove.add(ids);
         	holeCompany.add(uiResponce);
 
@@ -127,48 +129,40 @@ String[] serviceArray = serviceType.split(",");
 
 	
 	
-	public TruckDownResponce getTruckTiming(Long lid) throws MalformedURLException, IOException
+	public String getTruckTiming(Long lid) throws MalformedURLException, IOException
 	{
 		
-		List<JsonObject> responce=new ArrayList<JsonObject>();
 		
 		 truckdoun=repairBookingService.findById(Long.valueOf(1));
 		 String serviceResponse="";
-		 String componyResponce="";
 		 String url="";
 		if(truckdoun.isPresent())
 		 {
 			url=truckdoun.get().getBaseUrl()+"location?key="+truckdoun.get().getKey()+"&id="+lid;
 		 }
-		 String locationResponce=null;
-         responce.add(ResponseUtil.parseResponse(getTruckdownResponce(url)));
- 		return new TruckDownResponce(responce,"SUCESS");
+		return ResponseUtil.parseResponseArray(getTruckdownResponce(url));
 	}
 	
-	public TruckDownResponce getTruckdownservices() throws MalformedURLException, IOException {
+	public String getTruckdownservices() throws MalformedURLException, IOException {
 		String url="";
 		
-		List<JsonObject> responce=new ArrayList<JsonObject>();
 		
 		 truckdoun=repairBookingService.findById(Long.valueOf(1));
 		 
 		 url=truckdoun.get().getBaseUrl()+"service?key="+truckdoun.get().getKey();
-    
 		 
-         responce.add(ResponseUtil.parseResponse(getTruckdownResponce(url)));
-     		return new TruckDownResponce(responce,"SUCESS");
-	}
+		 return ResponseUtil.parseResponseArray(getTruckdownResponce(url));
+		 }
 	
-	
-	public TruckDownResponce getTruckPhone(String ids) throws MalformedURLException, IOException
+
+	public String getTruckPhone(String ids) throws MalformedURLException, IOException
 	{
-		List<JsonObject> responce=new ArrayList<JsonObject>();
 
 		 truckdoun=repairBookingService.findById(Long.valueOf(1));
 		 String url="";
 		 url=truckdoun.get().getBaseUrl()+"phone?key="+truckdoun.get().getKey()+"&id="+ids;
-         responce.add(ResponseUtil.parseResponse(getTruckdownResponce(url)));
-  		return new TruckDownResponce(responce,"SUCESS");
+		 return ResponseUtil.parseResponseArray(getTruckdownResponce(url));
+
 	}
 	
 	

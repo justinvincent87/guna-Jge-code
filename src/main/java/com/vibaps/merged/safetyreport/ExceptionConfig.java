@@ -18,7 +18,7 @@ public class ExceptionConfig extends ResponseEntityExceptionHandler {
 	 * @param ex
 	 * @return
 	 */
-	@ExceptionHandler(GeoTabException.class)
+@ExceptionHandler(GeoTabException.class)
 	public ResponseEntity<GeoTabReponse> handleGeoTabException(GeoTabException ex) {
 		
 		AppMsg appMsg = ex.getAppMsg();

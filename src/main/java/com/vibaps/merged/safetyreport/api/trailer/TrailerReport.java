@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vibaps.merged.safetyreport.ExceptionConfig;
-import com.vibaps.merged.safetyreport.ExeptionHandler;
 import com.vibaps.merged.safetyreport.common.AppMsg;
 import com.vibaps.merged.safetyreport.dto.gl.GeoTabReponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.gson.JsonObject;
 import com.vibaps.merged.safetyreport.dao.truckdown.RepairBookingDAO;
 import com.vibaps.merged.safetyreport.dto.truckdown.TruckDownResponce;
 import com.vibaps.merged.safetyreport.entity.truckdown.TdUser;
@@ -43,18 +44,18 @@ public int getoath() throws MalformedURLException, IOException {
 }
 
 @Transactional
-public TruckDownResponce getTruckPhone(TrackDownEntity entity) throws MalformedURLException, IOException {
+public String getTruckPhone(TrackDownEntity entity) throws MalformedURLException, IOException {
 	// TODO Auto-generated method stub
 	return repairBookingDAO.getTruckPhone(entity.getIds());
 }
 
 @Transactional
-public TruckDownResponce getTruckTiming(TrackDownEntity entity) throws MalformedURLException, IOException {
+public String getTruckTiming(TrackDownEntity entity) throws MalformedURLException, IOException {
 	// TODO Auto-generated method stub
 	return repairBookingDAO.getTruckTiming(entity.getLid());
 }
 
-public TruckDownResponce getTruckdownservices() throws MalformedURLException, IOException {
+public String getTruckdownservices() throws MalformedURLException, IOException {
 	// TODO Auto-generated method stub
 	return repairBookingDAO.getTruckdownservices();
 }

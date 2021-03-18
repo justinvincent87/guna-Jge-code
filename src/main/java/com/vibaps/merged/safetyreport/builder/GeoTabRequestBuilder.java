@@ -284,6 +284,13 @@ public class GeoTabRequestBuilder implements Serializable {
 		private String toDate;
 		@JsonInclude(NON_NULL)
 		private String resultsLimit;
+		@JsonInclude(NON_NULL)
+		private boolean isDefective;
+		@JsonInclude(NON_NULL)
+		private boolean isRepaired;
+		@JsonInclude(NON_NULL)
+		private boolean isCertified;
+		
 		
 		
 		
@@ -293,6 +300,21 @@ public class GeoTabRequestBuilder implements Serializable {
 		
 		public Search(Params parent) {
 			this.parent = parent;
+		}
+		
+		public Search isDefective(boolean isDefective) {
+			this.isDefective = isDefective;
+			return this;
+		}
+		
+		public Search isRepaired(boolean isRepaired) {
+			this.isRepaired = isRepaired;
+			return this;
+		}
+		
+		public Search isCertified(boolean isCertified) {
+			this.isCertified = isCertified;
+			return this;
 		}
 		
 		public Search id(String id) {

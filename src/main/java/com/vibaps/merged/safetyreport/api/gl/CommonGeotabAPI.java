@@ -50,6 +50,18 @@ public ComDatabase insertTrailer(@RequestBody TrailerParams reportParams) throws
 	return commonGeotabService.insertTrailer(reportParams);
 }
 
+
+@PostMapping(value = "/insertDriver")
+public ComDatabase insertDriver(@RequestBody TrailerParams reportParams) throws SQLException{
+	
+	return commonGeotabService.insertDriver(reportParams);
+}
+@PostMapping(value = "/insertDefacts")
+public ComDatabase insertDefacts(@RequestBody TrailerParams reportParams) throws SQLException{
+	
+	return commonGeotabService.insertDefects(reportParams);
+}
+
 @PostMapping(value = "/uploadFile")
 public String uploadFile(@RequestParam("file") MultipartFile file,@RequestParam String filePath) throws SQLException, IOException{
 	

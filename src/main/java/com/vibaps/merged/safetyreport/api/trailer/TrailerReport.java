@@ -42,42 +42,10 @@ public class TrailerReport {
 
 
 @PostMapping(value = "/show-report",produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<GeoTabReponse> showReport(@RequestBody TrailerParams trailerParams)
+public ResponseEntity<String> showReport(@RequestBody TrailerParams trailerParams)
 {
 	
-	
-	if(trailerParams.getTrailerId().isEmpty() || 
-	   trailerParams.getDeviceId().isEmpty() ||
-	   trailerParams.getActiveFrom().isEmpty() ||
-	   trailerParams.getActiveTo().isEmpty() || 
-	   trailerParams.getGeotabDatabase().isEmpty() ||
-	   trailerParams.getGeotabSessionId().isEmpty() ||
-	   trailerParams.getGeotabUserName().isEmpty()
-			)
-	{
-		
-		 GeoTabException ex=new GeoTabException(AppMsg.CV002);
-		 appMsg = ex.getAppMsg();
-		
-		 responseBody = GeoTabReponse.builder()
-				.isError(true)
-				.errorMsg(appMsg.getHttpStatus().getReasonPhrase())
-				.errorCode(appMsg.getCode())
-				.description(appMsg.getMessage())
-				.build();
-		
-	}
-	else
-	{
-			GeoTabException ex=new GeoTabException(AppMsg.SUCCESS);
-			 appMsg = ex.getAppMsg();
-			 responseBody = GeoTabReponse.builder()
-			.isSuccess(true)
-			.isError(false)
-			.trailerResponce(trailerService.showReport(trailerParams).getResult())
-			.build();
-	}
-	return new ResponseEntity<GeoTabReponse>(responseBody, appMsg.getHttpStatus());
+	return trailerService.showReport(trailerParams);
 
 }
 

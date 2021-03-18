@@ -7,7 +7,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
-import javax.persistence.Transient;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,18 +16,27 @@ import lombok.Setter;
 @Entity
 @Setter
 @NoArgsConstructor
-@Table(name = "com_database")
-public class ComDatabase {
+@Table(name = "gen_defects")
+public class GenDefects {
+
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	private Long Id;
+	private Long id;
 
-	@Column(name = "database_name")
-	private String databaseName;
+	@Column(name = "ref_com_database_id")
+	private Long refComDatabaseId;
+
+	@Column(name = "base_defect_id")
+	private String baseDefectId;
+
+	@Column(name = "base_defect_name")
+	private String baseDefectName;
 	
-	@Transient
-	private String result;
+	@Column(name = "defect_id")
+	private String defectId;
 
+	@Column(name = "defect_name")
+	private String defectName;
 }

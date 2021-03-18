@@ -22,8 +22,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -81,81 +83,53 @@ public class TrailerService {
 	@Autowired
 	private GeoTabApiService geoTabApiService;
 	
-	public TrailerResponce showReport(TrailerParams trailerParams)  {
-		List<TrailerResponce> lisrResponce=new ArrayList<TrailerResponce>();
-		
-		String deviceId = trailerParams.getDeviceId();
-		String trailerId = trailerParams.getTrailerId();
-		String[] trailerArray = trailerId.split(",");
-		
-		
+	public ResponseEntity<String> showReport(TrailerParams trailerParams)  {
 
-		boolean exist=false;
-		
-	    String[] deviceArray = deviceId.split(",");
-	    int usecase;
-	    
-		String payload =null;
-		Long comDatabaseId;
-		
-		Long dbCount=comDatabaseRepository.countdatabaseName(trailerParams.getGeotabDatabase());
-		
-		log.info("DB Entry Count: {}",dbCount);
-		
-		if( dbCount > 0)
-		{
-		 comDatabaseId=comDatabaseRepository.findBydatabaseName(trailerParams.getGeotabDatabase()).getId();
-		}else
-		{
-		
-			comDatabaseId=insertDeviceandTrailer(trailerParams);
-		}
-		
 	
-		for(int l=0;l<deviceArray.length;l++)
-		{
-			
-				trailerParams.setDeviceId(deviceArray[l]);
+				
 		
-				payload=getReportRequest(trailerParams,1);
+		JSONObject payload=getTrailerRequestPayload(trailerParams,getZoneId(trailerParams));
 			
 			if (log.isDebugEnabled()) {
 				log.debug("Get report data payload: {}", payload);
 			}
 	
-			String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+			String uri = AppConstants.DATA_MONSTER_BASE_URL+AppConstants.DATA_MONSTER_TRAILER_SEARCH_URL;
+			
 			if (log.isDebugEnabled()) {
 				log.debug("Get report data uri: {}", uri);
 			}
 	
-			ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+			ResponseEntity<String> response = restTemplate.postForEntity(uri,payload,String.class);
 			if (log.isDebugEnabled()) {
 				log.debug("Get report data response code: {}", response.getStatusCodeValue());
 			}
 	
-			JsonObject parsedResponse = ResponseUtil.parseResponse(response);
 			
-			JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
-		    JsonArray names = data.get("result").getAsJsonArray();
-		    
-		    for(int i=0;i<names.size();i++)
-		    {
-			    	JsonObject device=names.get(i).getAsJsonObject();
-			    	exist = Arrays.stream(trailerArray).anyMatch(device.get("trailer").getAsJsonObject().get("id").
-							  getAsString()::equals);
-		    		if(exist)
-		    		{
-		    			lisrResponce.add(new TrailerResponce(device.get("activeFrom").getAsString(),device.get("activeTo").getAsString(),device.get("trailer").getAsJsonObject().get("id").
-						  getAsString(),device.get("device").getAsJsonObject().get("id").
-						  getAsString()));
-		    		}
-		    }
-			
-		}
-		return new TrailerResponce(lisrResponce);
+		
+		return response;
 		//return convertParsedReponseShow(lisrResponce,trailerParams,comDatabaseId);
 	}
 	
+	private JSONObject getTrailerRequestPayload(TrailerParams trailerParams,String currentzoneId)
+	{
+		String deviceId = trailerParams.getDeviceId();
+		String trailerId = trailerParams.getTrailerId();
+		String[] trailerArray = trailerId.split(",");
+		String[] deviceArray = deviceId.split(",");
+		
+
+		
+		JSONObject obj=new JSONObject();    
+		obj.put("trailerIds", Arrays.asList(trailerArray));
+		obj.put("deviceIds", Arrays.asList(deviceArray));
+		obj.put("activeFrom", getEstTime(trailerParams.getActiveFrom()+AppConstants.FROM_TS_SUFFIX));
+		obj.put("activeTo",getEstTime(trailerParams.getActiveTo()+AppConstants.TO_TS_SUFFIX));
+		obj.put("zoneId", currentzoneId);
+		obj.put("database", trailerParams.getGeotabDatabase());
+
+		return obj;
+	}
 	
 	public TrailerResponce convertParsedReponseShow(TrailerParams trailerParams) 
 	{
@@ -338,7 +312,7 @@ public class TrailerService {
 	
 	
 	@Cacheable(value = "getZoneTime")
-	private String getZoneTime(String timeZoneId,String utcTime)
+	public String getZoneTime(String timeZoneId,String utcTime)
 	{
 		
 	    DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
@@ -353,8 +327,16 @@ public class TrailerService {
 	     return  parsed.format(formatter1);
 	}
 	
+	public String getEstTime(String utcTime)
+	{
+		 DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+		 DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'+0000'");
+		 ZonedDateTime parsed = ZonedDateTime.parse(utcTime, formatter.withZone(ZoneId.of("America/New_York")));
+		 return  parsed.format(formatter1);
+	}
 	
-	private String getZoneId(TrailerParams trailerParams)
+	
+	public String getZoneId(TrailerParams trailerParams)
 	{
 		String payload =  getReportRequest(trailerParams,6);
 		if (log.isDebugEnabled()) {
@@ -394,11 +376,12 @@ public class TrailerService {
 	
 
 	
-	private Long insertDeviceandTrailer(TrailerParams trailerParams) {
+	public Long insertDeviceandTrailer(TrailerParams trailerParams) {
 		
 		Long comDatabaseId=commonGeotabDAO.insertDevice(trailerParams).getId();
 			commonGeotabDAO.insertTrailer(trailerParams);
-		
+			commonGeotabDAO.insertDriver(trailerParams);
+			commonGeotabDAO.insertDefects(trailerParams);
 		return comDatabaseId;
 		
 		

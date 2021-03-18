@@ -7,28 +7,34 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
-import javax.persistence.Transient;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 @Getter
 @Entity
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "com_database")
-public class ComDatabase {
+@Table(name="gen_driver_users")
+public class GenDriverUsers {
+
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	private Long Id;
-
-	@Column(name = "database_name")
-	private String databaseName;
+	private Long id;
 	
-	@Transient
-	private String result;
-
+	@Column(name = "ref_com_database_id")
+	private Long refComDatabaseId;
+	
+	@Column(name = "driver_id")
+	private String driverId;
+	
+	@Column(name = "driver_name")
+	private String driverName;	
+	
+	@Column(name = "emp_number")
+	private String empNumber;	
 }

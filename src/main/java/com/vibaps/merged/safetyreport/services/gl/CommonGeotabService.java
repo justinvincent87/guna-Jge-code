@@ -6,6 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
 import com.vibaps.merged.safetyreport.builder.Uri;
@@ -57,6 +62,17 @@ public class CommonGeotabService {
 		return dao.insertTrailer(reportParams);
 	}
 	
+	public ComDatabase insertDriver(TrailerParams reportParams) throws SQLException
+	{
+		return dao.insertDriver(reportParams);
+	}
+	
+	public ComDatabase insertDefects(TrailerParams reportParams) throws SQLException
+	{
+		return dao.insertDefects(reportParams);
+	}
+	
+	
 	public TrailerResponce getDevice(TrailerParams trailerParams) 
 	{
 		// TODO Auto-generated method stub
@@ -81,6 +97,133 @@ public class CommonGeotabService {
 		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
 		return trailerService.convertParsedReponse(parsedResponse);
 	}
+	
+	public TrailerResponce getDriver(TrailerParams trailerParams) 
+	{
+		// TODO Auto-generated method stub
+		
+		
+		String payload =  getReportRequestDriver(trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return convertParsedUserReponse(parsedResponse);
+	}
+	
+	
+	public TrailerResponce getDefects(TrailerParams trailerParams) 
+	{
+		String payload =  getReportRequestDefacts(trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return convertParsedDefectReponse(parsedResponse);
+	}
+	
+	public TrailerResponce convertParsedUserReponse(JsonObject parsedResponse) {
+		
+		List<TrailerResponce> responcelist=new ArrayList<>();
+		
+		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
+	    JsonArray names = data .get("result").getAsJsonArray();
+	    
+	    
+	    for(int i=0;i<names.size();i++)
+	    {
+	    	JsonObject user=names.get(i).getAsJsonObject();
+	    	
+	       
+	    	TrailerResponce trailerResponce = new TrailerResponce(user.get("id").getAsString(),user.get("firstName").getAsString()+" "+user.get("lastName").getAsString(),user.get("name").getAsString());
+	    	
+	   
+	        responcelist.add(trailerResponce);
+	        
+	    }
+		return new TrailerResponce(responcelist);
+
+	}
+	
+	public TrailerResponce convertParsedDefectReponse(JsonObject parsedResponse) {
+		
+		List<TrailerResponce> responcelist=new ArrayList<>();
+		List<String> defactList=new ArrayList<String>();
+		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
+	    JsonArray names = data .get("result").getAsJsonArray();
+	    JsonObject defacts=names.get(0).getAsJsonObject();
+	    JsonArray baseDefacts=defacts.getAsJsonArray("children").getAsJsonArray();
+	    
+	    System.out.println("Base Size"+baseDefacts.size());
+	    for(int i=0;i<baseDefacts.size();i++)
+	    {
+		    JsonObject baseIndujualDefact=baseDefacts.get(i).getAsJsonObject();
+		    String baseDefactsId=baseIndujualDefact.get("id").getAsString();
+		    String baseDefactsName=baseIndujualDefact.get("name").getAsString();
+	    	JsonArray innerDefacts=baseIndujualDefact.getAsJsonArray("children").getAsJsonArray();
+	    	
+	    	
+	    	for(int j=0;j<innerDefacts.size();j++)
+	    	{
+	    		JsonObject innerDefactObject=innerDefacts.get(j).getAsJsonObject();
+	    		String innerDefactsId=innerDefactObject.get("id").getAsString();
+	    		String innerDefactsName=innerDefactObject.get("name").getAsString();
+	    		TrailerResponce trailerResponce = new TrailerResponce(baseDefactsId,baseDefactsName,innerDefactsId,innerDefactsName,false);
+		    	
+	    		
+	    		
+		        responcelist.add(trailerResponce);
+	    		
+	    		
+	    		JsonArray insideinnerDefacts=innerDefactObject.getAsJsonArray("children").getAsJsonArray();
+		    	
+	    		if(insideinnerDefacts.size()>0)
+	    		{
+	    			for(int k=0;k<insideinnerDefacts.size();k++)
+	    	    	{
+	    				JsonObject insideinnerDefactObject=insideinnerDefacts.get(k).getAsJsonObject();
+	    	    		String insideinnerDefactsId=insideinnerDefactObject.get("id").getAsString();
+	    	    		String insideinnerDefactsName=insideinnerDefactObject.get("name").getAsString();
+	    	    		TrailerResponce insidetrailerResponce = new TrailerResponce(innerDefactsId,innerDefactsName,insideinnerDefactsId,insideinnerDefactsName,false);
+	    		    	
+	    	    		responcelist.add(insidetrailerResponce);
+	    	    		
+
+	    	    	}
+	    		}
+	    		   
+	    		
+	    	}
+	    }
+	       
+	        
+	    
+		return new TrailerResponce(responcelist);
+
+	}
+	
 	
 	public TrailerResponce getTrailer(TrailerParams trailerParams) 
 	{
@@ -147,6 +290,36 @@ public class CommonGeotabService {
 		
 	}
 	
+	private String getReportRequestDriver(TrailerParams trailerParams)  
+	{
+		
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		 return builder.params().typeName("User")
+				.build();
+		
+	}
+	
+	private String getReportRequestDefacts(TrailerParams trailerParams)  
+	{
+		
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		 return builder.params().typeName("Group")
+				 .search()
+				 .id("groupDefectsId")
+				.build();
+		
+	}
+	
 	public TrailerResponce getMissedDevice(TrailerParams trailerParams,String deviseId) 
 	{
 		// TODO Auto-generated method stub
@@ -171,6 +344,33 @@ public class CommonGeotabService {
 		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
 		return trailerService.convertParsedReponse(parsedResponse);
 	}
+	
+	public TrailerResponce getMissedDriver(TrailerParams trailerParams,String deviseId) 
+	{
+		// TODO Auto-generated method stub
+		
+		
+		String payload =  getReportRequestMissedDriver(trailerParams,deviseId);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return convertParsedUserReponse(parsedResponse);
+	}
+	
+	
 	private String getReportRequestMissedDevice(TrailerParams trailerParams,String deviceId)  
 	{
 		
@@ -181,6 +381,20 @@ public class CommonGeotabService {
 		geoTabApiService.buildCredentials(builder, trailerParams);
 		
 		 return builder.params().typeName("Device").search().id(deviceId)
+				.build();
+		
+	}
+	
+	private String getReportRequestMissedDriver(TrailerParams trailerParams,String deviceId)  
+	{
+		
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		 return builder.params().typeName("User").search().id(deviceId)
 				.build();
 		
 	}

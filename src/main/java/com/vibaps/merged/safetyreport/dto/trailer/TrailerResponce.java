@@ -41,6 +41,10 @@ private String attachedLocation;
 private String detachedLocation;
 private String trailerattachedId;
 
+private String defactId;
+private String defactName;
+private boolean defactStatus;
+
 public TrailerResponce(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation)
 {
 	this.activeFrom=activeFrom;
@@ -106,6 +110,21 @@ public TrailerResponce(String formattedAddress) {
 	this.formattedAddress=formattedAddress;
 	
 }
+
+public TrailerResponce(String id, String name, String deviceId) {
+	this.id = id;
+	this.name = name;
+	this.deviceId = deviceId;
+}
+
+public TrailerResponce(String id, String name, String defactId, String defactName,boolean defactStatus) {
+	super();
+	this.id = id;
+	this.name = name;
+	this.defactId = defactId;
+	this.defactName = defactName;
+}
+
 
 
 

@@ -1,6 +1,8 @@
 package com.vibaps.merged.safetyreport.util;
 
 import org.apache.commons.lang.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -42,4 +44,18 @@ public final class ResponseUtil {
 		Assert.isNull(parsedResponse, AppMsg.ER003);
 		return parsedResponse.getAsJsonObject();
 	}
+
+	
+	public static String parseResponseObject(ResponseEntity<String> response) 
+	{
+
+		//Validate response
+		Assert.isNull(response, AppMsg.ER001);
+		Assert.valid(StringUtils.isNotBlank(response.getBody()), AppMsg.ER001);
+		Assert.valid(HttpStatus.OK.equals(response.getStatusCode()), AppMsg.ER002);
+		
+		return response.getBody();
+	}
+	
+	
 }

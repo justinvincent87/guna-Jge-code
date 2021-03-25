@@ -29,7 +29,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
-import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
 import com.vibaps.merged.safetyreport.entity.gl.GenDefects;
 import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
@@ -138,7 +138,7 @@ public ComDatabase insertDriver(TrailerParams reportParams){
 private ComDatabase insertGeoTabDevice(Long id, TrailerParams reportParams)
 {
 
-	TrailerResponce trailerResponce=commonGeotabService.getDevice(reportParams);
+	TrailerResponse trailerResponce=commonGeotabService.getDevice(reportParams);
 	List<GenDevice> collection=new ArrayList<GenDevice>();
 	for(int i=0;i<trailerResponce.getResult().size();i++)
 	{
@@ -157,7 +157,7 @@ private ComDatabase insertGeoTabDevice(Long id, TrailerParams reportParams)
 private ComDatabase insertGeoTabUser(Long id, TrailerParams reportParams)
 {
 
-	TrailerResponce trailerResponce=commonGeotabService.getDriver(reportParams);
+	TrailerResponse trailerResponce=commonGeotabService.getDriver(reportParams);
 	List<GenDriverUsers> collection=new ArrayList<GenDriverUsers>();
 	for(int i=0;i<trailerResponce.getResult().size();i++)
 	{
@@ -177,7 +177,7 @@ private ComDatabase insertGeoTabUser(Long id, TrailerParams reportParams)
 private ComDatabase insertGeoTabDefects(Long id, TrailerParams reportParams)
 {
 
-	TrailerResponce trailerResponce=commonGeotabService.getDefects(reportParams);
+	TrailerResponse trailerResponce=commonGeotabService.getDefects(reportParams);
 	List<GenDefects> collection=new ArrayList<GenDefects>();
 	for(int i=0;i<trailerResponce.getResult().size();i++)
 	{
@@ -200,7 +200,7 @@ private ComDatabase insertGeoTabDefects(Long id, TrailerParams reportParams)
 public GenDevice insertMissedGeoTabDevice(Long id, TrailerParams reportParams,String deviceId)
 {
 
-	TrailerResponce trailerResponce=commonGeotabService.getMissedDevice(reportParams,deviceId);
+	TrailerResponse trailerResponce=commonGeotabService.getMissedDevice(reportParams,deviceId);
 	List<GenDevice> collection=new ArrayList<GenDevice>();
 	GenDevice param=new GenDevice();
 	for(int i=0;i<1;i++)
@@ -221,7 +221,7 @@ public GenDevice insertMissedGeoTabDevice(Long id, TrailerParams reportParams,St
 public GenDriverUsers insertMissedGeoTabDriver(Long id, TrailerParams reportParams,String driverId)
 {
 
-	TrailerResponce trailerResponce=commonGeotabService.getMissedDriver(reportParams,driverId);
+	TrailerResponse trailerResponce=commonGeotabService.getMissedDriver(reportParams,driverId);
 	List<GenDriverUsers> collection=new ArrayList<GenDriverUsers>();
 	GenDriverUsers param=new GenDriverUsers();
 	for(int i=0;i<1;i++)
@@ -244,7 +244,7 @@ public GenDriverUsers insertMissedGeoTabDriver(Long id, TrailerParams reportPara
 public GenTrailer insertGeoTabMissedTrailer(Long id, TrailerParams reportParams,String trailerId) 
 {
 
-	TrailerResponce trailerResponce=commonGeotabService.getMissedTrailer(reportParams,trailerId);
+	TrailerResponse trailerResponce=commonGeotabService.getMissedTrailer(reportParams,trailerId);
 	
 		GenTrailer param=new GenTrailer();
 		param.setRefComDatabaseId(id);
@@ -262,7 +262,7 @@ public GenTrailer insertGeoTabMissedTrailer(Long id, TrailerParams reportParams,
 private ComDatabase insertGeoTabTrailer(Long id, TrailerParams reportParams) 
 {
 
-	TrailerResponce trailerResponce=commonGeotabService.getTrailer(reportParams);
+	TrailerResponse trailerResponce=commonGeotabService.getTrailer(reportParams);
 	List<GenTrailer> collection=new ArrayList<GenTrailer>();
 	for(int i=0;i<trailerResponce.getResult().size();i++)
 	{

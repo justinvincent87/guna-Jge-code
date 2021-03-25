@@ -300,4 +300,10 @@ public class GeoTabApiService {
 		builder.params().credentials().database(reportParams.getGeotabDatabase())
 		        .sessionId(reportParams.getGeotabSessionId()).userName(reportParams.getGeotabUserName());
 	}
+	
+	public void buildvibapsCredentials(GeoTabRequestBuilder builder, ReportParams reportParams) {
+
+		builder.credentials().database(reportParams.getGeotabDatabase())
+		        .sessionId(reportParams.getGeotabSessionId()).userName(reportParams.getGeotabUserName());
+	}
 }

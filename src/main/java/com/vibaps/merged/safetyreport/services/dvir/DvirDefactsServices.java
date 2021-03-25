@@ -23,7 +23,7 @@ import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.dvir.DvirDefactsResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
-import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
 import com.vibaps.merged.safetyreport.entity.gl.GenDefects;
 import com.vibaps.merged.safetyreport.entity.gl.GenDriverUsers;
@@ -64,7 +64,7 @@ public class DvirDefactsServices {
 	@Autowired
 	private GenDriverUsersRepo genDriverUsersRepo;
 	
-    private TrailerResponce trailerResponce;
+    private TrailerResponse trailerResponce;
 	
 	public DvirDefactsResponse showDvirDefacts(TrailerParams trailerParams) {
 		

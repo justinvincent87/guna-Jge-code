@@ -49,7 +49,50 @@ public class GeoTabRequestBuilder implements Serializable {
 	private String	method;
 	@JsonInclude(Include.NON_NULL)
 	private Params	params;
+	
+	@JsonInclude(NON_NULL)
+	private Credentials					credentials;
+	
+	@JsonInclude(Include.NON_NULL)
+	private List<String>	deviceIds;
+	@JsonInclude(Include.NON_NULL)
+	private List<String>	trailerIds;
+	
+	@JsonInclude(Include.NON_NULL)
+	private String	activeFrom;
+	
+	@JsonInclude(Include.NON_NULL)
+	private String	activeTo;
+	
+	
+	
+	
+	public Credentials credentials() {
+		if (Objects.isNull(credentials)) {
+			credentials = new Credentials(this);
+		}
+		return credentials;
+	}
+	public GeoTabRequestBuilder deviceIds(List<String> deviceIds) {
+		this.deviceIds = deviceIds;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder trailerIds(List<String> trailerIds) {
+		this.trailerIds = trailerIds;
+		return this;
+	}
 
+	public GeoTabRequestBuilder activeTo(String activeTo) {
+		this.activeTo = activeTo;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder activeFrom(String activeFrom) {
+		this.activeFrom = activeFrom;
+		return this;
+	}
+	
 	/**
 	 * @param parentParams - It use to do step back
 	 */
@@ -416,6 +459,10 @@ public class GeoTabRequestBuilder implements Serializable {
 
 		public Credentials(Params parent) {
 			this.parent = parent;
+		}
+
+		public Credentials(GeoTabRequestBuilder geoTabRequestBuilder) {
+			// TODO Auto-generated constructor stub
 		}
 
 		public Credentials database(String database) {

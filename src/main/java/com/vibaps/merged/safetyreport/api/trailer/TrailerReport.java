@@ -17,12 +17,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.vibaps.merged.safetyreport.ExceptionConfig;
 import com.vibaps.merged.safetyreport.ExeptionHandler;
 import com.vibaps.merged.safetyreport.common.AppMsg;
 import com.vibaps.merged.safetyreport.dto.gl.GeoTabReponse;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerAttachementResponce;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
-import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 import com.vibaps.merged.safetyreport.exception.GeoTabException;
 import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
 
@@ -42,7 +45,7 @@ public class TrailerReport {
 
 
 @PostMapping(value = "/show-report",produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<String> showReport(@RequestBody TrailerParams trailerParams)
+public TrailerResponse showReport(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
 {
 	
 	return trailerService.showReport(trailerParams);
@@ -132,7 +135,7 @@ public ResponseEntity<GeoTabReponse> showReportPageWise(@RequestBody TrailerPara
 
 
 @PostMapping(value = "/get-trailer-attachement",produces = MediaType.APPLICATION_JSON_VALUE)
-public  List<TrailerResponce> getTrailerAttachementData(@RequestBody TrailerParams trailerParams)
+public  List<TrailerResponse> getTrailerAttachementData(@RequestBody TrailerParams trailerParams)
 {
 return  trailerService.getTrailerAttachementData(trailerParams).getResult();
 }

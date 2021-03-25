@@ -26,7 +26,7 @@ import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
-import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
 import com.vibaps.merged.safetyreport.repo.gl.ComDatabaseRepository;
 import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
@@ -73,7 +73,7 @@ public class CommonGeotabService {
 	}
 	
 	
-	public TrailerResponce getDevice(TrailerParams trailerParams) 
+	public TrailerResponse getDevice(TrailerParams trailerParams) 
 	{
 		// TODO Auto-generated method stub
 		
@@ -98,7 +98,7 @@ public class CommonGeotabService {
 		return trailerService.convertParsedReponse(parsedResponse);
 	}
 	
-	public TrailerResponce getDriver(TrailerParams trailerParams) 
+	public TrailerResponse getDriver(TrailerParams trailerParams) 
 	{
 		// TODO Auto-generated method stub
 		
@@ -124,7 +124,7 @@ public class CommonGeotabService {
 	}
 	
 	
-	public TrailerResponce getDefects(TrailerParams trailerParams) 
+	public TrailerResponse getDefects(TrailerParams trailerParams) 
 	{
 		String payload =  getReportRequestDefacts(trailerParams);
 		if (log.isDebugEnabled()) {
@@ -144,9 +144,9 @@ public class CommonGeotabService {
 		return convertParsedDefectReponse(parsedResponse);
 	}
 	
-	public TrailerResponce convertParsedUserReponse(JsonObject parsedResponse) {
+	public TrailerResponse convertParsedUserReponse(JsonObject parsedResponse) {
 		
-		List<TrailerResponce> responcelist=new ArrayList<>();
+		List<TrailerResponse> responcelist=new ArrayList<>();
 		
 		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
 	    JsonArray names = data .get("result").getAsJsonArray();
@@ -157,19 +157,19 @@ public class CommonGeotabService {
 	    	JsonObject user=names.get(i).getAsJsonObject();
 	    	
 	       
-	    	TrailerResponce trailerResponce = new TrailerResponce(user.get("id").getAsString(),user.get("firstName").getAsString()+" "+user.get("lastName").getAsString(),user.get("name").getAsString());
+	    	TrailerResponse trailerResponce = new TrailerResponse(user.get("id").getAsString(),user.get("firstName").getAsString()+" "+user.get("lastName").getAsString(),user.get("name").getAsString());
 	    	
 	   
 	        responcelist.add(trailerResponce);
 	        
 	    }
-		return new TrailerResponce(responcelist);
+		return new TrailerResponse(responcelist);
 
 	}
 	
-	public TrailerResponce convertParsedDefectReponse(JsonObject parsedResponse) {
+	public TrailerResponse convertParsedDefectReponse(JsonObject parsedResponse) {
 		
-		List<TrailerResponce> responcelist=new ArrayList<>();
+		List<TrailerResponse> responcelist=new ArrayList<>();
 		List<String> defactList=new ArrayList<String>();
 		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
 	    JsonArray names = data .get("result").getAsJsonArray();
@@ -190,7 +190,7 @@ public class CommonGeotabService {
 	    		JsonObject innerDefactObject=innerDefacts.get(j).getAsJsonObject();
 	    		String innerDefactsId=innerDefactObject.get("id").getAsString();
 	    		String innerDefactsName=innerDefactObject.get("name").getAsString();
-	    		TrailerResponce trailerResponce = new TrailerResponce(baseDefactsId,baseDefactsName,innerDefactsId,innerDefactsName,false);
+	    		TrailerResponse trailerResponce = new TrailerResponse(baseDefactsId,baseDefactsName,innerDefactsId,innerDefactsName,false);
 		    	
 	    		
 	    		
@@ -206,7 +206,7 @@ public class CommonGeotabService {
 	    				JsonObject insideinnerDefactObject=insideinnerDefacts.get(k).getAsJsonObject();
 	    	    		String insideinnerDefactsId=insideinnerDefactObject.get("id").getAsString();
 	    	    		String insideinnerDefactsName=insideinnerDefactObject.get("name").getAsString();
-	    	    		TrailerResponce insidetrailerResponce = new TrailerResponce(innerDefactsId,innerDefactsName,insideinnerDefactsId,insideinnerDefactsName,false);
+	    	    		TrailerResponse insidetrailerResponce = new TrailerResponse(innerDefactsId,innerDefactsName,insideinnerDefactsId,insideinnerDefactsName,false);
 	    		    	
 	    	    		responcelist.add(insidetrailerResponce);
 	    	    		
@@ -220,12 +220,12 @@ public class CommonGeotabService {
 	       
 	        
 	    
-		return new TrailerResponce(responcelist);
+		return new TrailerResponse(responcelist);
 
 	}
 	
 	
-	public TrailerResponce getTrailer(TrailerParams trailerParams) 
+	public TrailerResponse getTrailer(TrailerParams trailerParams) 
 	{
 		// TODO Auto-generated method stub
 		
@@ -250,7 +250,7 @@ public class CommonGeotabService {
 		return trailerService.convertParsedReponse(parsedResponse);
 	}
 	
-	public TrailerResponce getMissedTrailer(TrailerParams trailerParams,String trailerId) 
+	public TrailerResponse getMissedTrailer(TrailerParams trailerParams,String trailerId) 
 	{
 		// TODO Auto-generated method stub
 		
@@ -320,7 +320,7 @@ public class CommonGeotabService {
 		
 	}
 	
-	public TrailerResponce getMissedDevice(TrailerParams trailerParams,String deviseId) 
+	public TrailerResponse getMissedDevice(TrailerParams trailerParams,String deviseId) 
 	{
 		// TODO Auto-generated method stub
 		
@@ -345,7 +345,7 @@ public class CommonGeotabService {
 		return trailerService.convertParsedReponse(parsedResponse);
 	}
 	
-	public TrailerResponce getMissedDriver(TrailerParams trailerParams,String deviseId) 
+	public TrailerResponse getMissedDriver(TrailerParams trailerParams,String deviseId) 
 	{
 		// TODO Auto-generated method stub
 		

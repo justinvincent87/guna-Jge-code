@@ -63,6 +63,15 @@ public class GeoTabRequestBuilder implements Serializable {
 	
 	@JsonInclude(Include.NON_NULL)
 	private String	activeTo;
+	@JsonInclude(Include.NON_NULL)
+	private String	database;
+	@JsonInclude(Include.NON_NULL)
+	private String	url;
+	@JsonInclude(Include.NON_NULL)
+	private String	groups;
+	
+	@JsonInclude(Include.NON_NULL)
+	private String	historicalFromDate;
 	
 	
 	
@@ -85,6 +94,26 @@ public class GeoTabRequestBuilder implements Serializable {
 
 	public GeoTabRequestBuilder activeTo(String activeTo) {
 		this.activeTo = activeTo;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder historicalFromDate(String historicalFromDate) {
+		this.historicalFromDate = historicalFromDate;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder groups(String groups) {
+		this.groups = groups;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder database(String database) {
+		this.database = database;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder url(String url) {
+		this.url = url;
 		return this;
 	}
 	

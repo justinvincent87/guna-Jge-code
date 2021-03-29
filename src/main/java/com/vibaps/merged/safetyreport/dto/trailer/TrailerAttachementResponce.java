@@ -4,9 +4,13 @@ import java.util.Date;
 
 import javax.persistence.Id;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.vibaps.merged.safetyreport.jackson.IdDeserializer;
 
 import lombok.Data;
 
@@ -15,10 +19,10 @@ public class TrailerAttachementResponce {
 	@Id
 	private String id;
 	private String version;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-	private Date activeFrom;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-	private Date activeTo;
+	@Transient
+	private String activeFrom;
+	@Transient
+	private String activeTo;
 	private String trailerId;
 	private String deviceId;
 	private String database;
@@ -29,5 +33,22 @@ public class TrailerAttachementResponce {
 	private String attachedLocation;
 	
 	private String detachedLocation;
+	
+
+	
+	
+	@JsonSetter("activeFrom")
+	@JsonDeserialize(using = IdDeserializer.class)
+	public void setActiveFrom(String activeFrom) {
+		this.activeFrom = activeFrom;
+	}
+	
+	@JsonSetter("activeTo")
+	@JsonDeserialize(using = IdDeserializer.class)
+	public void setActiveTo(String activeTo) {
+		this.activeTo = activeTo;
+	}
+	
+	
 	
 }

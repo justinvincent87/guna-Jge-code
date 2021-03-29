@@ -5,6 +5,8 @@ public final class AppConstants {
 	public static final String RESPONSE_SUCCESS = "OK";
 	public static final String DATA_MONSTER_BASE_URL="http://vibaps.com:8787/data-monster/";
 	public static final String DATA_MONSTER_TRAILER_SEARCH_URL="trailer/search";
+	public static final String DATA_MONSTER_DEVICE_SEARCH_URL="device/search";
+	public static final String DATA_MONSTER_TRAILERLIST_SEARCH_URL="trailerlist/search";
 
 	public static final String	COLON				= ":";
 	public static final String	SLASH				= "/";

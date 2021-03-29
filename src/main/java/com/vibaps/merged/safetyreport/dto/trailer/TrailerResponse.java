@@ -47,6 +47,8 @@ private boolean defactStatus;
 
 private TrailerAttachementResponce[] trailerResponce;
 
+
+
 public TrailerResponse(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation)
 {
 	this.activeFrom=activeFrom;
@@ -130,6 +132,7 @@ public TrailerResponse(String id, String name, String defactId, String defactNam
 public TrailerResponse(TrailerAttachementResponce[] trailerResponce) {
 	this.trailerResponce = trailerResponce;
 }
+
 
 
 

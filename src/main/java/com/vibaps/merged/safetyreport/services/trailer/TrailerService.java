@@ -61,7 +61,9 @@ import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
+import com.vibaps.merged.safetyreport.dto.trailer.DeviceResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerAttachementResponce;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerListResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
@@ -106,7 +108,6 @@ public class TrailerService {
 	
 	public TrailerResponse showReport(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
 
-	
 				
 		
 		String payload=getTrailerRequestPayload(trailerParams);
@@ -130,16 +131,23 @@ public class TrailerService {
 
 			//ResponseEntity<String> response = restTemplate.postForEntity(uri,payload.toString(),String.class);
 			
-			if (log.isDebugEnabled()) {
-				log.debug("Get report data response code: {}", response);
-			}
+			/*
+			 * if (log.isDebugEnabled()) { log.debug("Get report data response code: {}",
+			 * response); }
+			 */
 
 			JSONObject obj=new JSONObject(response);
 			JSONArray jsonarray=obj.getJSONArray("data");
 			  
+			SimpleDateFormat df = new SimpleDateFormat("dd/M/yyyy hh:mm a");
+	        df.setTimeZone(TimeZone.getDefault());
+	        
+	        
 			  ObjectMapper mapper = new ObjectMapper();
 			  
 			  mapper.setTimeZone(TimeZone.getTimeZone(getZoneId(trailerParams)));
+		      mapper.setDateFormat(df);
+
 			  
 			  
 			  TrailerAttachementResponce[] result= mapper.readValue(jsonarray.toString(),  TrailerAttachementResponce[].class );
@@ -148,8 +156,80 @@ public class TrailerService {
 			  return new TrailerResponse(result);
 	}
 	
+	
+	public DeviceResponse showDevice(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
 
+	
+				
+		
+		String payload=getDeviceRequestPayload(trailerParams);
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Get report data payload: {}", payload);
+			}
+	
+			String uri = AppConstants.DATA_MONSTER_BASE_URL+AppConstants.DATA_MONSTER_DEVICE_SEARCH_URL;
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Get report data uri: {}", uri);
+			}
+	
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
 
+			HttpEntity<String> entity = new HttpEntity<String>(payload,headers);
+
+			String response = restTemplate.postForObject(uri, entity, String.class);
+
+			//ResponseEntity<String> response = restTemplate.postForEntity(uri,payload.toString(),String.class);
+			
+			/*
+			 * if (log.isDebugEnabled()) { log.debug("Get report data response code: {}",
+			 * response); }
+			 */
+
+			JSONObject obj=new JSONObject(response);
+			JSONArray jsonarray=obj.getJSONArray("data");
+			ObjectMapper mapper = new ObjectMapper();
+			DeviceResponse[] result= mapper.readValue(jsonarray.toString(),  DeviceResponse[].class );
+		   
+			return new DeviceResponse(result);
+	}
+
+	public TrailerListResponse showTrailer(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
+		String payload=getTrailerListRequestPayload(trailerParams);
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Get report data payload: {}", payload);
+			}
+	
+			String uri = AppConstants.DATA_MONSTER_BASE_URL+AppConstants.DATA_MONSTER_TRAILERLIST_SEARCH_URL;
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Get report data uri: {}", uri);
+			}
+	
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+
+			HttpEntity<String> entity = new HttpEntity<String>(payload,headers);
+
+			String response = restTemplate.postForObject(uri, entity, String.class);
+
+			//ResponseEntity<String> response = restTemplate.postForEntity(uri,payload.toString(),String.class);
+			
+			/*
+			 * if (log.isDebugEnabled()) { log.debug("Get report data response code: {}",
+			 * response); }
+			 */
+
+			JSONObject obj=new JSONObject(response);
+			JSONArray jsonarray=obj.getJSONArray("data");
+			ObjectMapper mapper = new ObjectMapper();
+			TrailerListResponse[] result= mapper.readValue(jsonarray.toString(),  TrailerListResponse[].class );
+		   
+			return new TrailerListResponse(result);
+	}
 
 
 
@@ -167,6 +247,18 @@ public class TrailerService {
 		
 return builder.deviceIds(Arrays.asList(deviceArray)).trailerIds(Arrays.asList(trailerArray)).activeFrom(trailerParams.getActiveFrom()).activeTo(trailerParams.getActiveTo()).build();
 
+	}
+	
+	private String getDeviceRequestPayload(TrailerParams trailerParams)
+	{
+GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+return builder.historicalFromDate(trailerParams.getActiveFrom()).url(trailerParams.getUrl()).groups(trailerParams.getGroups()).database(trailerParams.getDatabase()).build();
+	}
+	
+	private String getTrailerListRequestPayload(TrailerParams trailerParams)
+	{
+GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+return builder.url(trailerParams.getUrl()).groups(trailerParams.getGroups()).database(trailerParams.getDatabase()).build();
 	}
 	
 	public TrailerResponse convertParsedReponseShow(TrailerParams trailerParams) 

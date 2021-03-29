@@ -23,7 +23,9 @@ import com.vibaps.merged.safetyreport.ExceptionConfig;
 import com.vibaps.merged.safetyreport.ExeptionHandler;
 import com.vibaps.merged.safetyreport.common.AppMsg;
 import com.vibaps.merged.safetyreport.dto.gl.GeoTabReponse;
+import com.vibaps.merged.safetyreport.dto.trailer.DeviceResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerAttachementResponce;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerListResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 import com.vibaps.merged.safetyreport.exception.GeoTabException;
@@ -51,6 +53,26 @@ public TrailerResponse showReport(@RequestBody TrailerParams trailerParams) thro
 	return trailerService.showReport(trailerParams);
 
 }
+
+@PostMapping(value = "/show-device",produces = MediaType.APPLICATION_JSON_VALUE)
+public DeviceResponse showDevice(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+{
+	
+	return trailerService.showDevice(trailerParams);
+
+}
+
+@PostMapping(value = "/show-trailer",produces = MediaType.APPLICATION_JSON_VALUE)
+public TrailerListResponse showTrailer(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+{
+	
+	return trailerService.showTrailer(trailerParams);
+
+}
+
+
+
+
 
 @PostMapping(value = "/getDevice",produces = MediaType.APPLICATION_JSON_VALUE)
 public ResponseEntity<GeoTabReponse> getDevice(@RequestBody TrailerParams trailerParams)

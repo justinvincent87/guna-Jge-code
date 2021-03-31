@@ -1,25 +1,14 @@
 package com.vibaps.merged.safetyreport.services.trailer;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.math.RoundingMode;
-import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,47 +16,35 @@ import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
-import javax.swing.text.html.FormSubmitEvent.MethodType;
-
-
-import org.codehaus.jackson.type.TypeReference;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.type.TypeBindings;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.vibaps.merged.safetyreport.ExeptionHandler;
+import com.graphbuilder.math.func.LgFunction;
 import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
 import com.vibaps.merged.safetyreport.builder.Uri;
 import com.vibaps.merged.safetyreport.common.AppConstants;
-import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
-import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.dto.trailer.DeviceResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerAttachementResponce;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerListResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
-import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
-import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
 import com.vibaps.merged.safetyreport.repo.gl.ComDatabaseRepository;
 import com.vibaps.merged.safetyreport.repo.gl.CommonGeotabRepository;
 import com.vibaps.merged.safetyreport.repo.gl.GenDeviceRepository;
@@ -108,8 +85,9 @@ public class TrailerService {
 	
 	public TrailerResponse showReport(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
 
-				
+		StopWatch sw=new StopWatch();
 		
+		sw.start();
 		String payload=getTrailerRequestPayload(trailerParams);
 			
 			if (log.isDebugEnabled()) {
@@ -129,6 +107,11 @@ public class TrailerService {
 
 			String response = restTemplate.postForObject(uri, entity, String.class);
 
+	sw.stop();
+	
+	log.info("Time :: {}",sw.getTotalTimeMillis());
+	
+	sw.start();
 			//ResponseEntity<String> response = restTemplate.postForEntity(uri,payload.toString(),String.class);
 			
 			/*
@@ -152,12 +135,45 @@ public class TrailerService {
 			  
 			  TrailerAttachementResponce[] result= mapper.readValue(jsonarray.toString(),  TrailerAttachementResponce[].class );
 		     
-			  
+	sw.stop();
+	log.info("Time End:: {}",sw.getTotalTimeMillis());
+
+	
 			  return new TrailerResponse(result);
 	}
 	
 	
-	public DeviceResponse showDevice(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
+	public String showReportCount(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
+
+		StopWatch sw=new StopWatch();
+		
+		sw.start();
+		String payload=getTrailerRequestPayload(trailerParams);
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Get report data payload: {}", payload);
+			}
+	
+			String uri = AppConstants.DATA_MONSTER_BASE_URL+AppConstants.DATA_MONSTER_TRAILER_SEARCH_COUNT_URL;
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Get report data uri: {}", uri);
+			}
+	
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+
+			HttpEntity<String> entity = new HttpEntity<String>(payload,headers);
+
+			String response = restTemplate.postForObject(uri, entity, String.class);
+
+	  return response;
+	}
+	
+	
+	
+	
+	public String showDevice(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
 
 	
 				
@@ -179,24 +195,10 @@ public class TrailerService {
 
 			HttpEntity<String> entity = new HttpEntity<String>(payload,headers);
 
-			String response = restTemplate.postForObject(uri, entity, String.class);
-
-			//ResponseEntity<String> response = restTemplate.postForEntity(uri,payload.toString(),String.class);
-			
-			/*
-			 * if (log.isDebugEnabled()) { log.debug("Get report data response code: {}",
-			 * response); }
-			 */
-
-			JSONObject obj=new JSONObject(response);
-			JSONArray jsonarray=obj.getJSONArray("data");
-			ObjectMapper mapper = new ObjectMapper();
-			DeviceResponse[] result= mapper.readValue(jsonarray.toString(),  DeviceResponse[].class );
-		   
-			return new DeviceResponse(result);
+			return restTemplate.postForObject(uri, entity, String.class);
 	}
 
-	public TrailerListResponse showTrailer(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
+	public String showTrailer(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
 		String payload=getTrailerListRequestPayload(trailerParams);
 			
 			if (log.isDebugEnabled()) {
@@ -214,21 +216,7 @@ public class TrailerService {
 
 			HttpEntity<String> entity = new HttpEntity<String>(payload,headers);
 
-			String response = restTemplate.postForObject(uri, entity, String.class);
-
-			//ResponseEntity<String> response = restTemplate.postForEntity(uri,payload.toString(),String.class);
-			
-			/*
-			 * if (log.isDebugEnabled()) { log.debug("Get report data response code: {}",
-			 * response); }
-			 */
-
-			JSONObject obj=new JSONObject(response);
-			JSONArray jsonarray=obj.getJSONArray("data");
-			ObjectMapper mapper = new ObjectMapper();
-			TrailerListResponse[] result= mapper.readValue(jsonarray.toString(),  TrailerListResponse[].class );
-		   
-			return new TrailerListResponse(result);
+			return restTemplate.postForObject(uri, entity, String.class);
 	}
 
 
@@ -244,6 +232,12 @@ public class TrailerService {
 		
 		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
 		geoTabApiService.buildvibapsCredentials(builder, trailerParams);
+	
+		if(!Objects.isNull(trailerParams.getPage()) && !Objects.isNull(trailerParams.getSize())) 
+			{
+				return builder.deviceIds(Arrays.asList(deviceArray)).trailerIds(Arrays.asList(trailerArray)).activeFrom(trailerParams.getActiveFrom()).activeTo(trailerParams.getActiveTo()).page(trailerParams.getPage()).size(trailerParams.getSize()).build();
+
+			}	
 		
 return builder.deviceIds(Arrays.asList(deviceArray)).trailerIds(Arrays.asList(trailerArray)).activeFrom(trailerParams.getActiveFrom()).activeTo(trailerParams.getActiveTo()).build();
 

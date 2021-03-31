@@ -73,8 +73,18 @@ public class GeoTabRequestBuilder implements Serializable {
 	@JsonInclude(Include.NON_NULL)
 	private String	historicalFromDate;
 	
+	private Integer page;
+	private Integer size;
 	
 	
+	public GeoTabRequestBuilder page(Integer page) {
+		this.page = page;
+		return this;
+	}
+	public GeoTabRequestBuilder size(Integer size) {
+		this.size = size;
+		return this;
+	}
 	
 	public Credentials credentials() {
 		if (Objects.isNull(credentials)) {

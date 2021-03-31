@@ -54,8 +54,16 @@ public TrailerResponse showReport(@RequestBody TrailerParams trailerParams) thro
 
 }
 
+@PostMapping(value = "/show-report-count",produces = MediaType.APPLICATION_JSON_VALUE)
+public String showReportcount(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+{
+	
+	return trailerService.showReportCount(trailerParams);
+
+}
+
 @PostMapping(value = "/show-device",produces = MediaType.APPLICATION_JSON_VALUE)
-public DeviceResponse showDevice(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+public String showDevice(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
 {
 	
 	return trailerService.showDevice(trailerParams);
@@ -63,7 +71,7 @@ public DeviceResponse showDevice(@RequestBody TrailerParams trailerParams) throw
 }
 
 @PostMapping(value = "/show-trailer",produces = MediaType.APPLICATION_JSON_VALUE)
-public TrailerListResponse showTrailer(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+public String showTrailer(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
 {
 	
 	return trailerService.showTrailer(trailerParams);

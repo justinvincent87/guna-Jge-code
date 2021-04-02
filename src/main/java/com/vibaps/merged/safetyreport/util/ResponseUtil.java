@@ -61,6 +61,16 @@ public final class ResponseUtil {
 		
 		return jsonObj.toString();
 		}
+	public static String parseResponseObject(ResponseEntity<String> response) 
+	{
+
+		//Validate response
+		Assert.isNull(response, AppMsg.ER001);
+		Assert.valid(StringUtils.isNotBlank(response.getBody()), AppMsg.ER001);
+		Assert.valid(HttpStatus.OK.equals(response.getStatusCode()), AppMsg.ER002);
+		
+		return response.getBody();
+	}
 	
 		
 }

@@ -49,7 +49,89 @@ public class GeoTabRequestBuilder implements Serializable {
 	private String	method;
 	@JsonInclude(Include.NON_NULL)
 	private Params	params;
+	
+	@JsonInclude(NON_NULL)
+	private Credentials					credentials;
+	
+	@JsonInclude(Include.NON_NULL)
+	private List<String>	deviceIds;
+	@JsonInclude(Include.NON_NULL)
+	private List<String>	trailerIds;
+	
+	@JsonInclude(Include.NON_NULL)
+	private String	activeFrom;
+	
+	@JsonInclude(Include.NON_NULL)
+	private String	activeTo;
+	@JsonInclude(Include.NON_NULL)
+	private String	database;
+	@JsonInclude(Include.NON_NULL)
+	private String	url;
+	@JsonInclude(Include.NON_NULL)
+	private String	groups;
+	
+	@JsonInclude(Include.NON_NULL)
+	private String	historicalFromDate;
+	
+	private Integer page;
+	private Integer size;
+	
+	
+	public GeoTabRequestBuilder page(Integer page) {
+		this.page = page;
+		return this;
+	}
+	public GeoTabRequestBuilder size(Integer size) {
+		this.size = size;
+		return this;
+	}
+	
+	public Credentials credentials() {
+		if (Objects.isNull(credentials)) {
+			credentials = new Credentials(this);
+		}
+		return credentials;
+	}
+	public GeoTabRequestBuilder deviceIds(List<String> deviceIds) {
+		this.deviceIds = deviceIds;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder trailerIds(List<String> trailerIds) {
+		this.trailerIds = trailerIds;
+		return this;
+	}
 
+	public GeoTabRequestBuilder activeTo(String activeTo) {
+		this.activeTo = activeTo;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder historicalFromDate(String historicalFromDate) {
+		this.historicalFromDate = historicalFromDate;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder groups(String groups) {
+		this.groups = groups;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder database(String database) {
+		this.database = database;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder url(String url) {
+		this.url = url;
+		return this;
+	}
+	
+	public GeoTabRequestBuilder activeFrom(String activeFrom) {
+		this.activeFrom = activeFrom;
+		return this;
+	}
+	
 	/**
 	 * @param parentParams - It use to do step back
 	 */
@@ -284,6 +366,13 @@ public class GeoTabRequestBuilder implements Serializable {
 		private String toDate;
 		@JsonInclude(NON_NULL)
 		private String resultsLimit;
+		@JsonInclude(NON_NULL)
+		private boolean isDefective;
+		@JsonInclude(NON_NULL)
+		private boolean isRepaired;
+		@JsonInclude(NON_NULL)
+		private boolean isCertified;
+		
 		
 		
 		
@@ -293,6 +382,21 @@ public class GeoTabRequestBuilder implements Serializable {
 		
 		public Search(Params parent) {
 			this.parent = parent;
+		}
+		
+		public Search isDefective(boolean isDefective) {
+			this.isDefective = isDefective;
+			return this;
+		}
+		
+		public Search isRepaired(boolean isRepaired) {
+			this.isRepaired = isRepaired;
+			return this;
+		}
+		
+		public Search isCertified(boolean isCertified) {
+			this.isCertified = isCertified;
+			return this;
 		}
 		
 		public Search id(String id) {
@@ -394,6 +498,10 @@ public class GeoTabRequestBuilder implements Serializable {
 
 		public Credentials(Params parent) {
 			this.parent = parent;
+		}
+
+		public Credentials(GeoTabRequestBuilder geoTabRequestBuilder) {
+			// TODO Auto-generated constructor stub
 		}
 
 		public Credentials database(String database) {

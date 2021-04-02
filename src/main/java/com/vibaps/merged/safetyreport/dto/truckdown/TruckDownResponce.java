@@ -7,7 +7,6 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 
 import com.google.gson.JsonObject;
-import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
 
 import lombok.Getter;
 import lombok.Setter;

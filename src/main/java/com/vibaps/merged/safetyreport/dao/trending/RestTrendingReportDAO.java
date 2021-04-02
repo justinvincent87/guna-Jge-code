@@ -133,49 +133,36 @@ public class RestTrendingReportDAO {
 
 					EXCEPTIONS_START_COLUMN = 6;
 							
-			
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+					Date newStartDate = sdf.parse(startDateStr);
+					
+					Date ssdate = sdf.parse(startDateStr);
+					Date eedate = sdf.parse(endDateStr);
+					
+					
+                 //   lytxVehicleEventsRecord =lytxProxyService.getLytxExceptionData(reportParams); 
+					int s = 0;
 				
+					GetBehaviorsResponse response = lytxProxyService.getLytxBehaviors(reportParams);
+		
+					
+
+					JSONObject jsonObject = new JSONObject(response);
+					String lytxBehaviorsJson = toStringValue(jsonObject);
+					
+					
+					lytxVehicleEventsRecord = lytxProxyService.getLytxTrendingExceptionData(reportParams);
+					 
 				
-					do {
-
-							lytxExceptionSummariesJson = sendLytxRequest(reportParams.getGroupId(), reportParams.getStartDate(), reportParams.getEndDate(), reportParams.getLytexSessionid(), reportParams.getEndPoint());
-
-							JSONObject lytxEventsJO = new JSONObject(lytxExceptionSummariesJson);
-							JSONArray lytxEventsArray = lytxEventsJO.getJSONArray("events");
-							
-	                        lytxVehicleEventsRecord =lytxProxyService.getLytxExceptionData(reportParams); 
-	                           
-	                           
-							if (lytxEventsJO.has("queryCutoff")) {
-								
-								
-								String cutoffData = lytxEventsJO.getString("queryCutoff");
-								System.out.println(cutoffData);
-
-								if (cutoffData != null) {
-									sdate=startDateForQuerryCutOff(cutoffData);
-									if (sdate.equalsIgnoreCase("-")) {
-										break;
-									}
-						
-								} else {
-									break;
-								}
-							} else {
-								break;
-							}
-						
-					} while (true);
-
 					updatedCombinedReportWithLytxExceptions(combinedReport, lytxVehicleEventsRecord);
-				
-				
+
 				responseJson=createTrendingResponce(combinedReport,displayColumns);
 				
 
 			glReportService.updateresponce(reportParams.getGeotabUserName(), responseJson,  reportParams.getGeotabDatabase());
 		
-
+			
 		return responseJson; 
 	}
 	
@@ -213,7 +200,6 @@ public class RestTrendingReportDAO {
 		String responseJson = "";
 		List<Integer> totals = new ArrayList<>();
 		StringBuffer combinedReportResponseJson = new StringBuffer();
-
 
 		for (int q = 0; q < displayColumns.size(); q++) {
 			totals.add(0);
@@ -381,17 +367,20 @@ public class RestTrendingReportDAO {
 			JsonObject geotabDriverTrendingReportResponseJson, String userName, String db) {
 		displayColumns = loadTrendingReporColumntHeaders(userName, db);
 
+		
 		// create report object:
 		Map<String, Map<String, String>> combinedReport = new LinkedHashMap<String, Map<String, String>>();
 		// GEOTAB Events processing
+		try
+		{
 		JsonArray geotabEventsJOArray = geotabDriverTrendingReportResponseJson.getAsJsonArray("result");
-		JsonArray resultChildArray = geotabEventsJOArray.getAsJsonArray();
+		JsonArray resultChildArray = geotabEventsJOArray.get(0).getAsJsonArray();
 		for (int i = 0; i < resultChildArray.size(); i++) {
 			JsonObject resultsChild = resultChildArray.get(i).getAsJsonObject();
-			Integer periodNumber = resultsChild.getAsJsonObject("periodNumber").getAsInt();
+			int periodNumber = resultsChild.get("periodNumber").getAsInt();
 
-			String periodStartDate = resultsChild.getAsJsonObject("periodStartDate").getAsString();
-			String periodEndDate = resultsChild.getAsJsonObject("periodEndDate").getAsString();
+			String periodStartDate = resultsChild.get("periodStartDate").getAsString();
+			String periodEndDate = resultsChild.get("periodEndDate").getAsString();
 			if (periods.get(periodNumber) == null) {
 				String[] periodRange = new String[2];
 				periodRange[0] = periodStartDate;
@@ -403,7 +392,7 @@ public class RestTrendingReportDAO {
 					+ ", Period End: " + periodEndDate + " - ");
 			JsonObject itemJO = resultsChild.getAsJsonObject("item");
 			// driverName
-			String geotabVehicleName = itemJO.getAsJsonObject("firstName").getAsString() + " " + itemJO.getAsJsonObject("lastName").getAsString();
+			String geotabVehicleName = itemJO.get("firstName").getAsString() + " " + itemJO.get("lastName").getAsString();
 			Map<String, String> newReportRow = new LinkedHashMap<String, String>();// getNewReportRow();
 			newReportRow.put(displayColumns.get(0), geotabVehicleName);
 			// group
@@ -411,10 +400,10 @@ public class RestTrendingReportDAO {
 			String group = null;
 			for (int j = 0; j < geotabDriverGroups.size(); j++) {
 				String groupName = "";
-				if (!geotabDriverGroups.get(j).getAsJsonObject().getAsJsonObject("name").has("name")) {
+				if (!geotabDriverGroups.get(j).getAsJsonObject().has("name")) {
 					groupName = "All Vehicles";
 				} else {
-					groupName = geotabDriverGroups.get(j).getAsJsonObject().getAsJsonObject("name").getAsString();
+					groupName = geotabDriverGroups.get(j).getAsJsonObject().get("name").getAsString();
 
 				}
 				if (group == null) {
@@ -425,9 +414,8 @@ public class RestTrendingReportDAO {
 			}
 			newReportRow.put(displayColumns.get(1), group);
 			// Distance
-			Object geotabVehicleTotalDistance = resultsChild.get("totalDistance");
+			long tDistance = resultsChild.get("totalDistance").getAsLong();
 
-			long tDistance = ((Double) geotabVehicleTotalDistance).longValue();
 
 			newReportRow.put(displayColumns.get(2), Long.toString(tDistance));
 			newReportRow.put(displayColumns.get(3), Integer.toString(periodNumber));
@@ -440,7 +428,7 @@ public class RestTrendingReportDAO {
 				if (!geotabExceptionSummariesJA.get(k).isJsonObject()) {
 					int eventCount = geotabExceptionSummariesJA.get(k).getAsJsonObject().getAsJsonObject("eventCount").getAsInt();
 					JsonObject geotabExceptionRuleJO = geotabExceptionSummariesJA.get(k).getAsJsonObject().getAsJsonObject("exceptionRule");
-					String geotabExceptionName = "G-" + geotabExceptionRuleJO.getAsJsonObject("name").getAsString();
+					String geotabExceptionName = "G-" + geotabExceptionRuleJO.get("name").getAsString();
 					geotabExceptionEvents.put(geotabExceptionName, eventCount);
 				}
 			}
@@ -457,7 +445,11 @@ public class RestTrendingReportDAO {
 			String key = periodNumber + "|" + geotabVehicleName;
 			combinedReport.put(geotabVehicleName, newReportRow);
 		}
-
+		}catch (Exception e) {
+			// TODO: handle exception
+			
+			System.out.println(e);
+		}
 		return combinedReport;
 	}
 	
@@ -475,20 +467,22 @@ public class RestTrendingReportDAO {
 		JsonArray geotabEventsJOArray = geotabTrendingReportResponseJson.getAsJsonArray("result");
 		JsonArray resultChildArray = geotabEventsJOArray.get(0).getAsJsonArray();
 		for (int j = 0; j < resultChildArray.size(); j++) {
-
+			
+			try
+			{
 			JsonObject exceptionSummary = resultChildArray.get(j).getAsJsonObject();
-			Integer periodNumber = exceptionSummary.getAsJsonObject("periodNumber").getAsInt();
-			String periodStartDate = exceptionSummary.getAsJsonObject("periodStartDate").getAsString();
-			String periodEndDate = exceptionSummary.getAsJsonObject("periodEndDate").getAsString();
+			int periodNumber = exceptionSummary.get("periodNumber").getAsInt();
+			String periodStartDate = exceptionSummary.get("periodStartDate").getAsString();
+			String periodEndDate = exceptionSummary.get("periodEndDate").getAsString();
 			if (periods.get(periodNumber) == null) {
 				String[] periodRange = new String[2];
 				periodRange[0] = periodStartDate;
 				periodRange[1] = periodEndDate;
 				periods.put(periodNumber, periodRange);
 			}
-			JsonObject itemJO = exceptionSummary.getAsJsonObject("item");
+			JsonObject itemJO = exceptionSummary.get("item").getAsJsonObject();
 			// vehicleName
-			String geotabVehicleName = itemJO.getAsJsonObject("name").getAsString();
+			String geotabVehicleName = itemJO.get("name").getAsString();
 			Map<String, String> newReportRow = new LinkedHashMap<String, String>();// getNewReportRow();
 
 			newReportRow.put(displayColumns.get(0), geotabVehicleName);
@@ -497,9 +491,9 @@ public class RestTrendingReportDAO {
 			String group = null;
 			for (int k = 0; k < geotabVehicleGroups.size(); k++) {
 				if (group == null) {
-					group = geotabVehicleGroups.get(k).getAsJsonObject().getAsJsonObject("name").getAsString();
+					group = geotabVehicleGroups.get(k).getAsJsonObject().get("name").getAsString();
 				} else {
-					String newGroup = geotabVehicleGroups.get(k).getAsJsonObject().getAsJsonObject("name").getAsString();
+					String newGroup = geotabVehicleGroups.get(k).getAsJsonObject().get("name").getAsString();
 					if ("Prohibit Idling".equalsIgnoreCase(newGroup)) {
 						group = newGroup + ", " + group;
 					} else {
@@ -509,9 +503,9 @@ public class RestTrendingReportDAO {
 			}
 			newReportRow.put(displayColumns.get(1), group);
 			// Distance
-			Object geotabVehicleTotalDistance = exceptionSummary.get("totalDistance");
+			long tDistance = exceptionSummary.get("totalDistance").getAsLong();
 
-			long tDistance = ((Double) geotabVehicleTotalDistance).longValue();
+		
 
 			newReportRow.put(displayColumns.get(2), Long.toString(tDistance));
 			newReportRow.put(displayColumns.get(3), Integer.toString(periodNumber));
@@ -523,9 +517,9 @@ public class RestTrendingReportDAO {
 			JsonArray geotabExceptionSummariesJA = exceptionSummary.getAsJsonArray("exceptionSummaries");
 			for (int m = 0; m < geotabExceptionSummariesJA.size(); m++) {
 				if (!geotabExceptionSummariesJA.get(m).isJsonNull()) {
-					int eventCount = geotabExceptionSummariesJA.get(m).getAsJsonObject().getAsJsonObject("eventCount").getAsInt();
-					JsonObject geotabExceptionRuleJO = geotabExceptionSummariesJA.get(m).getAsJsonObject().getAsJsonObject("exceptionRule");
-					String geotabExceptionName = "G-" + geotabExceptionRuleJO.getAsJsonObject("name").getAsString();
+					int eventCount = geotabExceptionSummariesJA.get(m).getAsJsonObject().get("eventCount").getAsInt();
+					JsonObject geotabExceptionRuleJO = geotabExceptionSummariesJA.get(m).getAsJsonObject().get("exceptionRule").getAsJsonObject();
+					String geotabExceptionName = "G-" + geotabExceptionRuleJO.get("name").getAsString();
 					geotabExceptionEvents.put(geotabExceptionName,
 							geotabExceptionEvents.get(geotabExceptionName) == null ? eventCount
 									: geotabExceptionEvents.get(geotabExceptionName) + eventCount);
@@ -543,7 +537,10 @@ public class RestTrendingReportDAO {
 			}
 			String key = periodNumber + "|" + geotabVehicleName;
 			combinedReport.put(key, newReportRow);
+		}catch (Exception e) {
+		System.out.println(e);
 		}
+			}
 		return combinedReport;
 	}
 	
@@ -673,7 +670,7 @@ public class RestTrendingReportDAO {
 	private String sendLytxRequest(String groupid, String sdate, String edate, String sees, String endpoint)
 			throws ParseException {
 
-		System.out.println(sdate + "---" + edate+ "---" + sees+ "---" + endpoint+"---"+groupid);
+		//System.out.println(sdate + "---" + edate+ "---" + sees+ "---" + endpoint+"---"+groupid);
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		String sDate = sdate;
@@ -696,7 +693,7 @@ public class RestTrendingReportDAO {
 
 		JSONObject jsonObject3 = new JSONObject(qr);
 		lytxExceptionSummariesJson = toStringValue(jsonObject3);
-System.out.println(lytxExceptionSummariesJson);
+//System.out.println(lytxExceptionSummariesJson);
 		return lytxExceptionSummariesJson;
 	}
 
@@ -748,7 +745,7 @@ System.out.println(lytxExceptionSummariesJson);
 		return lytxVehicleEventsRecord;
 	}
 
-	private Date getDateFromMilliSeconds(String ms) {
+	public static Date getDateFromMilliSeconds(String ms) {
 		Date stdate = new Date(Long.parseLong(ms.substring(33, ms.indexOf(','))));
 
 		return stdate;
@@ -1010,6 +1007,80 @@ System.out.println(lytxExceptionSummariesJson);
 			}
 			}
 		
+	    private Map<String, Map<String, Integer>> extractExceptionDataFromLytxResponseDriver(String endpoint,String lytxSess,JSONArray lytxExceptionSummariesJson, Map<Long, String> lytxVehicleList, boolean trending, Date startDate, Date endDate, String lytxBehaviorsJson) throws RemoteException, ParseException {
+	         Map<String, Map<String, Integer>> lytxVehicleEventsRecord = new HashMap<String, Map<String, Integer>>();
+	        lytxBehaviors = loadLytxBehaviors(lytxBehaviorsJson);
+			vechilelytxlist=null;
 
+			/*
+			 * System.out.println("EndPoint"+endpoint);
+			 * System.out.println("lytex"+lytxSess);
+			 */
+	    	vechilemap=new LinkedHashMap<Long, String>();
+			ISubmissionServiceV5Proxy er=new ISubmissionServiceV5Proxy(endpoint);
+			  GetUsersResponse vr=new GetUsersResponse();
+			  GetUsersRequest getusersrequest=new GetUsersRequest();
+			  getusersrequest.setSessionId(lytxSess);
+				  vr=er.getUsers(getusersrequest);
+				JSONObject jsonObject2 = new JSONObject(vr);
+
+
+		  vechilelytxlist=jsonObject2.toString(); 
+		  JSONObject lytxVechileJO = new JSONObject(vechilelytxlist);
+
+				JSONArray lytxVechileArray = jsonObject2.getJSONArray("users");
+
+				//System.out.println("vlist"+vechilelytxlist);
+
+				for(int i=0;i<lytxVechileArray.length();i++)
+				{
+					JSONObject lytxObjValue=lytxVechileArray.getJSONObject(i);
+
+					//System.out.println(lytxObjValue.getLong("userId")+"-"+lytxObjValue.getString("firstName")+" "+lytxObjValue.getString("lastName"));
+
+					vechilemap.put(lytxObjValue.getLong("userId"),lytxObjValue.getString("firstName")+" "+lytxObjValue.getString("lastName"));
+				}
+	        for (int i = 0; i < lytxExceptionSummariesJson.length(); ++i) {
+	             Long eventsVehicleId = lytxExceptionSummariesJson.getJSONObject(i).getLong("driverId");
+	             String vehicleName = vechilemap.get(eventsVehicleId);
+	            System.out.println(vehicleName);
+
+	            Map<String, Integer> lytxExceptionEvents = lytxVehicleEventsRecord.get(vehicleName);
+	            if (lytxExceptionEvents == null) {
+	                lytxExceptionEvents = new HashMap<String, Integer>();
+	                String key = vehicleName;
+	                if (trending) {
+	                    final String recordDateUTC = lytxExceptionSummariesJson.getJSONObject(i).getString("recordDateUTC");
+	                    Date recordDate = null;
+	                    if (recordDateUTC.contains("java")) {
+	                        recordDate = getDateFromMilliSeconds(recordDateUTC);
+	                    }
+	                    else {
+	                        recordDate = getDate(recordDateUTC);
+	                    }
+	                    if (recordDate.before(startDate)) {
+	                        continue;
+	                    }
+	                    if (recordDate.after(endDate)) {
+	                        continue;
+	                    }
+	                     Integer periodNumber = getPeriodNumberForDate(recordDate);
+	                    key = periodNumber + "|" + key;
+	                }
+	                lytxVehicleEventsRecord.put(key, lytxExceptionEvents);
+	            }
+	             JSONArray lytxBehavioursArray = lytxExceptionSummariesJson.getJSONObject(i).getJSONArray("behaviors");
+	            for (int j = 0; j < lytxBehavioursArray.length(); ++j) {
+	                 int behavior = lytxBehavioursArray.getJSONObject(j).getInt("behavior");
+	                 String exceptionName = lytxBehaviors.get(behavior);
+	                Integer behaviorCount = lytxExceptionEvents.get(exceptionName);
+	                if (behaviorCount == null) {
+	                    behaviorCount = 0;
+	                }
+	                lytxExceptionEvents.put(exceptionName, ++behaviorCount);
+	            }
+	        }
+	        return lytxVehicleEventsRecord;
+	    }
 
 }

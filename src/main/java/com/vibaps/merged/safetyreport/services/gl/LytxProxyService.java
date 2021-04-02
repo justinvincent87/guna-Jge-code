@@ -3,7 +3,10 @@ package com.vibaps.merged.safetyreport.services.gl;
 import static com.vibaps.merged.safetyreport.util.DateTimeUtil.parseUtilDate;
 
 import java.rmi.RemoteException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -29,10 +32,12 @@ import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.dto.UserInfo;
 import com.lytx.dto.VehicleInfo;
 import com.lytx.services.ISubmissionServiceV5Proxy;
+import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.AppMsg;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.exception.GeoTabException;
+import com.vibaps.merged.safetyreport.util.DateTimeUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -102,6 +107,125 @@ public class LytxProxyService {
 		return lytxVehicleEventsRecord;
 	}
 
+	
+	public Map<String, Map<String, Integer>> getLytxTrendingExceptionData(ReportParams reportParams) throws ParseException {
+		Integer	behaviorCount;
+		Map<Long, String>					vehicles;
+		Map<String, Map<String, Integer>>	lytxVehicleEventsRecord	= new HashMap<>();
+	if(EntityType.isDriver(reportParams.getEntityType()))
+	{
+		
+		vehicles				= getLytxUserDetailMap(reportParams);
+	}
+	else
+	{
+		vehicles				= getLytxVehicleDetailMap(reportParams);
+	}
+		Map<Long, String>					behaviors				= getLytxBehaviorsMap(reportParams);
+
+		
+		/*
+		 * if (log.isDebugEnabled()) { log.
+		 * debug("Exception data count for Event record: {}, vehicles: {} and behaviors: {}"
+		 * , eventReponse.getEvents().length, vehicles.size(), behaviors.size()); }
+		 */
+		
+		//
+		String startDateStr = reportParams.getStartDate() + AppConstants.START_UTC;
+		String endDateStr = reportParams.getEndDate() + AppConstants.END_UTC;
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+		Date newStartDate = sdf.parse(startDateStr);
+		
+		Date ssdate = sdf.parse(startDateStr);
+		Date eedate = sdf.parse(endDateStr);
+		int s=0;
+		String sdate="";
+		do {
+
+			System.out.println("check---" + s++);
+			
+			reportParams.setStartDate(startDateStr);
+				
+			GetEventsResponse					eventReponse			= getLytxExceptionSummary(reportParams);
+
+				
+				JSONObject lytxEventsJO = new JSONObject(eventReponse);
+				JSONArray lytxEventsArray = lytxEventsJO.getJSONArray("events");
+
+				for (EventsInfoV5 event : eventReponse.getEvents()) {
+					String vehicleName;
+					if(EntityType.isDriver(reportParams.getEntityType()))
+					{
+						
+						vehicleName			= vehicles.get(event.getDriverId());
+					}
+					else
+					{
+						vehicleName			= vehicles.get(event.getVehicleId());
+
+					}
+					Map<String, Integer>	lytxExceptionEvents	= lytxVehicleEventsRecord.get(vehicleName);
+					if (Objects.isNull(lytxExceptionEvents)) {
+						lytxExceptionEvents = new HashMap<String, Integer>();
+						lytxVehicleEventsRecord.put(vehicleName, lytxExceptionEvents);
+					}
+
+					for (EventBehavior behavior : event.getBehaviors()) {
+						String	exceptionName	= behaviors.get(behavior.getBehavior());
+							behaviorCount	= lytxExceptionEvents.get(exceptionName);
+						if (behaviorCount == null) {
+							behaviorCount = 0;
+						}
+						lytxExceptionEvents.put("L-"+exceptionName, ++behaviorCount);
+					}
+				}
+				
+				if (lytxEventsJO.has("queryCutoff")) {
+					String cutoffData = lytxEventsJO.getString("queryCutoff");
+					System.out.println(cutoffData);
+
+					if (cutoffData != null) {
+
+						newStartDate = DateTimeUtil.getDateFromMilliSeconds(cutoffData);
+
+						String year = (newStartDate.getYear() + 1900) + "";
+						String month = (newStartDate.getMonth() + 1) + "";
+						String date = newStartDate.getDate() + "";
+
+						if (month.length() == 1) {
+							month = "0" + month;
+						}
+						if (date.length() == 1) {
+							date = "0" + date;
+						}
+						String strNewDate = year + "-" + month + "-" + date;
+
+						if (strNewDate.equals(sdate)) {
+							break;
+						}
+						sdate = strNewDate;
+
+					} else {
+						break;
+					}
+				} else {
+					break;
+				}
+				
+
+			
+		} while (true);
+
+	
+		
+		//end
+
+		if (log.isTraceEnabled()) {
+			log.trace("Exception records : {}", lytxVehicleEventsRecord);
+		}
+		return lytxVehicleEventsRecord;
+	}
 	/**
 	 * Get all exception summry records
 	 * 
@@ -126,6 +250,23 @@ public class LytxProxyService {
 		}
 	}
 
+	public GetEventsResponse getLytxExceptionSummaryTrending(ReportParams reportParams) {
+
+		GetEventsByLastUpdateDateRequest getEventsRequest = new GetEventsByLastUpdateDateRequest();
+		getEventsRequest.setSessionId(reportParams.getLytexSessionid());
+		getEventsRequest.setStartDate(parseUtilDate(reportParams.getStartDate()));
+		getEventsRequest.setEndDate(parseUtilDate(reportParams.getEndDate()));
+		if (StringUtils.isNotBlank(reportParams.getGroupId())) {
+			getEventsRequest.setGroupId(Long.valueOf(reportParams.getGroupId()));
+		}
+
+		try {
+			return getProxy(reportParams).getEventsByLastUpdateDate(getEventsRequest);
+		} catch (RemoteException e) {
+			log.error("Error while fetching lytx exception summary", e);
+			throw new GeoTabException(AppMsg.ER002);
+		}
+	}
 	/**
 	 * Get all vehicles map from lytx
 	 * 

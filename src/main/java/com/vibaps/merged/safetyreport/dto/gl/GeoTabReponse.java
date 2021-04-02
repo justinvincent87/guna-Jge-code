@@ -7,7 +7,7 @@ import org.apache.poi.ss.formula.functions.T;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -29,6 +29,6 @@ public class GeoTabReponse
 	@JsonInclude(Include.NON_NULL)
 	private Object data;
 	@JsonInclude(Include.NON_NULL)
-	private List<TrailerResponce> trailerResponce;
+	private List<TrailerResponse> trailerResponce;
 	
 }

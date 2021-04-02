@@ -17,11 +17,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.vibaps.merged.safetyreport.ExceptionConfig;
 import com.vibaps.merged.safetyreport.common.AppMsg;
 import com.vibaps.merged.safetyreport.dto.gl.GeoTabReponse;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerAttachementResponce;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
-import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 import com.vibaps.merged.safetyreport.exception.GeoTabException;
 import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
 
@@ -41,44 +44,40 @@ public class TrailerReport {
 
 
 @PostMapping(value = "/show-report",produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<GeoTabReponse> showReport(@RequestBody TrailerParams trailerParams)
+public TrailerResponse showReport(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
 {
 	
-	
-	if(trailerParams.getTrailerId().isEmpty() || 
-	   trailerParams.getDeviceId().isEmpty() ||
-	   trailerParams.getActiveFrom().isEmpty() ||
-	   trailerParams.getActiveTo().isEmpty() || 
-	   trailerParams.getGeotabDatabase().isEmpty() ||
-	   trailerParams.getGeotabSessionId().isEmpty() ||
-	   trailerParams.getGeotabUserName().isEmpty()
-			)
-	{
-		
-		 GeoTabException ex=new GeoTabException(AppMsg.CV002);
-		 appMsg = ex.getAppMsg();
-		
-		 responseBody = GeoTabReponse.builder()
-				.isError(true)
-				.errorMsg(appMsg.getHttpStatus().getReasonPhrase())
-				.errorCode(appMsg.getCode())
-				.description(appMsg.getMessage())
-				.build();
-		
-	}
-	else
-	{
-			GeoTabException ex=new GeoTabException(AppMsg.SUCCESS);
-			 appMsg = ex.getAppMsg();
-			 responseBody = GeoTabReponse.builder()
-			.isSuccess(true)
-			.isError(false)
-			.trailerResponce(trailerService.showReport(trailerParams).getResult())
-			.build();
-	}
-	return new ResponseEntity<GeoTabReponse>(responseBody, appMsg.getHttpStatus());
+	return trailerService.showReport(trailerParams);
 
 }
+
+@PostMapping(value = "/show-report-count",produces = MediaType.APPLICATION_JSON_VALUE)
+public String showReportcount(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+{
+	
+	return trailerService.showReportCount(trailerParams);
+
+}
+
+@PostMapping(value = "/show-device",produces = MediaType.APPLICATION_JSON_VALUE)
+public String showDevice(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+{
+	
+	return trailerService.showDevice(trailerParams);
+
+}
+
+@PostMapping(value = "/show-trailer",produces = MediaType.APPLICATION_JSON_VALUE)
+public String showTrailer(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+{
+	
+	return trailerService.showTrailer(trailerParams);
+
+}
+
+
+
+
 
 @PostMapping(value = "/getDevice",produces = MediaType.APPLICATION_JSON_VALUE)
 public ResponseEntity<GeoTabReponse> getDevice(@RequestBody TrailerParams trailerParams)
@@ -163,7 +162,7 @@ public ResponseEntity<GeoTabReponse> showReportPageWise(@RequestBody TrailerPara
 
 
 @PostMapping(value = "/get-trailer-attachement",produces = MediaType.APPLICATION_JSON_VALUE)
-public  List<TrailerResponce> getTrailerAttachementData(@RequestBody TrailerParams trailerParams)
+public  List<TrailerResponse> getTrailerAttachementData(@RequestBody TrailerParams trailerParams)
 {
 return  trailerService.getTrailerAttachementData(trailerParams).getResult();
 }

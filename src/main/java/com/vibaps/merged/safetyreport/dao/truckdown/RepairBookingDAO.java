@@ -20,7 +20,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.mail.handlers.text_plain;
-import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponce;
 import com.vibaps.merged.safetyreport.dto.truckdown.TruckDownResponce;
 import com.vibaps.merged.safetyreport.entity.truckdown.TdUser;
 import com.vibaps.merged.safetyreport.repo.truckdown.TdUserRepo;

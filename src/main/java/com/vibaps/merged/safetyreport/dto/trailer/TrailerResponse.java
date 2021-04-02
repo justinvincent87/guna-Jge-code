@@ -21,7 +21,7 @@ import lombok.Setter;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TrailerResponce {
+public class TrailerResponse {
 	
 private String id;
 private String name;
@@ -29,10 +29,10 @@ private String activeFrom;
 private String activeTo;
 private String trailerId;
 private String deviceId;
-private List<TrailerResponce> result;
+private List<TrailerResponse> result;
 @JsonInclude(Include.NON_NULL)
-private List<TrailerResponce> parsetrailercall;
-private List<TrailerResponce> parseaddressresponce;
+private List<TrailerResponse> parsetrailercall;
+private List<TrailerResponse> parseaddressresponce;
 private Double latitude;
 @JsonInclude(Include.NON_NULL)
 private Double longitude;
@@ -41,7 +41,15 @@ private String attachedLocation;
 private String detachedLocation;
 private String trailerattachedId;
 
-public TrailerResponce(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation)
+private String defactId;
+private String defactName;
+private boolean defactStatus;
+
+private TrailerAttachementResponce[] trailerResponce;
+
+
+
+public TrailerResponse(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation)
 {
 	this.activeFrom=activeFrom;
 	this.activeTo=activeTo;
@@ -53,7 +61,7 @@ public TrailerResponce(String activeFrom,String activeTo,String trailerId,String
 
 }
 
-public TrailerResponce(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation,String trailerattachedId)
+public TrailerResponse(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation,String trailerattachedId)
 {
 	this.activeFrom=activeFrom;
 	this.activeTo=activeTo;
@@ -66,7 +74,7 @@ public TrailerResponce(String activeFrom,String activeTo,String trailerId,String
 
 }
 
-public TrailerResponce(String activeFrom,String activeTo,String trailerId,String deviceId)
+public TrailerResponse(String activeFrom,String activeTo,String trailerId,String deviceId)
 {
 	this.activeFrom=activeFrom;
 	this.activeTo=activeTo;
@@ -74,7 +82,7 @@ public TrailerResponce(String activeFrom,String activeTo,String trailerId,String
 	this.deviceId=deviceId;
 }
 
-public TrailerResponce(String activeFrom, String activeTo, String trailerId, String deviceId,
+public TrailerResponse(String activeFrom, String activeTo, String trailerId, String deviceId,
 		String trailerattachedId) {
 	this.activeFrom = activeFrom;
 	this.activeTo = activeTo;
@@ -85,27 +93,47 @@ public TrailerResponce(String activeFrom, String activeTo, String trailerId, Str
 
 
 
-public TrailerResponce(List<TrailerResponce> result)
+public TrailerResponse(List<TrailerResponse> result)
 {
 this.result=result;	
 }
 
-public TrailerResponce(String id,String name)
+public TrailerResponse(String id,String name)
 {
 this.id=id;
 this.name=name;
 }
 
-public TrailerResponce(Double latitude,Double longitude)
+public TrailerResponse(Double latitude,Double longitude)
 {
 this.latitude=latitude;
 this.longitude=longitude;
 }
 
-public TrailerResponce(String formattedAddress) {
+public TrailerResponse(String formattedAddress) {
 	this.formattedAddress=formattedAddress;
 	
 }
+
+public TrailerResponse(String id, String name, String deviceId) {
+	this.id = id;
+	this.name = name;
+	this.deviceId = deviceId;
+}
+
+public TrailerResponse(String id, String name, String defactId, String defactName,boolean defactStatus) {
+	super();
+	this.id = id;
+	this.name = name;
+	this.defactId = defactId;
+	this.defactName = defactName;
+}
+
+public TrailerResponse(TrailerAttachementResponce[] trailerResponce) {
+	this.trailerResponce = trailerResponce;
+}
+
+
 
 
 

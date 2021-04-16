@@ -92,4 +92,9 @@ public final class DateTimeUtil {
 			throw new GeoTabException("Error while parse string to date", e);
 		}
 	}
+	public static Date getDateFromMilliSeconds(String ms) {
+		Date stdate = new Date(Long.parseLong(ms.substring(33, ms.indexOf(','))));
+
+		return stdate;
+	}
 }

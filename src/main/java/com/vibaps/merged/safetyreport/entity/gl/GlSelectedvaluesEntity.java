@@ -20,60 +20,32 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "gl_rulelist")
-@SecondaryTable(name = "gl_selectedvalues")
-public class GlRulelistEntity {
+@Table(name = "gl_selectedvalues")
+public class GlSelectedvaluesEntity {
 
 	@Id
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
-	@Column(name = "id", unique = true, nullable = false)
+	@Column(name = "id")
 	private Long		id;
 	
-	@Column(name = "rulename")
-	private String	rulename;
+	@Column(name = "gen_user_id")
+	private Long	gen_user_id;
 	
-	@Column(name = "rulevalue")
-	private String	rulevalue;
-	
-	@Column(name = "rulecompany")
-	private String	rulecompany;
-	
+	@Column(name = "gen_rulelist_id")
+	private Long	gen_rulelist_id;
+
 	@Column(name = "weight")
 	private int		weight;
 
-	@Column(name = "status", table = "gl_selectedvalues")
+	@Column(name = "status")
 	private int status;
-	
 
-	
-	@Transient
-	private Float minmiles;
-	
-
-
-	public GlRulelistEntity(String rulename, int weight) {
-		this.rulename = rulename;
+	public GlSelectedvaluesEntity(Long gen_rulelist_id, int weight, int status) {
+		this.gen_rulelist_id = gen_rulelist_id;
 		this.weight = weight;
+		this.status = status;
 	}
-
 	
-	  public GlRulelistEntity(String rulevalue) 
-	  { 
-		  this.rulevalue = rulevalue; 
-		  
-	  }
-	 
-
-	public GlRulelistEntity(int weight) {
-		this.weight = weight;
-	}
-
-
-
-
-
-
-
 
 }

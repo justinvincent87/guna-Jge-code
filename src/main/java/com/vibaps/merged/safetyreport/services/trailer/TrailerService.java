@@ -3,7 +3,9 @@ package com.vibaps.merged.safetyreport.services.trailer;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -86,7 +88,7 @@ public class TrailerService {
 	public TrailerResponse showReport(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException  {
 
 		StopWatch sw=new StopWatch();
-		
+		List<TrailerResponse> list=new ArrayList<TrailerResponse>();
 		sw.start();
 		String payload=getTrailerRequestPayload(trailerParams);
 			
@@ -122,24 +124,33 @@ public class TrailerService {
 			JSONObject obj=new JSONObject(response);
 			JSONArray jsonarray=obj.getJSONArray("data");
 			  
-			SimpleDateFormat df = new SimpleDateFormat("dd/M/yyyy hh:mm a");
-	        df.setTimeZone(TimeZone.getDefault());
+		//	SimpleDateFormat df = new SimpleDateFormat("dd/M/yyyy hh:mm a");
+	       // df.setTimeZone(TimeZone.getDefault());
+	      String zoneId=  getZoneId(trailerParams);
 	        
-	        
-			  ObjectMapper mapper = new ObjectMapper();
+			//  ObjectMapper mapper = new ObjectMapper();
 			  
-			  mapper.setTimeZone(TimeZone.getTimeZone(getZoneId(trailerParams)));
-		      mapper.setDateFormat(df);
+			 // mapper.setTimeZone(TimeZone.getTimeZone(getZoneId(trailerParams)));
+		     // mapper.setDateFormat(df);
+for(int i=0;i<jsonarray.length();i++)
+{
+	
+	
+	list.add(new TrailerResponse(jsonarray.getJSONObject(i).getString("id"),getZoneDateTime(zoneId,jsonarray.getJSONObject(i).getString(
+			  "activeFrom")),getZoneDateTime(zoneId,jsonarray.getJSONObject(i).getString("activeTo")),jsonarray.getJSONObject(i).getString("trailerName"),jsonarray.getJSONObject(i).getString("deviceName"),jsonarray.getJSONObject(i).getString("attachedLocation"),jsonarray.getJSONObject(i).getString("detachedLocation")));	
 
+	 
+}
 			  
 			  
-			  TrailerAttachementResponce[] result= mapper.readValue(jsonarray.toString(),  TrailerAttachementResponce[].class );
+			 // TrailerAttachementResponce[] result= mapper.readValue(jsonarray.toString(),  TrailerAttachementResponce[].class );
 		     
 	sw.stop();
 	log.info("Time End:: {}",sw.getTotalTimeMillis());
 
+	return new TrailerResponse(list);
 	
-			  return new TrailerResponse(result);
+			 // return new TrailerResponse(result);
 	}
 	
 	
@@ -444,6 +455,22 @@ return builder.url(trailerParams.getUrl()).groups(trailerParams.getGroups()).dat
 
 	    
 	     ZonedDateTime parsed = ZonedDateTime.parse(utcTime, formatter.withZone(ZoneId.of(timeZoneId)));
+	     if(parsed.getYear()>Calendar.getInstance().get(Calendar.YEAR))
+	     {
+	    	 return "-";
+	     }
+	     return  parsed.format(formatter1);
+	}
+	
+	@Cacheable(value = "getZoneTime")
+	public String getZoneDateTime(String timeZoneId,String utcTime)
+	{
+
+	    DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+	    DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("MM-dd-yyyy hh:mm a");
+
+	    
+	     ZonedDateTime parsed = ZonedDateTime.parse(utcTime.substring(0, utcTime.indexOf("+"))+"Z", formatter.withZone(ZoneId.of(timeZoneId)));
 	     if(parsed.getYear()>Calendar.getInstance().get(Calendar.YEAR))
 	     {
 	    	 return "-";

@@ -28,6 +28,8 @@ private String name;
 private String activeFrom;
 private String activeTo;
 private String trailerId;
+private String trailerName;
+private String deviceName;
 private String deviceId;
 private List<TrailerResponse> result;
 @JsonInclude(Include.NON_NULL)
@@ -49,30 +51,30 @@ private TrailerAttachementResponce[] trailerResponce;
 
 
 
+
 public TrailerResponse(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation)
 {
 	this.activeFrom=activeFrom;
 	this.activeTo=activeTo;
 	this.trailerId=trailerId;
 	this.deviceId=deviceId;
-	
 	this.attachedLocation=attachedLocation;
 	this.detachedLocation=detachedLocation;
 
 }
 
-public TrailerResponse(String activeFrom,String activeTo,String trailerId,String deviceId,String attachedLocation,String detachedLocation,String trailerattachedId)
-{
-	this.activeFrom=activeFrom;
-	this.activeTo=activeTo;
-	this.trailerId=trailerId;
-	this.deviceId=deviceId;
-	
-	this.attachedLocation=attachedLocation;
-	this.detachedLocation=detachedLocation;
-	this.trailerattachedId = trailerattachedId;
-
-}
+/*
+ * public TrailerResponse(String activeFrom,String activeTo,String
+ * trailerId,String deviceId,String attachedLocation,String
+ * detachedLocation,String trailerattachedId) { this.activeFrom=activeFrom;
+ * this.activeTo=activeTo; this.trailerId=trailerId; this.deviceId=deviceId;
+ * 
+ * this.attachedLocation=attachedLocation;
+ * this.detachedLocation=detachedLocation; this.trailerattachedId =
+ * trailerattachedId;
+ * 
+ * }
+ */
 
 public TrailerResponse(String activeFrom,String activeTo,String trailerId,String deviceId)
 {
@@ -131,6 +133,18 @@ public TrailerResponse(String id, String name, String defactId, String defactNam
 
 public TrailerResponse(TrailerAttachementResponce[] trailerResponce) {
 	this.trailerResponce = trailerResponce;
+}
+
+public TrailerResponse(String id, String activeFrom, String activeTo, String trailerName, String deviceName,
+		String attachedLocation, String detachedLocation) {
+	super();
+	this.id = id;
+	this.activeFrom = activeFrom;
+	this.activeTo = activeTo;
+	this.trailerName = trailerName;
+	this.deviceName = deviceName;
+	this.attachedLocation = attachedLocation;
+	this.detachedLocation = detachedLocation;
 }
 
 

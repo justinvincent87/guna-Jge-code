@@ -43,7 +43,7 @@ public class RestTrendingReport {
 	}
 	
 	@PostMapping(value ="/createExcelTrendingReport")
-	private String createExcelReport(@RequestBody ReportParams reportParams)
+	public String createExcelReport(@RequestBody ReportParams reportParams)
 			throws IOException, FileNotFoundException {
 		return restTrendingReportService.createExcelReport(reportParams);
 

@@ -19,10 +19,10 @@ public class TrailerAttachementResponce {
 	@Id
 	private String id;
 	private String version;
-	@Transient
-	private String activeFrom;
-	@Transient
-	private String activeTo;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	private Date activeFrom;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	private Date activeTo;
 	private String trailerId;
 	private String deviceId;
 	private String database;
@@ -34,20 +34,27 @@ public class TrailerAttachementResponce {
 	
 	private String detachedLocation;
 	
+	@Transient
+	private String activeFromString;
+	
+	@Transient
+	private String activeToString;
+	
 
 	
 	
-	@JsonSetter("activeFrom")
-	@JsonDeserialize(using = IdDeserializer.class)
-	public void setActiveFrom(String activeFrom) {
-		this.activeFrom = activeFrom;
-	}
-	
-	@JsonSetter("activeTo")
-	@JsonDeserialize(using = IdDeserializer.class)
-	public void setActiveTo(String activeTo) {
-		this.activeTo = activeTo;
-	}
+	/*
+	 * @JsonSetter("activeFromString")
+	 * 
+	 * @JsonDeserialize(using = IdDeserializer.class) public void
+	 * setActiveFromString(Date activeFrom) { this.activeFromString =
+	 * activeFromString; }
+	 * 
+	 * @JsonSetter("activeToString")
+	 * 
+	 * @JsonDeserialize(using = IdDeserializer.class) public void
+	 * setActiveToString(Date activeTo) { this.activeToString = activeToString; }
+	 */
 	
 	
 	

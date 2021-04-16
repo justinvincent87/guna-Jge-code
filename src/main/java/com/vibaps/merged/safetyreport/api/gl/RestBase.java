@@ -137,7 +137,7 @@ public class RestBase {
 	  
 	  
 	  @RequestMapping(value="/Login",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE) 
-	  public @ResponseBody Object Login(@RequestParam String dbname,String endpoint) throws RemoteException 
+	  public @ResponseBody LoginResponse Login(@RequestParam String dbname,String endpoint) throws RemoteException 
 	  { 
 		  String lytxUsername="";
 		  String lytxPassword="";

@@ -62,6 +62,7 @@ import com.lytx.dto.GetVehiclesRequest;
 import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
+import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.gl.Behave;
@@ -69,9 +70,12 @@ import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.entity.gl.GenDevice;
 import com.vibaps.merged.safetyreport.entity.gl.GenDriver;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
+import com.vibaps.merged.safetyreport.entity.gl.GlSelectedvaluesEntity;
 import com.vibaps.merged.safetyreport.entity.gl.ReportRow;
 import com.vibaps.merged.safetyreport.entity.gl.Score;
 import com.vibaps.merged.safetyreport.entity.gl.Trip;
+import com.vibaps.merged.safetyreport.repo.gl.GlRulelistEntityRepository;
+import com.vibaps.merged.safetyreport.repo.gl.GlSelectedvaluesEntityRepository;
 import com.vibaps.merged.safetyreport.repo.gl.UserReportFilterRepository;
 import com.vibaps.merged.safetyreport.services.gl.GeoTabApiService;
 import com.vibaps.merged.safetyreport.services.gl.LytxProxyService;
@@ -93,6 +97,10 @@ public class GlReportService {
 	private UserReportFilterRepository userReportFilterRepository;
 	
 	@Autowired
+	private GlRulelistEntityRepository glRulelistEntityRepository;
+	
+	
+	@Autowired
 	private RestTemplate restTemplate;
 	
 	@Autowired
@@ -103,6 +111,9 @@ public class GlReportService {
 
 	@Autowired
 	private CommonGeotabDAO commonGeotabDAO;
+	
+	@Autowired
+	private GlSelectedvaluesEntityRepository glSelectedvaluesEntityRepository;
 
 	private String				vechilelytxlist;
 	private Map<Long, String>	vechilemap;
@@ -130,40 +141,46 @@ public class GlReportService {
 
 	public Object view(String companyid, String db) {
 		Map<String, Object>		result	= new HashMap<>();
-		List<GlRulelistEntity>	obj		= null;
-		List<GlRulelistEntity>	obj1	= null;
+		List<GlSelectedvaluesEntity>	obj1	= new ArrayList<GlSelectedvaluesEntity>();
 
 		Integer countuser = null;
 		countuser = userReportFilterRepository.userCount(companyid, db);
 
 		if (countuser.intValue() == 0) {
 
-			BigInteger newUserId = userReportFilterRepository.userCreation(companyid, db);
+			Long newUserId = userReportFilterRepository.userCreation(companyid, db);
 
 			if (newUserId.intValue() != 0) {
 
-				obj1 = userReportFilterRepository.getRuleList(db);
+				obj1 = glSelectedvaluesEntityRepository.getRuleList(db);
 
-				Iterator it = obj1.iterator();
-				while (it.hasNext()) {
-					Object[] line = (Object[]) it.next();
-					userReportFilterRepository.insertUserRuleList(newUserId, Integer.parseInt(line[0].toString()),
-					        Integer.parseInt(line[1].toString()), Integer.parseInt(line[2].toString()));
-
+				
+				for(int i=0;i<obj1.size();i++)
+				{
+					GlSelectedvaluesEntity ent=obj1.get(i);					
+					glSelectedvaluesEntityRepository.insertUserRuleList(newUserId, ent.getGen_rulelist_id(),ent.getStatus(),ent.getWeight());
 				}
+				
 
 			}
+			
+			
 
 		}
+		List<GlRulelistEntity> obj = new ArrayList<GlRulelistEntity>();
 
-		return countuser;
+		obj = glRulelistEntityRepository.viewadd(companyid, db);
+
+		return obj;
+
+
 	}
 
 	public Object viewadd(String geotabUserid, String db) {
 
-		List<GlRulelistEntity> obj = null;
+		List<GlRulelistEntity> obj = new ArrayList<GlRulelistEntity>();
 
-		obj = userReportFilterRepository.viewadd(geotabUserid, db);
+		obj = glRulelistEntityRepository.viewBehaveList(geotabUserid, db);
 
 		return obj;
 	}
@@ -195,11 +212,11 @@ public class GlReportService {
 		return obj;
 	}
 
-	public List<String> getallbehaveui(String geotabUserid, String db) {
+	public List<GlRulelistEntity> getallbehaveui(String geotabUserid, String db) {
 
-		List<String> obj = new ArrayList();
+		List<GlRulelistEntity> obj = new ArrayList<GlRulelistEntity>();
 
-		obj = userReportFilterRepository.getallbehave(geotabUserid, db);
+		obj = glRulelistEntityRepository.getallbehaveui(geotabUserid, db);
 
 		return obj;
 	}
@@ -260,13 +277,19 @@ public class GlReportService {
 			i = userReportFilterRepository.getRuleListInsert(companyid, db, Float.valueOf(Float.parseFloat(minmiles)));
 
 		} catch (Exception exception) {
+			
 		}
 
 		for (int d = 0; d < v.size(); d++) {
-
-			userReportFilterRepository.updateRuleListValue(companyid, db,
-			        Integer.valueOf(((GlRulelistEntity) v.get(d)).getWeight()),
-			        ((GlRulelistEntity) v.get(d)).getRulevalue());
+			
+			try
+			{
+				userReportFilterRepository.updateRuleListValue(companyid, db,v.get(d).getWeight(),v.get(d).getId());
+					
+			}
+			catch (Exception e) {
+	}
+			
 			result.put("result", "Rules list saved");
 		}
 
@@ -1673,16 +1696,15 @@ public class GlReportService {
 
 		List<String> displayColumns = loadReporColumntHeaders(geouname, geodatabase);
 
-		File	source	= new File(
-		        "/usr/local/apache-tomcat-8.5.51/webapps/GL_Driver_Safety_Report_Template_" + templect + ".xlsx");
-		File	dest	= new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx");
+		File	source	= new File(AppConstants.NORMAL_REPORT_EXCEL_PATH);
+		File	dest	= new File(AppConstants.EXCEL_BASE_PATH+geodatabase+"_as.xlsx");
 		try {
 			copyFileUsingStream(source, dest);
 		} catch (IOException e3) {
 			e3.printStackTrace();
 		}
 		Workbook	workbook	= WorkbookFactory
-		        .create(new File("/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/as.xlsx"));
+		        .create(new File(AppConstants.EXCEL_BASE_PATH+geodatabase+"_as.xlsx"));
 		Sheet		sheet		= workbook.getSheetAt(0);
 		DateFormat	df			= new SimpleDateFormat("dd/MM/yy HH:mm:ss");
 		Calendar	calobj		= Calendar.getInstance();
@@ -1769,17 +1791,17 @@ public class GlReportService {
 		cells.setCellValue(min);
 		int statrpoint = s + 7;
 
-		String[] formulas = { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)", "Data!E@", "Data!F@",
-		        "Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@", "Data!N@",
-		        "IFERROR((E#*E$6)/($C#/100),0)", "IFERROR((F#*F$6)/($C#/100),0)", "IFERROR((G#*G$6)/($C#/100),0)",
-		        "IFERROR((H#*H$6)/($C#/100),0)", "IFERROR((I#*I$6)/($C#/100),0)", "IFERROR((J#*J$6)/($C#/100),0)",
-		        "IFERROR((K#*K$6)/($C#/100),0)", "IFERROR((L#*L$6)/($C#/100),0)", "IFERROR((M#*M$6)/($C#/100),0)",
-		        "IFERROR((N#*N$6)/($C#/100),0)", "AVERAGE(OFFSET($O#,0,0,1,$Y$5))" };
+//		String[] formulas = { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)", "Data!E@", "Data!F@",
+//		        "Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@", "Data!N@",
+//		        "IFERROR((E#*E$6)/($C#/100),0)", "IFERROR((F#*F$6)/($C#/100),0)", "IFERROR((G#*G$6)/($C#/100),0)",
+//		        "IFERROR((H#*H$6)/($C#/100),0)", "IFERROR((I#*I$6)/($C#/100),0)", "IFERROR((J#*J$6)/($C#/100),0)",
+//		        "IFERROR((K#*K$6)/($C#/100),0)", "IFERROR((L#*L$6)/($C#/100),0)", "IFERROR((M#*M$6)/($C#/100),0)",
+//		        "IFERROR((N#*N$6)/($C#/100),0)", "AVERAGE(OFFSET($O#,0,0,1,$Y$5))" };
 		// String[] formulas =
 		// {"Data!A@","Data!B@","Data!C@","IF(C#>$C$6,TRUE,FALSE)","Data!E@","Data!F@","Data!G@","Data!H@","Data!I@","Data!J@","Data!K@","Data!L@","Data!M@","Data!N@","IFERROR((E#*E$6)/($C8/100),0)","IFERROR((F#*F$6)/($C8/100),0)","IFERROR((G#*G$6)/($C8/100),0)","IFERROR((H#*H$6)/($C8/100),0)","IFERROR((I#*I$6)/($C8/100),0)","IFERROR((J#*J$6)/($C8/100),0)","IFERROR((K#*K$6)/($C8/100),0)","IFERROR((L#*L$6)/($C8/100),0)","IFERROR((M#*M$6)/($C8/100),0)","IFERROR((N#*N$6)/($C8/100),0)","AVERAGE(OFFSET($O#,0,0,1,$Y$5))"};
 		// String[] formulas =
 		// {"Data!A@","Data!B@","Data!C@","IF(C#>$C$6,TRUE,FALSE)","Data!E@","Data!F@","Data!G@","Data!H@","Data!I@","Data!J@","Data!K@","Data!L@","Data!M@","Data!N@","Data!O@","Data!P@","Data!Q@","Data!R@","Data!S@","Data!T@","Data!U@","Data!V@","Data!W@","Data!X@","IFERROR((E#*E$6)/($C8/100),0)","IFERROR((F#*F$6)/($C8/100),0)","IFERROR((G#*G$6)/($C8/100),0)","IFERROR((H#*H$6)/($C8/100),0)","IFERROR((I#*I$6)/($C8/100),0)","IFERROR((J#*J$6)/($C8/100),0)","IFERROR((K#*K$6)/($C8/100),0)","IFERROR((L#*L$6)/($C8/100),0)","IFERROR((M#*M$6)/($C8/100),0)","IFERROR((N#*N$6)/($C8/100),0)","IFERROR((O#*O$6)/($C8/100),0)","IFERROR((P#*P$6)/($C8/100),0)","IFERROR((Q#*Q$6)/($C8/100),0)","IFERROR((R#*R$6)/($C8/100),0)","IFERROR((S#*S$6)/($C8/100),0)","IFERROR((T#*T$6)/($C8/100),0)","IFERROR((U#*U$6)/($C8/100),0)","IFERROR((V#*V$6)/($C8/100),0)","IFERROR((W#*W$6)/($C8/100),0)","IFERROR((X#*X$6)/($C8/100),0)","AVERAGE(OFFSET($Y#,0,0,1,$AS$5))"};
-		updateFormulaForReport(report, FORMULA_START_ROW, s, ROW_OFFSET, formulas);
+		updateFormulaForReport(report, FORMULA_START_ROW, s, ROW_OFFSET, AppConstants.NORMAL_REPORT_FORMULAS);
 //				
 
 		/*
@@ -1799,13 +1821,13 @@ public class GlReportService {
 		 */
 
 		try (FileOutputStream outputStream = new FileOutputStream(
-		        "/usr/local/apache-tomcat-8.5.51/webapps/" + geodatabase + "/report/excel/" + filename + ".xlsx")) {
+		        AppConstants.EXCEL_BASE_PATH+filename+".xlsx")) {
 			XSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
 			workbook.write(outputStream);
 		}
 		workbook.close();
 
-		return "{\"url\":\"" + url + geodatabase + "/report/excel/" + filename + ".xlsx\"}";
+		return "{\"url\":\"" + url +"glReportUI/report/excel/" + filename + ".xlsx\"}";
 	}
 
 	public void copyFileUsingStream(File source, File dest) throws IOException {

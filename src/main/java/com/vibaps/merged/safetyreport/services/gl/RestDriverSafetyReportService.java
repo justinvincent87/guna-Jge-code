@@ -23,9 +23,9 @@ public class RestDriverSafetyReportService {
 
 	public Object insert(ReportParams reportParams) {
 		ArrayList<GlRulelistEntity> glRuleListValue = new ArrayList<>();
-		for (int j = 0; j < reportParams.getRules().size(); j++) {
+		for (int j = 0; j < reportParams.getRuleId().size(); j++) {
 			GlRulelistEntity glRulelistEntity = new GlRulelistEntity();
-			glRulelistEntity.setId(((Integer) reportParams.getRuleId().get(j)).intValue());
+			glRulelistEntity.setId((reportParams.getRuleId().get(j)).longValue());
 			glRulelistEntity.setWeight(((Integer) reportParams.getWeight().get(j)).intValue());
 			glRuleListValue.add(glRulelistEntity);
 		}

@@ -14,7 +14,7 @@ import com.vibaps.merged.safetyreport.entity.gl.UserReportFilterEntity;
 
 @Repository
 @Transactional
-public interface CommonGeotabRepository extends JpaRepository<UserReportFilterEntity, Integer>{
+public interface CommonGeotabRepository extends JpaRepository<LyUserEntity, Long>{
 
 @Query(value="insert into gen_device(ref_gen_user_id,device_id,device_name) values (:refid,:deviceid,:devicename)",nativeQuery = true)
 void insertDevice(@Param("refid") int refid,@Param("deviceid") String deviceid, @Param("devicename") String devicename);
@@ -25,7 +25,7 @@ int getCompanyId(@Param("userid") String userid,@Param("db") String db);
 @Query(value = "insert into gen_driver(ref_gen_user_id,driver_id,driver_name) values (:refid,:driverid,:drivername)",nativeQuery = true)
 void insertDriver(@Param("refid") int refid,@Param("driverid") String driverid, @Param("drivername") String drivername);
 
-@Query(value = "SELECT ly_username,ly_password FROM ly_user where dbname=:db",nativeQuery = true)
+@Query(value = "SELECT * FROM ly_user where dbname=:db",nativeQuery = true)
 LyUserEntity getLytxCredentials(@Param("db") String db);
 
 }

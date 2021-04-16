@@ -3,10 +3,16 @@ package com.vibaps.merged.safetyreport.services.gl;
 import static com.vibaps.merged.safetyreport.util.DateTimeUtil.parseUtilDate;
 
 import java.rmi.RemoteException;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,10 +35,12 @@ import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.dto.UserInfo;
 import com.lytx.dto.VehicleInfo;
 import com.lytx.services.ISubmissionServiceV5Proxy;
+import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.AppMsg;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.exception.GeoTabException;
+import com.vibaps.merged.safetyreport.util.DateTimeUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -45,12 +53,16 @@ public class LytxProxyService {
 	 * 
 	 * @param reportParams
 	 * @return
+	 * @throws ParseException 
 	 */
-	public Map<String, Map<String, Integer>> getLytxExceptionData(ReportParams reportParams) {
+	
+	public Map<String, Map<String, Integer>> getLytxExceptionData(ReportParams reportParams) throws ParseException {
 		Integer	behaviorCount;
 		Map<Long, String>					vehicles;
 		Map<String, Map<String, Integer>>	lytxVehicleEventsRecord	= new HashMap<>();
-		GetEventsResponse					eventReponse			= getLytxExceptionSummary(reportParams);
+	
+
+
 	if(EntityType.isDriver(reportParams.getEntityType()))
 	{
 		
@@ -63,10 +75,36 @@ public class LytxProxyService {
 		Map<Long, String>					behaviors				= getLytxBehaviorsMap(reportParams);
 
 		
+		String startDateStr = reportParams.getStartDate() + AppConstants.START_UTC;
+		String endDateStr = reportParams.getEndDate() + AppConstants.END_UTC;
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+		Date newStartDate = sdf.parse(startDateStr);
+		
+		Date ssdate = sdf.parse(startDateStr);
+		Date eedate = sdf.parse(endDateStr);
+		int s=0;
+		String sdate=startDateStr;
+		
+		do {
+
+			System.out.println("check---" + s++);
+			
+			reportParams.setStartDate(sdate);
+			GetEventsResponse					eventReponse= getLytxExceptionSummary(reportParams);
+
+			JSONObject lytxEventsJO = new JSONObject(eventReponse);
+			
+			log.info("LyData{}",lytxEventsJO.toString());
+			
+		
 		if (log.isDebugEnabled()) {
 			log.debug("Exception data count for Event record: {}, vehicles: {} and behaviors: {}",
 			        eventReponse.getEvents().length, vehicles.size(), behaviors.size());
 		}
+		
+		 
+
 
 		for (EventsInfoV5 event : eventReponse.getEvents()) {
 			String vehicleName;
@@ -88,20 +126,223 @@ public class LytxProxyService {
 
 			for (EventBehavior behavior : event.getBehaviors()) {
 				String	exceptionName	= behaviors.get(behavior.getBehavior());
-					behaviorCount	= lytxExceptionEvents.get(exceptionName);
+					behaviorCount	= lytxExceptionEvents.get("L-"+exceptionName);
 				if (behaviorCount == null) {
 					behaviorCount = 0;
 				}
 				lytxExceptionEvents.put("L-"+exceptionName, ++behaviorCount);
 			}
 		}
+		
+		if (lytxEventsJO.has("queryCutoff")) {
+			String cutoffData = lytxEventsJO.getString("queryCutoff");
+			System.out.println(cutoffData);
+
+			if (cutoffData != null) {
+
+				newStartDate = DateTimeUtil.getDateFromMilliSeconds(cutoffData);
+
+				String year = (newStartDate.getYear() + 1900) + "";
+				String month = (newStartDate.getMonth() + 1) + "";
+				String date = newStartDate.getDate() + "";
+
+				if (month.length() == 1) {
+					month = "0" + month;
+				}
+				if (date.length() == 1) {
+					date = "0" + date;
+				}
+				String strNewDate = year + "-" + month + "-" + date;
+
+				if (strNewDate.equals(sdate)) {
+					break;
+				}
+				sdate = strNewDate;
+
+			} else {
+				break;
+			}
+		} else {
+			break;
+		}
+		
+
+	
+} while (true);
 
 		if (log.isTraceEnabled()) {
 			log.trace("Exception records : {}", lytxVehicleEventsRecord);
 		}
 		return lytxVehicleEventsRecord;
 	}
+	
+	
+	public Map<String, Map<String, Integer>> getLytxTrendingExceptionData(ReportParams reportParams,Map<Integer, String[]> periods) throws ParseException {
+		Integer	behaviorCount;
+		Map<Long, String>					vehicles;
+		Map<String, Map<String, Integer>>	lytxVehicleEventsRecord	= new HashMap<>();
+	if(EntityType.isDriver(reportParams.getEntityType()))
+	{
+		
+		vehicles				= getLytxUserDetailMap(reportParams);
+	}
+	else
+	{
+		vehicles				= getLytxVehicleDetailMap(reportParams);
+	}
+		Map<Long, String>					behaviors				= getLytxBehaviorsMap(reportParams);
 
+		
+		/*
+		 * if (log.isDebugEnabled()) { log.
+		 * debug("Exception data count for Event record: {}, vehicles: {} and behaviors: {}"
+		 * , eventReponse.getEvents().length, vehicles.size(), behaviors.size()); }
+		 */
+		
+		//
+		String startDateStr = reportParams.getStartDate() + AppConstants.START_UTC;
+		String endDateStr = reportParams.getEndDate() + AppConstants.END_UTC;
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+		Date newStartDate = sdf.parse(startDateStr);
+		
+		Date ssdate = sdf.parse(startDateStr);
+		Date eedate = sdf.parse(endDateStr);
+		int s=0;
+		String sdate=startDateStr;
+		do {
+
+			System.out.println("check---" + s++);
+			
+			reportParams.setStartDate(sdate);
+				
+			GetEventsResponse					eventReponse			= getLytxExceptionSummary(reportParams);
+
+				
+				JSONObject lytxEventsJO = new JSONObject(eventReponse);
+
+				for (EventsInfoV5 event : eventReponse.getEvents()) {
+					String vehicleName;
+					if(EntityType.isDriver(reportParams.getEntityType()))
+					{
+						
+						vehicleName			= vehicles.get(event.getDriverId());
+					}
+					else
+					{
+						vehicleName			= vehicles.get(event.getVehicleId());
+
+					}
+					
+					Map<String, Integer>	lytxExceptionEvents	= lytxVehicleEventsRecord.get(vehicleName);
+					if (Objects.isNull(lytxExceptionEvents)) {
+						
+						String recordDateUTC =event.getRecordDateUTC().toString();
+						Date recordDate = null;
+
+						if (recordDateUTC.contains("java")) {
+							recordDate = getDateFromMilliSeconds(recordDateUTC);
+						} else {
+							recordDate = getDate(recordDateUTC);
+						}
+						if (recordDate.before(ssdate) || recordDate.after(eedate)) {
+							continue;
+						}
+						Integer periodNumber = getPeriodNumberForDate(recordDate,periods);
+						
+						
+						
+						lytxExceptionEvents = new HashMap<String, Integer>();
+						lytxVehicleEventsRecord.put( periodNumber + "|" +vehicleName, lytxExceptionEvents);
+					}
+
+					for (EventBehavior behavior : event.getBehaviors()) {
+						String	exceptionName	= behaviors.get(behavior.getBehavior());
+						behaviorCount	= lytxExceptionEvents.get("L-"+exceptionName);
+						if (behaviorCount == null) {
+							behaviorCount = 0;
+						}
+						lytxExceptionEvents.put("L-"+exceptionName, ++behaviorCount);
+					}
+				}
+				
+				if (lytxEventsJO.has("queryCutoff")) {
+					String cutoffData = lytxEventsJO.getString("queryCutoff");
+					System.out.println(cutoffData);
+
+					if (cutoffData != null) {
+
+						newStartDate = DateTimeUtil.getDateFromMilliSeconds(cutoffData);
+
+						String year = (newStartDate.getYear() + 1900) + "";
+						String month = (newStartDate.getMonth() + 1) + "";
+						String date = newStartDate.getDate() + "";
+
+						if (month.length() == 1) {
+							month = "0" + month;
+						}
+						if (date.length() == 1) {
+							date = "0" + date;
+						}
+						String strNewDate = year + "-" + month + "-" + date;
+
+						if (strNewDate.equals(sdate)) {
+							break;
+						}
+						sdate = strNewDate;
+
+					} else {
+						break;
+					}
+				} else {
+					break;
+				}
+				
+
+			
+		} while (true);
+
+	
+		
+		//end
+
+		if (log.isTraceEnabled()) {
+			log.trace("Exception records : {}", lytxVehicleEventsRecord);
+		}
+
+		return lytxVehicleEventsRecord;
+	}
+	public Integer getPeriodNumberForDate(Date date,Map<Integer, String[]> periods) throws ParseException {
+		for (Map.Entry<Integer, String[]> entry : periods.entrySet()) {
+			Integer key = entry.getKey();
+			String[] value = entry.getValue();
+			Date startDate = getDate(value[0]);
+			Date endDate = getDate(value[1]);
+			if (!(date.before(startDate) || date.after(endDate))) {
+				return key;
+			}
+		}
+		return null;
+	}
+	
+	private Date getDateFromMilliSeconds(String ms) {
+		Date stdate = new Date(Long.parseLong(ms.substring(33, ms.indexOf(','))));
+
+		return stdate;
+	}
+	
+	private Date getDate(String dateStr) throws ParseException {
+		dateStr = dateStr.substring(0, dateStr.indexOf('.'));
+		TimeZone timeZone = TimeZone.getTimeZone("UTC");
+		Calendar calendar = Calendar.getInstance(timeZone);
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+//					simpleDateFormat.setTimeZone(timeZone);
+		Date date = null;
+		
+			date = simpleDateFormat.parse(dateStr);
+		
+		return date;
+	}
 	/**
 	 * Get all exception summry records
 	 * 
@@ -110,6 +351,8 @@ public class LytxProxyService {
 	 */
 	public GetEventsResponse getLytxExceptionSummary(ReportParams reportParams) {
 
+		
+		
 		GetEventsByLastUpdateDateRequest getEventsRequest = new GetEventsByLastUpdateDateRequest();
 		getEventsRequest.setSessionId(reportParams.getLytexSessionid());
 		getEventsRequest.setStartDate(parseUtilDate(reportParams.getStartDate()));

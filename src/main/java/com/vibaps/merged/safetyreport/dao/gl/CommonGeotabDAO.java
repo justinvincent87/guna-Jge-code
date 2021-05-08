@@ -91,48 +91,48 @@ public ComDatabase insertDevice(TrailerParams reportParams){
 	}
 
 @Transactional	
-public ComDatabase insertTrailer(TrailerParams reportParams){
+public ComDatabase insertTrailer(TrailerParams reportParams,Long dbId){
 
-	comDatabase=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase());
-	
-	if(comDatabase==null)
-	{  
-		comDatabase=new ComDatabase();
-		comDatabase.setDatabaseName(reportParams.getGeotabDatabase());
-		comDatabase=comDatabaseRepository.save(comDatabase);
-	}
+//	comDatabase=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase());
+//	
+//	if(comDatabase==null)
+//	{  
+//		comDatabase=new ComDatabase();
+//		comDatabase.setDatabaseName(reportParams.getGeotabDatabase());
+//		comDatabase=comDatabaseRepository.save(comDatabase);
+//	}
 
-	return insertGeoTabTrailer(comDatabase.getId(),reportParams);
+	return insertGeoTabTrailer(dbId,reportParams);
 	}
 
 @Transactional
-public ComDatabase insertDefects(TrailerParams reportParams) {
-comDatabase=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase());
-	
-	if(comDatabase==null)
-	{  
-		comDatabase=new ComDatabase();
-		comDatabase.setDatabaseName(reportParams.getGeotabDatabase());
-		comDatabase=comDatabaseRepository.save(comDatabase);
-	}
+public ComDatabase insertDefects(TrailerParams reportParams,Long dbId) {
+//comDatabase=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase());
+//	
+//	if(comDatabase==null)
+//	{  
+//		comDatabase=new ComDatabase();
+//		comDatabase.setDatabaseName(reportParams.getGeotabDatabase());
+//		comDatabase=comDatabaseRepository.save(comDatabase);
+//	}
 
-	return insertGeoTabDefects(comDatabase.getId(),reportParams);
+	return insertGeoTabDefects(dbId,reportParams);
 }
 
 
 @Transactional	
-public ComDatabase insertDriver(TrailerParams reportParams){
+public ComDatabase insertDriver(TrailerParams reportParams,Long dbId){
 
-	comDatabase=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase());
-	
-	if(comDatabase==null)
-	{  
-		comDatabase=new ComDatabase();
-		comDatabase.setDatabaseName(reportParams.getGeotabDatabase());
-		comDatabase=comDatabaseRepository.save(comDatabase);
-	}
+//	comDatabase=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase());
+//	
+//	if(comDatabase==null)
+//	{  
+//		comDatabase=new ComDatabase();
+//		comDatabase.setDatabaseName(reportParams.getGeotabDatabase());
+//		comDatabase=comDatabaseRepository.save(comDatabase);
+//	}
 
-	return insertGeoTabUser(comDatabase.getId(),reportParams);
+	return insertGeoTabUser(dbId,reportParams);
 	}
 
 private ComDatabase insertGeoTabDevice(Long id, TrailerParams reportParams)

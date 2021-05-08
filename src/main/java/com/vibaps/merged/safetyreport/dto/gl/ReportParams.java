@@ -38,5 +38,6 @@ public class ReportParams{
 	private MultipartFile  	file;
 	private String database;
 	private String groups;
+	private String fromDate;
 	
 }

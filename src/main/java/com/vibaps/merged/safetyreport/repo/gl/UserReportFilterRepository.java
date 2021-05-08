@@ -56,10 +56,14 @@ public interface UserReportFilterRepository extends JpaRepository<UserReportFilt
 	@Query(value = "select CONCAT(a.rulecompany,'-',a.rulename) as value from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.db=:db order by value", nativeQuery = true)
 	List<String> getallbehave(@Param("userid") String userid, @Param("db") String db);
 
+	@Query(value = "select a.rulevalue,CONCAT(a.rulecompany,'-',a.rulename) as rulename,from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.db=:db order by rulename", nativeQuery = true)
+	List<GlRulelistEntity> getallbehaveTrending(@Param("userid") String userid, @Param("db") String db);
+
+	
 	@Query(value = "select CONCAT(a.rulecompany,'-',a.rulename) as rulename,b.weight from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.id=b.gen_rulelist_id and b.status=1 and a.db=:db order by rulename", nativeQuery = true)
 	List<GlRulelistEntity> getallbehaveui(@Param("userid") String userid, @Param("db") String db);
 
-	@Query(value = "select concat(b.rulecompany,'-',b.rulename) as val,a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and b.db=:db and a.status= 1 and a.gen_user_id=c.id and a.gen_rulelist_id=b.id order by val", nativeQuery = true)
+	@Query(value = "select concat(b.rulecompany,'-',b.rulename) as val,a.weight,b.rulevalue from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and b.db=:db and a.status= 1 and a.gen_user_id=c.id and a.gen_rulelist_id=b.id order by val", nativeQuery = true)
 	List<Object[]> getallBehaveFromDB(@Param("userid") String userid, @Param("db") String db);
 
 	@Query(value = "select count(b.id) from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and b.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id", nativeQuery = true)
@@ -68,9 +72,13 @@ public interface UserReportFilterRepository extends JpaRepository<UserReportFilt
 	@Query(value = "select count(b.id),a.weight from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='L' and a.gen_rulelist_id=b.id", nativeQuery = true)
 	int lyCount(@Param("userid") String userid, @Param("db") String db);
 
-	@Query(value = "select a.weight from gl_selectedvalues a,gen_user b,gl_rulelist c where a.gen_user_id=b.id and b.companyid=:userid and b.db=:db and a.gen_rulelist_id=c.id and concat(c.rulecompany,'-',c.rulename)=:rule", nativeQuery = true)
+	@Query(value = "select a.weight from gl_selectedvalues a,gen_user b,gl_rulelist c where a.gen_user_id=b.id and b.companyid=:userid and b.db=:db and a.gen_rulelist_id=c.id and c.rulevalue=:rule", nativeQuery = true)
 	int getWeight(@Param("userid") String userid, @Param("db") String db, @Param("rule") String rule);
+    
+	@Query(value = "select concat(c.rulecompany,'-',c.rulename) as val from gl_selectedvalues a,gen_user b,gl_rulelist c where a.gen_user_id=b.id and b.companyid=:userid and b.db=:db and a.gen_rulelist_id=c.id and c.rulevalue=:rule", nativeQuery = true)
+	String getRuleName(@Param("userid") String userid, @Param("db") String db, @Param("rule") String rule);
 
+	
 	@Query(value = "select a.minmiles from gl_minmiles a,gen_user b where b.companyid=:userid and b.db=:db and a.gen_user_id=b.id", nativeQuery = true)
 	float getminmiles(@Param("userid") String userid, @Param("db") String db);
 

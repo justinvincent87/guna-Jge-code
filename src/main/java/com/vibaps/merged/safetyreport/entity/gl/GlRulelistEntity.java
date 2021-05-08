@@ -70,6 +70,12 @@ public class GlRulelistEntity {
 	}
 
 
+	public GlRulelistEntity(String rulename, String rulevalue) {
+		this.rulename = rulename;
+		this.rulevalue = rulevalue;
+	}
+
+
 
 
 

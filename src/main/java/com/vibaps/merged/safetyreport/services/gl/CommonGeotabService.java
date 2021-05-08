@@ -59,17 +59,22 @@ public class CommonGeotabService {
 	
 	public ComDatabase insertTrailer(TrailerParams reportParams) throws SQLException
 	{
-		return dao.insertTrailer(reportParams);
+		Long comDatabaseId=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase()).getId();
+		return dao.insertTrailer(reportParams,comDatabaseId);
 	}
 	
 	public ComDatabase insertDriver(TrailerParams reportParams) throws SQLException
 	{
-		return dao.insertDriver(reportParams);
+		Long comDatabaseId=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase()).getId();
+
+		return dao.insertDriver(reportParams,comDatabaseId);
 	}
 	
 	public ComDatabase insertDefects(TrailerParams reportParams) throws SQLException
 	{
-		return dao.insertDefects(reportParams);
+		Long comDatabaseId=comDatabaseRepository.findBydatabaseName(reportParams.getGeotabDatabase()).getId();
+
+		return dao.insertDefects(reportParams,comDatabaseId);
 	}
 	
 	

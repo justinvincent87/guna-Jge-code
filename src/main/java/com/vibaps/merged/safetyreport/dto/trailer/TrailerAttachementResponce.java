@@ -10,7 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.vibaps.merged.safetyreport.jackson.IdDeserializer;
+import com.vibaps.merged.safetyreport.jackson.DateDeserializer;
 
 import lombok.Data;
 

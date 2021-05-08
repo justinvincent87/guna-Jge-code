@@ -67,10 +67,7 @@ public class DvirDefactsServices {
     private TrailerResponse trailerResponce;
 	
 	public DvirDefactsResponse showDvirDefacts(TrailerParams trailerParams) {
-		
-		
-		
-	    
+	 
 		String payload =null;
 		Long comDatabaseId;
 		

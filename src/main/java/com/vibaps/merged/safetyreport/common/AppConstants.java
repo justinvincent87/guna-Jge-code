@@ -3,7 +3,8 @@ package com.vibaps.merged.safetyreport.common;
 public final class AppConstants {
 
 	public static final String RESPONSE_SUCCESS = "OK";
-	public static final String DATA_MONSTER_BASE_URL="http://addon.assuredtelematics.com:8787/data-monster/";
+	public static final String DATA_MONSTER_BASE_URL="https://vibaps.com:8787/data-monster/";
+	//public static final String DATA_MONSTER_BASE_URL="http://localhost:8787/data-monster/";
 	public static final String DATA_MONSTER_TRAILER_SEARCH_URL="trailer/search";
 	public static final String DATA_MONSTER_TRAILER_SEARCH_COUNT_URL="trailer/count";
 	public static final String DATA_MONSTER_DEVICE_SEARCH_URL="device/search";
@@ -37,7 +38,6 @@ public final class AppConstants {
 	        "IFERROR((K#*K$6)/($C#/100),0)", "IFERROR((L#*L$6)/($C#/100),0)", "IFERROR((M#*M$6)/($C#/100),0)",
 	        "IFERROR((N#*N$6)/($C#/100),0)", "AVERAGE(OFFSET($O#,0,0,1,$Y$5))" };
 	
-	public static final String NORMAL_REPORT_EXCEL_PATH="/home/sri/exceltemplate/GL_Driver_Safety_Report_Template_Normal.xlsx";
 	
 
 	
@@ -50,7 +50,31 @@ public final class AppConstants {
 			"IFERROR((N#*N$6)/($C#/100),0)", "IFERROR((O#*O$6)/($C#/100),0)", "IFERROR((P#*P$6)/($C#/100),0)",
 			"AVERAGE(OFFSET($Q#,0,0,1,$AA$5))" };
 	
-	public static final String TRENDING_REPORT_EXCEL_PATH="/home/sri/exceltemplate/GL_Driver_Safety_Report_Template_Trending.xlsx";
 
-	public static final String EXCEL_BASE_PATH="/home/sri/apache-tomcat-8.5.65/webapps/glReportUI/report/excel/";
+	public static final String EXCEL_BASE_PATH="/usr/local/apache-tomcat-8.5.51/webapps/glReportUI/report/excel/";
+
+	public static String getNormalExcelTemplate(String entityType)
+	{
+		if(entityType.equals("Device"))
+		{
+			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Device.xlsx";
+
+		}
+		
+		return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Driver.xlsx";
+
+	}
+	
+	public static String getTrendingExcelTemplate(String entityType)
+	{
+		if(entityType.equals("Device"))
+		{
+			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Device.xlsx";
+
+		}
+		
+		return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Driver.xlsx";
+
+	}
+
 }

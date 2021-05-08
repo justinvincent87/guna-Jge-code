@@ -149,7 +149,7 @@ public class GeoTabApiService {
 					
 					JSONObject geotabExceptionRuleJO = geotabExceptionSummariesJA.getJSONObject(k).getJSONObject("exceptionRule");
 					
-					String geotabExceptionName = "G-" + geotabExceptionRuleJO.getString("name");
+					String geotabExceptionName = geotabExceptionRuleJO.getString("id");
 					
 					//System.out.println(geotabExceptionName+"-"+eventCount);
 					geotabExceptionEvents.put(geotabExceptionName, geotabExceptionEvents.get(geotabExceptionName)==null?eventCount:geotabExceptionEvents.get(geotabExceptionName)+eventCount);
@@ -213,7 +213,7 @@ public class GeoTabApiService {
 					JSONObject geotabExceptionRuleJO = geotabExceptionSummariesJA.getJSONObject(k)
 					        .getJSONObject("exceptionRule");
 
-					String geotabExceptionName = "G-" + geotabExceptionRuleJO.getString(ATTR_NAME);
+					String geotabExceptionName = geotabExceptionRuleJO.getString("id");
 
 					geotabExceptionEvents.put(geotabExceptionName,
 					        geotabExceptionEvents.get(geotabExceptionName) == null ? eventCount

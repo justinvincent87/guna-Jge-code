@@ -47,7 +47,7 @@ public class UserReportFilterService {
 		log.info("Behave matched count: {}", data.size());
 		
 		return data.stream()
-			.map(record -> new Behave((String) record[0], (Integer) record[1]))
+			.map(record -> new Behave((String) record[0], (Integer) record[1],(String) record[2]))
 			.collect(Collectors.toList());
 	}
 	
@@ -100,7 +100,7 @@ public class UserReportFilterService {
 		List<String> reportColumnHeader = new ArrayList<String>();
 		reportColumnHeader.addAll(Arrays.asList(AppConstants.DEFAULT_HEADERS));
 		reportColumnHeader.addAll(getSelectedRuleNames(userName, db).stream()
-				.map(Behave::getRuleName).collect(Collectors.toList()));
+				.map(Behave::getRulevalue).collect(Collectors.toList()));
 		return reportColumnHeader;
 	}
 }

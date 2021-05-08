@@ -257,13 +257,13 @@ return builder.deviceIds(Arrays.asList(deviceArray)).trailerIds(Arrays.asList(tr
 	private String getDeviceRequestPayload(TrailerParams trailerParams)
 	{
 GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
-return builder.historicalFromDate(trailerParams.getActiveFrom()).url(trailerParams.getUrl()).groups(trailerParams.getGroups()).database(trailerParams.getDatabase()).build();
+return builder.historicalFromDate(trailerParams.getFromDate()).url(trailerParams.getUrl()).groups(trailerParams.getGeotabGroups()).database(trailerParams.getGeotabDatabase()).build();
 	}
 	
 	private String getTrailerListRequestPayload(TrailerParams trailerParams)
 	{
 GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
-return builder.url(trailerParams.getUrl()).groups(trailerParams.getGroups()).database(trailerParams.getDatabase()).build();
+return builder.url(trailerParams.getUrl()).groups(trailerParams.getGeotabGroups()).database(trailerParams.getGeotabDatabase()).build();
 	}
 	
 	public TrailerResponse convertParsedReponseShow(TrailerParams trailerParams) 
@@ -525,9 +525,10 @@ return builder.url(trailerParams.getUrl()).groups(trailerParams.getGroups()).dat
 	public Long insertDeviceandTrailer(TrailerParams trailerParams) {
 		
 		Long comDatabaseId=commonGeotabDAO.insertDevice(trailerParams).getId();
-			commonGeotabDAO.insertTrailer(trailerParams);
-			commonGeotabDAO.insertDriver(trailerParams);
-			commonGeotabDAO.insertDefects(trailerParams);
+			
+			commonGeotabDAO.insertTrailer(trailerParams,comDatabaseId);
+			commonGeotabDAO.insertDriver(trailerParams,comDatabaseId);
+			commonGeotabDAO.insertDefects(trailerParams,comDatabaseId);
 		return comDatabaseId;
 		
 		

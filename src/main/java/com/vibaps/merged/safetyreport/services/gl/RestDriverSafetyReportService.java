@@ -77,7 +77,12 @@ public class RestDriverSafetyReportService {
 	        throws EncryptedDocumentException, IOException {
 		return glReportService.createExcelReport(reportParams.getStartDate(), reportParams.getEndDate(),
 		        reportParams.getGeotabUserName(), reportParams.getGeotabDatabase(), reportParams.getUrl(),
-		        reportParams.getFilename(), reportParams.getTemplect());
+		        reportParams.getFilename(), reportParams.getTemplect(),reportParams.getEntityType());
+	}
+	
+	public String fileCopy()
+	   {
+		return glReportService.fileCopy();
 	}
 
 }

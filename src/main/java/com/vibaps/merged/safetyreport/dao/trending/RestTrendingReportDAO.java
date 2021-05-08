@@ -62,6 +62,7 @@ import com.vibaps.merged.safetyreport.builder.Uri;
 import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
+import com.vibaps.merged.safetyreport.dto.gl.Behave;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
 import com.vibaps.merged.safetyreport.entity.gl.ReportRow;
@@ -372,12 +373,15 @@ public class RestTrendingReportDAO {
 			Map<String, Integer> geotabExceptionEvents = new HashMap<String, Integer>();
 			JsonArray geotabExceptionSummariesJA = resultsChild.getAsJsonArray("exceptionSummaries");
 			for (int k = 0; k < geotabExceptionSummariesJA.size(); k++) {
-				if (!geotabExceptionSummariesJA.get(k).isJsonObject()) {
-					int eventCount = geotabExceptionSummariesJA.get(k).getAsJsonObject().getAsJsonObject("eventCount").getAsInt();
-					JsonObject geotabExceptionRuleJO = geotabExceptionSummariesJA.get(k).getAsJsonObject().getAsJsonObject("exceptionRule");
-					String geotabExceptionName = "G-" + geotabExceptionRuleJO.get("name").getAsString();
-					geotabExceptionEvents.put(geotabExceptionName, eventCount);
+				if (!geotabExceptionSummariesJA.get(k).isJsonNull()) {
+					Integer eventCount = geotabExceptionSummariesJA.get(k).getAsJsonObject().get("eventCount").getAsInt();
+					JsonObject geotabExceptionRuleJO = geotabExceptionSummariesJA.get(k).getAsJsonObject().get("exceptionRule").getAsJsonObject();
+					String geotabExceptionName = geotabExceptionRuleJO.get("id").getAsString();
+					geotabExceptionEvents.put(geotabExceptionName,
+							geotabExceptionEvents.get(geotabExceptionName) == null ? eventCount
+									: geotabExceptionEvents.get(geotabExceptionName) + eventCount);
 				}
+				
 			}
 			for (int m = EXCEPTIONS_START_COLUMN; m < displayColumns.size(); m++) {
 				if (geotabExceptionEvents.get(displayColumns.get(m)) != null) {
@@ -464,9 +468,9 @@ public class RestTrendingReportDAO {
 			JsonArray geotabExceptionSummariesJA = exceptionSummary.getAsJsonArray("exceptionSummaries");
 			for (int m = 0; m < geotabExceptionSummariesJA.size(); m++) {
 				if (!geotabExceptionSummariesJA.get(m).isJsonNull()) {
-					int eventCount = geotabExceptionSummariesJA.get(m).getAsJsonObject().get("eventCount").getAsInt();
+					Integer eventCount = geotabExceptionSummariesJA.get(m).getAsJsonObject().get("eventCount").getAsInt();
 					JsonObject geotabExceptionRuleJO = geotabExceptionSummariesJA.get(m).getAsJsonObject().get("exceptionRule").getAsJsonObject();
-					String geotabExceptionName = "G-" + geotabExceptionRuleJO.get("name").getAsString();
+					String geotabExceptionName = geotabExceptionRuleJO.get("id").getAsString();
 					geotabExceptionEvents.put(geotabExceptionName,
 							geotabExceptionEvents.get(geotabExceptionName) == null ? eventCount
 									: geotabExceptionEvents.get(geotabExceptionName) + eventCount);
@@ -709,12 +713,18 @@ public class RestTrendingReportDAO {
 		reportColumnHeader.add("EndDate");
 		// TODO: Remaining columns to be populated from database selected columns. using
 		
-		List<String> gval = new ArrayList();
-		gval = glReportService.getallbehave(userName, db);
-		for (int j = 0; j < gval.size(); j++) {
-			// System.out.println(j + "-----" + gval.get(j));
-			reportColumnHeader.add(gval.get(j));
+//		List<String> gval = new ArrayList();
+//		gval = glReportService.getallbehave(userName, db);
+//		for (int j = 0; j < gval.size(); j++) {
+//			// System.out.println(j + "-----" + gval.get(j));
+//			reportColumnHeader.add(gval.get(j));
+//		}
+		
+		List<Behave> selectedRuleNames = userReportFilterService.getSelectedRuleNames(userName, db);
+		for (Behave header : selectedRuleNames) {
+			reportColumnHeader.add(header.getRulevalue());
 		}
+		
 		return reportColumnHeader;
 	}
 	
@@ -1369,7 +1379,7 @@ System.out.println(lytxExceptionSummariesJson);
 
 		List<String> displayColumns = loadTrendingReporColumntHeaders(geouname, geodatabase);
 
-		File source = new File(AppConstants.TRENDING_REPORT_EXCEL_PATH);
+		File source = new File(AppConstants.getTrendingExcelTemplate(entityType));
 		File	dest	= new File(AppConstants.EXCEL_BASE_PATH+geodatabase+"_as.xlsx");
 		
 			glReportService.copyFileUsingStream(source, dest);
@@ -1441,7 +1451,26 @@ System.out.println(lytxExceptionSummariesJson);
 			Cell cell3 = row3.getCell(j4);
 			if (cell3 == null)
 				cell3 = row3.createCell(j4);
-			cell3.setCellValue(((String) displayColumns.get(j4)).toString());
+			if(j4==0)
+			{
+				if(entityType.equals("Device"))
+				{
+					entityType="Vehicle";
+				}
+				cell3.setCellValue(entityType+"Name");
+			
+			}
+			else
+			{
+				if(j4>5)
+				{
+					cell3.setCellValue(glReportService.getruleName(geouname, ((String) displayColumns.get(j4)).toString().trim(), geodatabase));
+				}
+				else
+				{
+				cell3.setCellValue(((String) displayColumns.get(j4)).toString());
+				}
+			}
 		}
 		JSONObject excelvd = new JSONObject(responseJson);
 		JSONArray info = excelvd.getJSONArray("information");

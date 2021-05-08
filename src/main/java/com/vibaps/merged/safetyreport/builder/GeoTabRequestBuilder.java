@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -73,7 +74,10 @@ public class GeoTabRequestBuilder implements Serializable {
 	@JsonInclude(Include.NON_NULL)
 	private String	historicalFromDate;
 	
+	@JsonInclude(NON_NULL)
 	private Integer page;
+	
+	@JsonInclude(NON_NULL)
 	private Integer size;
 	
 	
@@ -213,6 +217,7 @@ public class GeoTabRequestBuilder implements Serializable {
 		private Argument					argument;
 		@JsonInclude(NON_NULL)
 		private String						typeName;
+		
 		@JsonInclude(NON_NULL)
 		private Search						search;
 		@JsonInclude(NON_NULL)
@@ -222,7 +227,7 @@ public class GeoTabRequestBuilder implements Serializable {
 		private List<Coordinates> coordinates;
 		
 		@JsonInclude(NON_NULL)
-		private boolean	movingAddresses;
+		private Boolean	movingAddresses;
 		
 
 		/**
@@ -367,11 +372,14 @@ public class GeoTabRequestBuilder implements Serializable {
 		@JsonInclude(NON_NULL)
 		private String resultsLimit;
 		@JsonInclude(NON_NULL)
-		private boolean isDefective;
+		private Boolean isDefective;
 		@JsonInclude(NON_NULL)
-		private boolean isRepaired;
+		private Boolean isRepaired;
 		@JsonInclude(NON_NULL)
-		private boolean isCertified;
+		private Boolean isCertified;
+		@JsonInclude(NON_NULL)
+		private String trailerSearch;
+		
 		
 		
 		
@@ -416,6 +424,11 @@ public class GeoTabRequestBuilder implements Serializable {
 		
 		public Search activeTo(String activeTo) {
 			this.activeTo = activeTo+TO_TS_SUFFIX;
+			return this;
+		}
+		
+		public Search trailerSearch(String trailerSearch) {
+			this.trailerSearch = trailerSearch;
 			return this;
 		}
 		

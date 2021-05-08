@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -211,6 +212,16 @@ public class GlReportService {
 
 		return obj;
 	}
+	
+	
+	public List<GlRulelistEntity> getallbehaveTrending(String geotabUserid, String db) {
+
+		List<GlRulelistEntity> obj = new ArrayList<GlRulelistEntity>();
+
+		obj = userReportFilterRepository.getallbehaveTrending(geotabUserid, db);
+
+		return obj;
+	}
 
 	public List<GlRulelistEntity> getallbehaveui(String geotabUserid, String db) {
 
@@ -239,8 +250,16 @@ public class GlReportService {
 
 	public int getwe(String geotabUserid, String rule, String db) {
 		int obj = 0;
-
+        
 		obj = userReportFilterRepository.getWeight(geotabUserid, db, rule);
+
+		return obj;
+	}
+	
+	public String getruleName(String geotabUserid, String rule, String db) {
+		String obj = "";
+        
+		obj = userReportFilterRepository.getRuleName(geotabUserid, db, rule);
 
 		return obj;
 	}
@@ -640,27 +659,33 @@ public class GlReportService {
 
 		if(geoRuleCount > 0)
 		{
+		log.info("Geotab- {}","Start");	
 			reportRows = geoTabApiService.getVehicleExceptionSummary(reportParams);
+		log.info("Geotab- {}","Stop");
 		}
 
 		// process LYTX exceptions response
 		// Create a Map of lytx vehicleIds to exception map
 
-		
+		log.info("Lytx - {}","Start");
 			lytxVehicleEventsRecord = lytxProxyService.getLytxExceptionData(reportParams);
-  
+		log.info("Lytx - {}","Stop");
 				//log.info("Lytx Responce::{}",lytxVehicleEventsRecord);			
 		
 				// combine Lytx exceptions data with the geotab exception report
 			if(geoRuleCount > 0)
 			{
+				log.info("Update- {}","Start");
 				reportRows=updateCombinedReportWithLytxExceptions(lytxVehicleEventsRecord, reportParams.getGeotabUserName(),reportRows);
+				log.info("Update- {}","Stop");
 			}
 			else
 			{
 				reportRows=createLytxExceptionsReport(lytxVehicleEventsRecord,reportParams.getGeotabUserName(),reportRows);
 			}
 			
+			
+	
 		String reportResponseJson = createReportReponseJson(reportParams.getGeotabUserName(),reportRows);
 
 		updateresponce(reportParams.getGeotabUserName(), reportResponseJson, reportParams.getGeotabDatabase());
@@ -1169,7 +1194,7 @@ public class GlReportService {
 		reportColumnHeader.add("Distance");
 		List<Behave> selectedRuleNames = userReportFilterService.getSelectedRuleNames(userName, db);
 		for (Behave header : selectedRuleNames) {
-			reportColumnHeader.add(header.getRuleName());
+			reportColumnHeader.add(header.getRulevalue());
 		}
 		return reportColumnHeader;
 	}
@@ -1689,14 +1714,14 @@ public class GlReportService {
 	}
 
 	public String createExcelReport(String sdate, String edate, String geouname, String geodatabase, String url,
-	        String filename, String templect) throws EncryptedDocumentException, IOException {
+	        String filename, String templect,String entityType) throws EncryptedDocumentException, IOException {
 		String responseJson = "";
 
 		responseJson = selectresponce(geouname, geodatabase);
 
 		List<String> displayColumns = loadReporColumntHeaders(geouname, geodatabase);
 
-		File	source	= new File(AppConstants.NORMAL_REPORT_EXCEL_PATH);
+		File	source	= new File(AppConstants.getNormalExcelTemplate(entityType));
 		File	dest	= new File(AppConstants.EXCEL_BASE_PATH+geodatabase+"_as.xlsx");
 		try {
 			copyFileUsingStream(source, dest);
@@ -1758,7 +1783,26 @@ public class GlReportService {
 			Cell cell3 = row3.getCell(j4);
 			if (cell3 == null)
 				cell3 = row3.createCell(j4);
-			cell3.setCellValue(((String) displayColumns.get(j4)).toString());
+			if(j4==0)
+			{
+				if(entityType.equals("Device"))
+				{
+					entityType="Vehicle";
+				}
+				cell3.setCellValue(entityType+"Name");
+			
+			}
+			else
+			{ 
+				if(j4>2)
+				{
+					cell3.setCellValue(getruleName(geouname, ((String) displayColumns.get(j4)).toString().trim(), geodatabase));
+				}
+				else
+				{
+				cell3.setCellValue(((String) displayColumns.get(j4)).toString());
+				}
+			}
 		}
 		JSONObject	excelvd	= new JSONObject(responseJson);
 		JSONArray	info	= excelvd.getJSONArray("information");
@@ -1831,18 +1875,8 @@ public class GlReportService {
 	}
 
 	public void copyFileUsingStream(File source, File dest) throws IOException {
-		InputStream		is	= null;
-		OutputStream	os	= null;
-
-		is	= new FileInputStream(source);
-		os	= new FileOutputStream(dest);
-		byte[]	buffer	= new byte[1024];
-		int		length;
-		while ((length = is.read(buffer)) > 0) {
-			os.write(buffer, 0, length);
-		}
-		is.close();
-		os.close();
+		
+		FileUtils.copyFile(source, dest);
 
 	}
 
@@ -1928,6 +1962,19 @@ public class GlReportService {
 			}
 		}
 		return lytxVehicleEventsRecord;
+	}
+	
+	public String fileCopy()
+	{
+		File	source	= new File(AppConstants.getNormalExcelTemplate("Device"));
+		File	dest	= new File(AppConstants.EXCEL_BASE_PATH+"Test"+"_as.xlsx");
+		try {
+			copyFileUsingStream(source, dest);
+		} catch (IOException e3) {
+			e3.printStackTrace();
+		}
+		
+		return null;
 	}
 
 }

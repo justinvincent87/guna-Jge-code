@@ -70,5 +70,12 @@ public class RestDriverSafetyReport {
 		
 		return restDriverSafetyReportService.createExcelReport(reportParams);
 	}
+	
+	@PostMapping(value = "/file-copy")
+	public String fileCopy() throws IOException, FileNotFoundException
+	{
+		
+		return restDriverSafetyReportService.fileCopy();
+	}
 
 }

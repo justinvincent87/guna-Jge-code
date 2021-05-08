@@ -91,11 +91,12 @@ public class LytxProxyService {
 			System.out.println("check---" + s++);
 			
 			reportParams.setStartDate(sdate);
+			log.info("Get Lytx Event- {}","Start");
 			GetEventsResponse					eventReponse= getLytxExceptionSummary(reportParams);
-
-			JSONObject lytxEventsJO = new JSONObject(eventReponse);
+			log.info("Get Lytx Event- {}","Stop");
+			//JSONObject lytxEventsJO = new JSONObject(eventReponse);
 			
-			log.info("LyData{}",lytxEventsJO.toString());
+			//log.info("LyData{}",lytxEventsJO.toString());
 			
 		
 		if (log.isDebugEnabled()) {
@@ -103,9 +104,10 @@ public class LytxProxyService {
 			        eventReponse.getEvents().length, vehicles.size(), behaviors.size());
 		}
 		
-		 
+		
 
-
+		log.info("Parse Lytx Event - {}","Start");
+		
 		for (EventsInfoV5 event : eventReponse.getEvents()) {
 			String vehicleName;
 			if(EntityType.isDriver(reportParams.getEntityType()))
@@ -125,17 +127,19 @@ public class LytxProxyService {
 			}
 
 			for (EventBehavior behavior : event.getBehaviors()) {
-				String	exceptionName	= behaviors.get(behavior.getBehavior());
-					behaviorCount	= lytxExceptionEvents.get("L-"+exceptionName);
+				String	exceptionName	= behavior.getBehavior().toString();
+					behaviorCount	= lytxExceptionEvents.get(exceptionName);
 				if (behaviorCount == null) {
 					behaviorCount = 0;
 				}
-				lytxExceptionEvents.put("L-"+exceptionName, ++behaviorCount);
+				lytxExceptionEvents.put(exceptionName, ++behaviorCount);
 			}
 		}
 		
-		if (lytxEventsJO.has("queryCutoff")) {
-			String cutoffData = lytxEventsJO.getString("queryCutoff");
+		log.info("Parse Lytx Event - {}","Stop");
+		
+		if (eventReponse.getQueryCutoff() != null) {
+			String cutoffData = eventReponse.getQueryCutoff().toString();
 			System.out.println(cutoffData);
 
 			if (cutoffData != null) {
@@ -175,6 +179,9 @@ public class LytxProxyService {
 		}
 		return lytxVehicleEventsRecord;
 	}
+	
+	
+	
 	
 	
 	public Map<String, Map<String, Integer>> getLytxTrendingExceptionData(ReportParams reportParams,Map<Integer, String[]> periods) throws ParseException {
@@ -257,12 +264,12 @@ public class LytxProxyService {
 					}
 
 					for (EventBehavior behavior : event.getBehaviors()) {
-						String	exceptionName	= behaviors.get(behavior.getBehavior());
-						behaviorCount	= lytxExceptionEvents.get("L-"+exceptionName);
+						String	exceptionName	= behavior.getBehavior().toString();
+						behaviorCount	= lytxExceptionEvents.get(exceptionName);
 						if (behaviorCount == null) {
 							behaviorCount = 0;
 						}
-						lytxExceptionEvents.put("L-"+exceptionName, ++behaviorCount);
+						lytxExceptionEvents.put(exceptionName, ++behaviorCount);
 					}
 				}
 				

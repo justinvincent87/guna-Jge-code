@@ -57,7 +57,7 @@ public final class AppConstants {
 	{
 		if(entityType.equals("Device"))
 		{
-			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Device.xlsx";
+			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Vehicle.xlsx";
 
 		}
 		
@@ -69,7 +69,7 @@ public final class AppConstants {
 	{
 		if(entityType.equals("Device"))
 		{
-			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Device.xlsx";
+			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Vehicle.xlsx";
 
 		}
 		

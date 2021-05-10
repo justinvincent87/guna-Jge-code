@@ -8,8 +8,11 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -24,6 +28,7 @@ import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
 import com.vibaps.merged.safetyreport.builder.Uri;
 import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
+import com.vibaps.merged.safetyreport.dto.dvir.IdNameSerialization;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
@@ -77,6 +82,8 @@ public class CommonGeotabService {
 		return dao.insertDefects(reportParams,comDatabaseId);
 	}
 	
+
+	
 	
 	public TrailerResponse getDevice(TrailerParams trailerParams) 
 	{
@@ -102,6 +109,24 @@ public class CommonGeotabService {
 		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
 		return trailerService.convertParsedReponse(parsedResponse);
 	}
+	
+
+	
+	private String getDiagnosticRequest(TrailerParams trailerParams)  
+	{
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+	
+		
+		return builder.params().typeName("Diagnostic")
+				.build();
+	
+	}
+
 	
 	public TrailerResponse getDriver(TrailerParams trailerParams) 
 	{

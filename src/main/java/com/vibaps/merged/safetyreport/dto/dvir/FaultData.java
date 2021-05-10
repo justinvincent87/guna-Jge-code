@@ -1,5 +1,8 @@
 package com.vibaps.merged.safetyreport.dto.dvir;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -14,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-
+@NoArgsConstructor
 public class FaultData {
 
 	private String dateTime;
@@ -25,6 +28,15 @@ public class FaultData {
 	private String failureMode;
 	
 	private String faultState;
+	
+	@Transient
+	private String deviceName;
+	
+	@Transient
+	private Map<String,List<FaultData>> result;
+	
+	
+	
 	
 	
 	@JsonSetter("controller")
@@ -51,4 +63,11 @@ public class FaultData {
 	public void setDevice(String deviceId) {
 		this.deviceId = deviceId;
 	}
+
+	public FaultData(Map<String, List<FaultData>> result) {
+		super();
+		this.result = result;
+	}
+	
+	
 }

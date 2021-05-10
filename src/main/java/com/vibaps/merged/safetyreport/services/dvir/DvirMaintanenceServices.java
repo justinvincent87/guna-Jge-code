@@ -2,16 +2,20 @@ package com.vibaps.merged.safetyreport.services.dvir;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.jasper.tagplugins.jstl.core.ForEach;
+import org.apache.poi.ss.formula.functions.T;
 import org.codehaus.jackson.JsonNode;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,6 +86,8 @@ public class DvirMaintanenceServices {
 		String payload =null;
 		Long comDatabaseId;
 		
+		
+		
 		Long dbCount=comDatabaseRepository.countdatabaseName(trailerParams.getGeotabDatabase());
 		
 		log.info("DB Entry Count: {}",dbCount);
@@ -95,65 +101,201 @@ public class DvirMaintanenceServices {
 			comDatabaseId=trailerService.insertDeviceandTrailer(trailerParams);
 		}
 		
+		String zoneId=trailerService.getZoneId(trailerParams);
+	
+		
 	Map<String,String> controll=new HashMap<String, String>();
 	Map<String,String> failureMode=new HashMap<String, String>();	
 	Map<String,String> diagnostic=new HashMap<String, String>();	
 	Map<String,String> eventRule=new HashMap<String, String>();	
-	List<EventOccurrence> eventOccurrenceList= new ArrayList<EventOccurrence>();
-	 List<FaultData> faultData=new ArrayList<FaultData>();
+	Map<String,List<EventOccurrence>> eventOccurrenceList= new HashMap<String,List<EventOccurrence>>();
+	Map<String,List<FaultData>> faultData=new HashMap<String,List<FaultData>>();
 	ResponseEntity<String> dvirResponce=getdvir(trailerParams);
-//		EventOccurrence[] allReminderResponce=getAllReminder(trailerParams);
-//		FaultData[] getAllFault=getAllFault(trailerParams);
-//		
-//		if(allReminderResponce.length >0)
-//		{
-//			 eventRule=getEventRule(trailerParams);	
-//			 eventOccurrenceList=evenOccurrenceMapping(allReminderResponce,eventRule);
-//
-//		}
-//		
-//		if(getAllFault.length > 0)
-//		{
-//			 controll=getController(trailerParams);
-//			 failureMode=getFailureMode(trailerParams);	
-//			 diagnostic=getDiagnostic(trailerParams);	
-//	         faultData=faultDataMapping(getAllFault,controll,failureMode,diagnostic);
-//			 
-//			   
-//		}
 	
-
-		return parsedDvirDefacts(dvirResponce.getBody(),trailerParams,comDatabaseId);
-	}
-	
-	private List<EventOccurrence> evenOccurrenceMapping(EventOccurrence[] allReminderResponce,Map<String,String> eventRule)
-	{
-		List<EventOccurrence> responce=new ArrayList<EventOccurrence>();
-		for(EventOccurrence data:allReminderResponce)
+		EventOccurrence[] allReminderResponce=getAllReminder(trailerParams);
+		FaultData[] getAllFault=getAllFault(trailerParams);
+		
+		if(allReminderResponce.length >0)
 		{
-			EventOccurrence entity=new EventOccurrence();
-			entity=data;
-			entity.setEventRule(eventRule.get(data.getEventRule()));
-			responce.add(entity);
+			 eventRule=getEventRule(trailerParams);	
+			 eventOccurrenceList=evenOccurrenceMapping(allReminderResponce,eventRule,zoneId,comDatabaseId,trailerParams);
+
 		}
 		
-		return responce;
+		if(getAllFault.length > 0)
+		{
+			 controll=getController(trailerParams);
+			 failureMode=getFailureMode(trailerParams);	
+			
+			 
+			 diagnostic=getDiagnostic(trailerParams,getAllFault);
+			 
+	         faultData=faultDataMapping(getAllFault,controll,failureMode,diagnostic,zoneId,comDatabaseId,trailerParams);
+			 
+			   
+		}
+		
+		//return eventOccurrenceList;
+		Map<String,List<DvirDefactsResponse>> dvirDefactsList=parsedDvirDefacts(dvirResponce.getBody(),trailerParams,comDatabaseId,zoneId);
+        
+		return new DvirDefactsResponse(parcedFullResponce(eventOccurrenceList,faultData,dvirDefactsList));
+	}
+	
+	private Map<String,List<?>>  parcedFullResponce(Map<String,List<EventOccurrence>> eventOccurrenceList,Map<String,List<FaultData>> faultData,Map<String,List<DvirDefactsResponse>> dvirDefactsList)
+	{
+		Map<String,List<?>> responseMap=new HashMap<String,List<?>>();
+
+		
+		for (Map.Entry<String,List<EventOccurrence>> entry : eventOccurrenceList.entrySet())
+       
+		{
+			
+			if(!responseMap.containsKey(entry.getKey()))
+			{
+				List newAddFault=new ArrayList();
+				newAddFault.add(entry.getValue());
+				responseMap.put(entry.getKey(),newAddFault);
+				
+			}
+			else
+			{
+				List faultMapData=responseMap.get(entry.getKey());
+				faultMapData.add(entry.getValue());
+				responseMap.put(entry.getKey(), faultMapData);
+				
+			}
+		}
+		
+		
+		for (Map.Entry<String,List<FaultData>> entry : faultData.entrySet())
+		       
+		{
+			
+			if(!responseMap.containsKey(entry.getKey()))
+			{
+				List newAddFault=new ArrayList();
+				newAddFault.add(entry.getValue());
+				responseMap.put(entry.getKey(),newAddFault);
+				
+			}
+			else
+			{
+				List faultMapData=responseMap.get(entry.getKey());
+				faultMapData.add(entry.getValue());
+				responseMap.put(entry.getKey(), faultMapData);
+				
+			}
+		}
+		
+		for (Map.Entry<String,List<DvirDefactsResponse>> entry : dvirDefactsList.entrySet())
+		       
+		{
+			
+			if(!responseMap.containsKey(entry.getKey()))
+			{
+				List newAddFault=new ArrayList();
+				newAddFault.add(entry.getValue());
+				responseMap.put(entry.getKey(),newAddFault);
+				
+			}
+			else
+			{
+				List faultMapData=responseMap.get(entry.getKey());
+				faultMapData.add(entry.getValue());
+				responseMap.put(entry.getKey(), faultMapData);
+				
+			}
+		}
+		
+		
+		return responseMap;
+	}
+	
+	
+	private Map<String,List<EventOccurrence>> evenOccurrenceMapping(EventOccurrence[] allReminderResponce,Map<String,String> eventRule,String zoonId,Long comDatabaseId,TrailerParams trailerParams)
+	{
+		String deviceId = trailerParams.getDeviceId();
+		String[] deviceArray = deviceId.split(",");
+		
+		List<EventOccurrence> responce=new ArrayList<EventOccurrence>();
+		Map<String,List<EventOccurrence>> responseMap=new HashMap<String,List<EventOccurrence>>();
+		for(EventOccurrence data:allReminderResponce)
+		{
+			if(Arrays.stream(deviceArray).anyMatch(data.getDeviceId()::equals))
+			{
+			EventOccurrence entity=new EventOccurrence();
+			entity=data;
+			entity.setDeviceName(getdeviceName(comDatabaseId,data.getDeviceId(),trailerParams));
+			entity.setEventDate(trailerService.getZoneTime(zoonId,data.getEventDate()));
+			entity.setEventRule(eventRule.get(data.getEventRule()));
+			responce.add(entity);
+			}
+		}
+		
+		
+		for(EventOccurrence value:responce)
+		{
+			
+			if(!responseMap.containsKey(value.getDeviceId()))
+			{
+				List newAddFault=new ArrayList();
+				newAddFault.add(value);
+				responseMap.put(value.getDeviceId(),newAddFault);
+				
+			}
+			else
+			{
+				List faultMapData=responseMap.get(value.getDeviceId());
+				faultMapData.add(value);
+				responseMap.put(value.getDeviceId(), faultMapData);
+				
+			}
+		}
+		return responseMap;
 	}
 
-	private List<FaultData> faultDataMapping(FaultData[] faultData,Map<String,String> controll,Map<String,String> failureMode,Map<String,String> diagnostic)
+	private Map<String,List<FaultData>> faultDataMapping(FaultData[] faultData,Map<String,String> controll,Map<String,String> failureMode,Map<String,String> diagnostic,String zoonId,Long comDatabaseId,TrailerParams trailerParams)
 	{
 		List<FaultData> responce=new ArrayList<FaultData>();
+		String deviceId = trailerParams.getDeviceId();
+		String[] deviceArray = deviceId.split(",");
+		
+		Map<String,List<FaultData>> responseMap=new HashMap<String,List<FaultData>>();
 		for(FaultData data:faultData)
 		{
+			if(Arrays.stream(deviceArray).anyMatch(data.getDeviceId()::equals))
+			{
 			FaultData entity=new FaultData();
 			entity=data;
+			entity.setDeviceName(getdeviceName(comDatabaseId,data.getDeviceId(),trailerParams));
+			entity.setDateTime(trailerService.getZoneTime(zoonId,data.getDateTime()));
 			entity.setController(controll.get(data.getController()));
 			entity.setDiagnostic(diagnostic.get(data.getDiagnostic()));
 			entity.setFailureMode(failureMode.get(data.getFailureMode()));
 			responce.add(entity);
+			}
 		}
 		
-		return responce;
+		for(FaultData value:responce)
+		{
+			
+			if(!responseMap.containsKey(value.getDeviceId()))
+			{
+				List newAddFault=new ArrayList();
+				newAddFault.add(value);
+				responseMap.put(value.getDeviceId(),newAddFault);
+				
+			}
+			else
+			{
+				List faultMapData=responseMap.get(value.getDeviceId());
+				faultMapData.add(value);
+				responseMap.put(value.getDeviceId(), faultMapData);
+				
+			}
+		}
+		
+		return responseMap;
 	}
 
 	public Map<String,String> getController(TrailerParams trailerParams)
@@ -198,9 +340,9 @@ public class DvirMaintanenceServices {
 			return serializingidname(response.getBody().replaceAll("\"NoFailureModeId\",",""));
 	}
 	
-	public Map<String,String> getDiagnostic(TrailerParams trailerParams) 
+	public Map<String,String> getDiagnostic(TrailerParams trailerParams, FaultData[] getAllFault) 
 	{
-		String payload=getDiagnosticRequest(trailerParams);
+		String payload=getDiagnosticRequest(trailerParams,getAllFault);
 				
 			if (log.isDebugEnabled()) {
 				log.debug("Get report data payload: {}", payload);
@@ -216,7 +358,7 @@ public class DvirMaintanenceServices {
 				log.debug("Get report data response code: {}", response.getStatusCodeValue());
 			}
 			
-			return serializingidname(response.getBody());
+			return serializingidnameMulticall(response.getBody());
 	}
 	
 	public Map<String,String> getEventRule(TrailerParams trailerParams) 
@@ -260,6 +402,35 @@ public class DvirMaintanenceServices {
 		{
 			dataMap.put(var.getId(), var.getName());
 		}
+		    return dataMap;
+	}
+	
+	private Map<String,String> serializingidnameMulticall(String response) 
+	{
+		Map<String,String> dataMap=new HashMap<String,String>();
+		
+		  JSONObject obj=new JSONObject(response);
+		  
+		 ObjectMapper mapper=new ObjectMapper();
+		 
+		 for(int i=0;i<obj.getJSONArray("result").length();i++)
+		 {
+		 JSONArray jsonobj=obj.getJSONArray("result").getJSONArray(i);
+		 
+		 
+		try
+		{
+			IdNameSerialization responseEntity =mapper.readValue(jsonobj.get(0).toString(), IdNameSerialization.class);
+			dataMap.put(responseEntity.getId(), responseEntity.getName());
+		}catch(Exception e)
+		{
+			System.out.println(e);
+		}
+		
+		
+			
+		
+		 }
 		    return dataMap;
 	}
 	
@@ -362,17 +533,18 @@ public class DvirMaintanenceServices {
 		return responseEntity;
 	}
 	
-	private DvirDefactsResponse parsedDvirDefacts(String responsevalue,TrailerParams trailerParams,Long comDatabaseId)
+	private Map<String,List<DvirDefactsResponse>> parsedDvirDefacts(String responsevalue,TrailerParams trailerParams,Long comDatabaseId,String zoonId)
 	{
-		String zoneId=trailerService.getZoneId(trailerParams);
-	List<DvirDefactsResponse> responseList=new ArrayList<DvirDefactsResponse>();
+		Map<String,List<DvirDefactsResponse>> responseMap=new HashMap<String,List<DvirDefactsResponse>>();
+
+	    List<DvirDefactsResponse> responseList=new ArrayList<DvirDefactsResponse>();
 		
 		JSONObject jsonObj=new JSONObject(responsevalue);
 		JSONArray jsonArry=jsonObj.getJSONArray("result");
 		List<CompletableFuture<DvirDefactsResponse>> futureList=new ArrayList<CompletableFuture<DvirDefactsResponse>>();
 		
 		jsonArry.forEach(t->{
-			CompletableFuture<DvirDefactsResponse> future=CompletableFuture.supplyAsync(() -> responceAsync((JSONObject) t,trailerParams,comDatabaseId,zoneId));
+			CompletableFuture<DvirDefactsResponse> future=CompletableFuture.supplyAsync(() -> responceAsync((JSONObject) t,trailerParams,comDatabaseId,zoonId));
 			futureList.add(future);
 		
 		});
@@ -403,8 +575,29 @@ public class DvirMaintanenceServices {
 		}
 		
 		
+		
+		for(DvirDefactsResponse value:responseList)
+		{
+			if(!responseMap.containsKey(value.getDeviceOrTrailerName()))
+			{
+				List newAddFault=new ArrayList();
+				newAddFault.add(value);
+				responseMap.put(value.getDeviceOrTrailerName(),newAddFault);
+				
+			}
+			else
+			{
+				List faultMapData=responseMap.get(value.getDeviceOrTrailerName());
+				faultMapData.add(value);
+				responseMap.put(value.getDeviceOrTrailerName(), faultMapData);
+				
+			}
+		}
 
-		return new DvirDefactsResponse(responseList);
+		return responseMap;
+		
+		
+		
 		
 	}
 	
@@ -415,8 +608,7 @@ public class DvirMaintanenceServices {
 	private DvirDefactsResponse responceAsync(JSONObject innerJsonObj,TrailerParams trailerParams,Long comDatabaseId,String zoneId)
 	{
 		String deviceId = trailerParams.getDeviceId();
-		String trailerId = trailerParams.getTrailerId();
-		String[] trailerArray = trailerId.split(",");
+	
 		String[] deviceArray = deviceId.split(",");
 		
 		
@@ -424,6 +616,7 @@ public class DvirMaintanenceServices {
 		
 		String tailerOrDeviceID="-";
 		String assetType="-";
+		String devicename="";
 
 
 		
@@ -431,18 +624,8 @@ public class DvirMaintanenceServices {
 		{
 			if(Arrays.stream(deviceArray).anyMatch(innerJsonObj.getJSONObject("device").getString("id")::equals))
 			{
-			Long countDevice=genDeviceRepository.countdeviceIdAndrefComDatabaseId(innerJsonObj.getJSONObject("device").getString("id"),comDatabaseId);
-			
-//			if( countDevice > 0)
-//				
-//			{
-//				tailerOrDeviceID=genDeviceRepository.findBydeviceIdAndrefComDatabaseId(innerJsonObj.getJSONObject("device").getString("id"),comDatabaseId).getDeviceName();
-//			}
-//			else
-//			{
-//				tailerOrDeviceID=	commonGeotabDAO.insertMissedGeoTabDevice(comDatabaseId, trailerParams,innerJsonObj.getJSONObject("device").getString("id")).getDeviceName();
-//			}
 			tailerOrDeviceID=innerJsonObj.getJSONObject("device").getString("id");
+			devicename=getdeviceName(comDatabaseId, tailerOrDeviceID, trailerParams);
 			assetType="Vehicle";
 			}
 		}
@@ -461,20 +644,10 @@ public class DvirMaintanenceServices {
 		
 		
 		String dateTime=trailerService.getZoneTime(zoneId,innerJsonObj.getString("dateTime"));
+
 		String logType=innerJsonObj.getString("logType");
 		GenDriverUsers driverInfo=new GenDriverUsers();
 		Long countDriver=genDriverUsersRepo.countdriverIdAndrefComDatabaseId(innerJsonObj.getJSONObject("driver").getString("id"), comDatabaseId);
-//		if(countDriver>0)
-//		{
-//		 driverInfo=genDriverUsersRepo.findByuserIdAndrefComDatabaseId(innerJsonObj.getJSONObject("driver").getString("id"), comDatabaseId);
-//		}
-//		else
-//		{
-//			 driverInfo=commonGeotabDAO.insertMissedGeoTabDriver(comDatabaseId, trailerParams, innerJsonObj.getJSONObject("driver").getString("id"));
-//
-//		}
-		
-		//String driverId=driverInfo.getDriverName()+" ("+driverInfo.getEmpNumber()+")";
 		String driverId=innerJsonObj.getJSONObject("driver").getString("id");
 		
 		if(tailerOrDeviceID.equalsIgnoreCase("-"))
@@ -484,7 +657,7 @@ public class DvirMaintanenceServices {
 		 
 		 
 		
-		return new DvirDefactsResponse(tailerOrDeviceID, dateTime, logType, driverId,defectName,assetType);
+		return new DvirDefactsResponse(tailerOrDeviceID, dateTime, logType, driverId,defectName,assetType,devicename);
 
 		}
 
@@ -562,7 +735,48 @@ public class DvirMaintanenceServices {
 	
 	}
 	
-	private String getDiagnosticRequest(TrailerParams trailerParams)  
+	private String getDiagnosticRequest(TrailerParams trailerParams, FaultData[] getAllFault)  
+	{
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_EXECUTE_MULTI_CALL);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		List<String> uniqeDiagnosticId=new ArrayList<String>();
+		
+		
+		for(FaultData data:getAllFault)
+		{
+			uniqeDiagnosticId.add(data.getDiagnostic());
+			
+		}
+		List<String> newList = uniqeDiagnosticId.stream()
+                .distinct()
+                .collect(Collectors.toList());
+
+        for(String value:newList)
+		{
+			getDiagnosticMulticalRequest(builder, value);
+		}
+        
+        String payload = builder.build();
+		return payload;
+	
+	}
+	
+	private void getDiagnosticMulticalRequest(GeoTabRequestBuilder builder,String diagnosticId)
+	{
+
+		builder.params()
+		.addCalls()
+			.method(AppConstants.METHOD_GET)
+			.params()
+				.typeName("Diagnostic")
+				.search()
+						.id(diagnosticId);
+	}
+	
+	private List getDiagnosticMultiCallRequest(TrailerParams trailerParams,FaultData[] getAllFault)
 	{
 		
 		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
@@ -570,11 +784,19 @@ public class DvirMaintanenceServices {
 		// bind credentials
 		geoTabApiService.buildCredentials(builder, trailerParams);
 		
-	
+		List payload=new ArrayList<String>();
 		
-		return builder.params().typeName("Diagnostic")
-				.build();
-	
+		
+		for(FaultData result : getAllFault)
+		{
+			payload.add(builder.params().typeName("Diagnostic")
+					.search()
+					.id(result.getDiagnostic()));
+		}
+		
+		return payload;
+		
+		
 	}
 	
 	private String getControllerRequest(TrailerParams trailerParams)  
@@ -601,6 +823,23 @@ public class DvirMaintanenceServices {
 		
 		return builder.params().typeName("FailureMode")
 				.build();
+	}
+	
+	private String getdeviceName(Long comDatabaseId,String deviceId,TrailerParams trailerParams)
+	{
+		Long countDevice=genDeviceRepository.countdeviceIdAndrefComDatabaseId(deviceId,comDatabaseId);
+		String deviceName="";
+		if( countDevice > 0)
+			
+		{
+			deviceName=genDeviceRepository.findBydeviceIdAndrefComDatabaseId(deviceId,comDatabaseId).getDeviceName();
+		}
+		else
+		{
+			deviceName=	commonGeotabDAO.insertMissedGeoTabDevice(comDatabaseId, trailerParams,deviceId).getDeviceName();
+		}
+		
+		return deviceName;
 	}
 	
 }

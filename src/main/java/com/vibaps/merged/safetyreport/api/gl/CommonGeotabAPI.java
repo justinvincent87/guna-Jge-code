@@ -62,6 +62,8 @@ public ComDatabase insertDefacts(@RequestBody TrailerParams reportParams) throws
 	return commonGeotabService.insertDefects(reportParams);
 }
 
+
+
 @PostMapping(value = "/uploadFile")
 public String uploadFile(@RequestParam("file") MultipartFile file,@RequestParam String filePath) throws SQLException, IOException{
 	

@@ -1,5 +1,7 @@
 package com.vibaps.merged.safetyreport.dto.dvir;
 
+import javax.persistence.Transient;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -16,6 +18,9 @@ public class EventOccurrence {
 	private String eventDate;
 	private String eventRule;
 	private String deviceId;
+	
+	@Transient
+	private String deviceName;
 	
 	
 	@JsonSetter("eventRule")

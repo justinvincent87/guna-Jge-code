@@ -43,6 +43,7 @@ import com.vibaps.merged.safetyreport.repo.gl.GenDeviceRepository;
 import com.vibaps.merged.safetyreport.repo.gl.GenDriverUsersRepo;
 import com.vibaps.merged.safetyreport.repo.gl.GenTrailerRepository;
 import com.vibaps.merged.safetyreport.service.gl.GlReportService;
+import com.vibaps.merged.safetyreport.services.dvir.DvirMaintanenceServices;
 import com.vibaps.merged.safetyreport.services.gl.CommonGeotabService;
 import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
 
@@ -66,6 +67,9 @@ public class CommonGeotabDAO  {
 	private GenDriverUsersRepo genDriverUsersRepo;
 	@Autowired
 	private GenDefectsRepo genDefectsRepo;
+	@Autowired
+	private DvirMaintanenceServices dvirMaintanenceServices;
+
 	
 	
 	
@@ -118,6 +122,7 @@ public ComDatabase insertDefects(TrailerParams reportParams,Long dbId) {
 
 	return insertGeoTabDefects(dbId,reportParams);
 }
+
 
 
 @Transactional	

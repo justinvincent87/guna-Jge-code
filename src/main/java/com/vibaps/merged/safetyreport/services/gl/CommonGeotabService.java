@@ -33,7 +33,21 @@ import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 import com.vibaps.merged.safetyreport.entity.gl.ComDatabase;
+import com.vibaps.merged.safetyreport.entity.gl.GenUserEntity;
+import com.vibaps.merged.safetyreport.entity.gl.GlMinmiles;
+import com.vibaps.merged.safetyreport.entity.gl.GlResponseEntity;
+import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
+import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntityI;
+import com.vibaps.merged.safetyreport.entity.gl.GlSelectedvaluesEntity;
+import com.vibaps.merged.safetyreport.entity.gl.LyUserEntity;
 import com.vibaps.merged.safetyreport.repo.gl.ComDatabaseRepository;
+import com.vibaps.merged.safetyreport.repo.gl.GenUserRepository;
+import com.vibaps.merged.safetyreport.repo.gl.GlMinmilesRepository;
+import com.vibaps.merged.safetyreport.repo.gl.GlResponseRepository;
+import com.vibaps.merged.safetyreport.repo.gl.GlRulelistEntityRepository;
+import com.vibaps.merged.safetyreport.repo.gl.GlRulelistRepository;
+import com.vibaps.merged.safetyreport.repo.gl.GlSelectedvaluesEntityRepository;
+import com.vibaps.merged.safetyreport.repo.gl.LyUserRepository;
 import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
 import com.vibaps.merged.safetyreport.util.ResponseUtil;
 
@@ -56,6 +70,19 @@ public class CommonGeotabService {
      
      @Autowired
  	private ComDatabaseRepository comDatabaseRepository;
+    @Autowired
+    private LyUserRepository lyUserRepository;
+    @Autowired
+    private GenUserRepository genUserRepository;
+    @Autowired
+    private GlRulelistRepository glRulelistEntityRepository;
+    @Autowired
+    private GlSelectedvaluesEntityRepository glSelectedvaluesEntityRepository;
+    @Autowired
+    private GlMinmilesRepository glMinmilesRepository;
+    @Autowired
+    private GlResponseRepository glResponseRepository;
+     
 
 	public ComDatabase insertDevice(TrailerParams reportParams) throws SQLException
 	{
@@ -494,6 +521,124 @@ public class CommonGeotabService {
 		//JsonObject parsedResponse = ResponseUtil.parseResponse(response);
 		return response;
 	}
+	
+	public String glReportInstall(TrailerParams reportParams) {
+		String payload =  getRule(reportParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(reportParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		//JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		return parsedGlreport(response,reportParams);
+	}
+	
+	private String parsedGlreport(ResponseEntity<String> response,TrailerParams reportParams)
+	{
+		  JSONObject obj=new JSONObject(response.getBody());
+		  IdNameSerialization[] responseEntity=null;
+		  List<String> queryList=new ArrayList<String>();
+		  
+		 ObjectMapper mapper=new ObjectMapper();
+		try
+		{
+		   responseEntity =mapper.readValue(obj.getJSONArray("result").toString(), IdNameSerialization[].class);
+		}catch(Exception e)
+		{
+			System.out.println(e);
+		}
+		
+		//insert gen_user
+		GenUserEntity genUserEntity=new GenUserEntity();
+		genUserEntity.setCompanyid(reportParams.getGeotabUserName());
+		genUserEntity.setDb(reportParams.getGeotabDatabase());
+		GenUserEntity userId=genUserRepository.save(genUserEntity);
+		
+		
+		
+		//insert ly_User Table
+		
+		LyUserEntity lyuserEntity=new LyUserEntity();
+		lyuserEntity.setDbName(reportParams.getGeotabDatabase());
+		lyuserEntity.setLytxUsername(reportParams.getLytxuserName());
+		lyuserEntity.setLytxPassword(reportParams.getLytxpassword());
+		lyUserRepository.save(lyuserEntity);
+		
+		
+		//insert gen_ruleList Table
+		List<GlRulelistEntityI> lytxRulevalue=glRulelistEntityRepository.getLytxRuleForInsert();
+		
+		List<GlRulelistEntityI> lytxRulevalueList=new ArrayList<GlRulelistEntityI>();
+		
+		
+		for(IdNameSerialization data:responseEntity)
+		{
+			GlRulelistEntityI rulelistEntity=new GlRulelistEntityI();
+			rulelistEntity.setRulecompany("G");
+			rulelistEntity.setRulename(data.getName());
+			rulelistEntity.setRulevalue(data.getId());
+			rulelistEntity.setDb(reportParams.getGeotabDatabase());
+			lytxRulevalueList.add(rulelistEntity);
+		}
+		
+		for(GlRulelistEntityI data:lytxRulevalue)
+		{
+			GlRulelistEntityI rulelistEntity=new GlRulelistEntityI();
+			rulelistEntity.setRulecompany("L");
+			rulelistEntity.setRulename(data.getRulename());
+			rulelistEntity.setRulevalue(data.getRulevalue());
+			rulelistEntity.setDb(reportParams.getGeotabDatabase());
+			
+			lytxRulevalueList.add(rulelistEntity);
+		}
+		
+		glRulelistEntityRepository.saveAll(lytxRulevalueList);
+		
+		//inset to selectedRuleList
+		List<GlRulelistEntityI> getAllrulelist=glRulelistEntityRepository.getAllRuleForInsert(reportParams.getGeotabDatabase());
+		List<GlSelectedvaluesEntity> allruleListEntity=new ArrayList<GlSelectedvaluesEntity>();
+		for(GlRulelistEntityI data:getAllrulelist)
+		{
+			GlSelectedvaluesEntity selectedRuleEntity=new GlSelectedvaluesEntity();
+			
+			selectedRuleEntity.setGen_user_id(userId.getId());
+			selectedRuleEntity.setGen_rulelist_id(data.getId());
+			selectedRuleEntity.setStatus(0);
+			selectedRuleEntity.setWeight(0);
+			allruleListEntity.add(selectedRuleEntity);
+		}
+		
+		glSelectedvaluesEntityRepository.saveAll(allruleListEntity);
+		
+		
+		//insert minimiles
+		GlMinmiles glMinimilesvalue=new GlMinmiles();
+		glMinimilesvalue.setGenUserId(userId.getId());
+		glMinimilesvalue.setMinmiles(100F);
+		glMinmilesRepository.save(glMinimilesvalue);
+		
+		//insert GlResponce
+		
+		GlResponseEntity glresponseEntity=new GlResponseEntity();
+		glresponseEntity.setGenUserId(userId.getId());
+		glresponseEntity.setResponceJson("{}");
+		
+		glResponseRepository.save(glresponseEntity);
+		
+		return ("Saved");
+		
+		
+	}
 
 	private String getpayloadGeotabResponceUsingTypeName(TrailerParams reportParams)  
 	{
@@ -505,6 +650,19 @@ public class CommonGeotabService {
 		geoTabApiService.buildCredentials(builder, reportParams);
 		
 		 return builder.params().typeName(reportParams.getTypeName())
+				.build();
+		
+	}
+	private String getRule(TrailerParams reportParams)  
+	{
+		
+		
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, reportParams);
+		
+		 return builder.params().typeName("Rule")
 				.build();
 		
 	}

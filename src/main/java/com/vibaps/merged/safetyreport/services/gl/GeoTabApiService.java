@@ -186,7 +186,12 @@ public class GeoTabApiService {
 			String		group				= null;
 			for (int j = 0; j < geotabVehicleGroups.length(); j++) {
 				if (group == null) {
+					try
+					{
 					group = geotabVehicleGroups.getJSONObject(j).getString(ATTR_NAME);
+					}catch (Exception e) {
+						// TODO: handle exception
+					}
 				} else {
 					String newGroup = geotabVehicleGroups.getJSONObject(j).getString(ATTR_NAME);
 					if (PROHIBIT_IDLING.equalsIgnoreCase(newGroup)) {

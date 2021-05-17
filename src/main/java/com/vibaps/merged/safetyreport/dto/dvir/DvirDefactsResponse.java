@@ -28,8 +28,7 @@ public class DvirDefactsResponse {
 	List fullresult;
 	private boolean status;
 	
-	@Transient
-	private Map<String,List<?>> data;
+	
 	
 	@Transient
 	private String deviceName;
@@ -65,10 +64,7 @@ public class DvirDefactsResponse {
 		this.deviceName = deviceName;
 	}
 
-	public DvirDefactsResponse(Map<String, List<?>> data) {
-		super();
-		this.data = data;
-	}
+	
 
 	
 	

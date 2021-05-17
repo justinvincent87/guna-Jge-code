@@ -39,5 +39,7 @@ public class ReportParams{
 	private String database;
 	private String groups;
 	private String fromDate;
+	private String lytxuserName;
+	private String lytxpassword;
 	
 }

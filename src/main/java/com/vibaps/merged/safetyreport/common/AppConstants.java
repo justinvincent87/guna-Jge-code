@@ -31,12 +31,20 @@ public final class AppConstants {
 	public static final String END_UTC="T23:59:00";
 	
 	public static final String[]	DEFAULT_HEADERS		= {"Vehicle Name", "Group", "Distance"};
-	public static final String[] NORMAL_REPORT_FORMULAS= { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)", "Data!E@", "Data!F@",
-	        "Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@", "Data!N@",
+	public static final String[] NORMAL_REPORT_FORMULAS= { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)","Data!D@","Data!E@","Data!F@",
+	        "Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@",
 	        "IFERROR((E#*E$6)/($C#/100),0)", "IFERROR((F#*F$6)/($C#/100),0)", "IFERROR((G#*G$6)/($C#/100),0)",
 	        "IFERROR((H#*H$6)/($C#/100),0)", "IFERROR((I#*I$6)/($C#/100),0)", "IFERROR((J#*J$6)/($C#/100),0)",
 	        "IFERROR((K#*K$6)/($C#/100),0)", "IFERROR((L#*L$6)/($C#/100),0)", "IFERROR((M#*M$6)/($C#/100),0)",
 	        "IFERROR((N#*N$6)/($C#/100),0)", "AVERAGE(OFFSET($O#,0,0,1,$Y$5))" };
+	
+	
+//	public static final String[] NORMAL_REPORT_FORMULAS= { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)", "Data!E@", "Data!F@",
+//	        "Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@", "Data!N@",
+//	        "IFERROR((E#*E$6)/($C#/100),0)", "IFERROR((F#*F$6)/($C#/100),0)", "IFERROR((G#*G$6)/($C#/100),0)",
+//	        "IFERROR((H#*H$6)/($C#/100),0)", "IFERROR((I#*I$6)/($C#/100),0)", "IFERROR((J#*J$6)/($C#/100),0)",
+//	        "IFERROR((K#*K$6)/($C#/100),0)", "IFERROR((L#*L$6)/($C#/100),0)", "IFERROR((M#*M$6)/($C#/100),0)",
+//	        "IFERROR((N#*N$6)/($C#/100),0)", "AVERAGE(OFFSET($O#,0,0,1,$Y$5))" };
 	
 	
 
@@ -55,25 +63,29 @@ public final class AppConstants {
 
 	public static String getNormalExcelTemplate(String entityType)
 	{
-		if(entityType.equals("Device"))
-		{
-			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Vehicle.xlsx";
-
-		}
+//		if(entityType.equals("Device"))
+//		{
+//			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Vehicle.xlsx";
+//
+//		}
 		
-		return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Driver.xlsx";
+		return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Vehicle.xlsx";
+		
+		//return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Driver.xlsx";
 
 	}
 	
 	public static String getTrendingExcelTemplate(String entityType)
 	{
-		if(entityType.equals("Device"))
-		{
-			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Vehicle.xlsx";
-
-		}
+//		if(entityType.equals("Device"))
+//		{
+//			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Vehicle.xlsx";
+//
+//		}
 		
-		return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Driver.xlsx";
+		//return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Driver.xlsx";
+
+		return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Vehicle.xlsx";
 
 	}
 

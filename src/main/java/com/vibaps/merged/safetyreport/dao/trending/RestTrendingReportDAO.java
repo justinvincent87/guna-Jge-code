@@ -1453,11 +1453,12 @@ System.out.println(lytxExceptionSummariesJson);
 				cell3 = row3.createCell(j4);
 			if(j4==0)
 			{
-				if(entityType.equals("Device"))
-				{
-					entityType="Vehicle";
-				}
-				cell3.setCellValue(entityType+"Name");
+//				if(entityType.equals("Device"))
+//				{
+//					entityType="Vehicle";
+//				}
+				//edited line
+				cell3.setCellValue("VehicleName");
 			
 			}
 			else

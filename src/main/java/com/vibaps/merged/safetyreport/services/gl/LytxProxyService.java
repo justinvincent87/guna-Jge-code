@@ -72,6 +72,12 @@ public class LytxProxyService {
 	{
 		vehicles				= getLytxVehicleDetailMap(reportParams);
 	}
+	
+	
+//	JSONObject lytxuserJO = new JSONObject(vehicles);
+//	
+//	log.info("User :: {}",lytxuserJO.toString());
+	
 		Map<Long, String>					behaviors				= getLytxBehaviorsMap(reportParams);
 
 		
@@ -92,11 +98,15 @@ public class LytxProxyService {
 			
 			reportParams.setStartDate(sdate);
 			log.info("Get Lytx Event- {}","Start");
-			GetEventsResponse					eventReponse= getLytxExceptionSummary(reportParams);
-			log.info("Get Lytx Event- {}","Stop");
-			//JSONObject lytxEventsJO = new JSONObject(eventReponse);
 			
-			//log.info("LyData{}",lytxEventsJO.toString());
+						
+			
+			GetEventsResponse					eventReponse= getLytxExceptionSummary(reportParams);
+			
+			log.info("Get Lytx Event- {}","Stop");
+//			JSONObject lytxEventsJO = new JSONObject(eventReponse);
+//			
+//			log.info("LyData{}",lytxEventsJO.toString());
 			
 		
 		if (log.isDebugEnabled()) {
@@ -109,6 +119,8 @@ public class LytxProxyService {
 		log.info("Parse Lytx Event - {}","Start");
 		
 		for (EventsInfoV5 event : eventReponse.getEvents()) {
+			
+			
 			String vehicleName;
 			if(EntityType.isDriver(reportParams.getEntityType()))
 			{
@@ -132,6 +144,7 @@ public class LytxProxyService {
 				if (behaviorCount == null) {
 					behaviorCount = 0;
 				}
+				
 				lytxExceptionEvents.put(exceptionName, ++behaviorCount);
 			}
 		}
@@ -358,7 +371,8 @@ public class LytxProxyService {
 	 */
 	public GetEventsResponse getLytxExceptionSummary(ReportParams reportParams) {
 
-		
+		log.info("Start - Date :: {}",parseUtilDate(reportParams.getStartDate()));
+		log.info("End - Date :: {}",parseUtilDate(reportParams.getEndDate()));
 		
 		GetEventsByLastUpdateDateRequest getEventsRequest = new GetEventsByLastUpdateDateRequest();
 		getEventsRequest.setSessionId(reportParams.getLytexSessionid());

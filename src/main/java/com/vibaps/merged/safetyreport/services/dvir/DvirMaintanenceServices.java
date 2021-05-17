@@ -122,6 +122,8 @@ public class DvirMaintanenceServices {
 
 		}
 		
+		System.out.println(allReminderResponce.length);
+		
 		if(getAllFault.length > 0)
 		{
 			 controll=getController(trailerParams);
@@ -135,16 +137,19 @@ public class DvirMaintanenceServices {
 			   
 		}
 		
+		System.out.println(getAllFault.length);
+
+	
 		//return eventOccurrenceList;
 		Map<String,List<DvirDefactsResponse>> dvirDefactsList=parsedDvirDefacts(dvirResponce.getBody(),trailerParams,comDatabaseId,zoneId);
         
-		return new DvirDefactsResponse(parcedFullResponce(eventOccurrenceList,faultData,dvirDefactsList));
+		return new DvirDefactsResponse(parcedFullResponce(eventOccurrenceList,faultData,dvirDefactsList),true);
 	}
 	
-	private Map<String,List<?>>  parcedFullResponce(Map<String,List<EventOccurrence>> eventOccurrenceList,Map<String,List<FaultData>> faultData,Map<String,List<DvirDefactsResponse>> dvirDefactsList)
+	private List  parcedFullResponce(Map<String,List<EventOccurrence>> eventOccurrenceList,Map<String,List<FaultData>> faultData,Map<String,List<DvirDefactsResponse>> dvirDefactsList)
 	{
 		Map<String,List<?>> responseMap=new HashMap<String,List<?>>();
-
+		List finalResponse=new ArrayList(); 
 		
 		for (Map.Entry<String,List<EventOccurrence>> entry : eventOccurrenceList.entrySet())
        
@@ -207,8 +212,17 @@ public class DvirMaintanenceServices {
 			}
 		}
 		
+
+		for (Map.Entry<String,List<?>> entry : responseMap.entrySet())
+		       
+		{
+			List<?> value= responseMap.get(entry.getKey());
+			
+			finalResponse.add(value);
+		}
 		
-		return responseMap;
+		
+		return finalResponse;
 	}
 	
 	
@@ -644,8 +658,11 @@ public class DvirMaintanenceServices {
 		
 		
 		String dateTime=trailerService.getZoneTime(zoneId,innerJsonObj.getString("dateTime"));
-
-		String logType=innerJsonObj.getString("logType");
+		String logType="-";
+		if(!innerJsonObj.isNull("logType"))
+		{
+			logType=innerJsonObj.getString("logType");
+		}
 		GenDriverUsers driverInfo=new GenDriverUsers();
 		Long countDriver=genDriverUsersRepo.countdriverIdAndrefComDatabaseId(innerJsonObj.getJSONObject("driver").getString("id"), comDatabaseId);
 		String driverId=innerJsonObj.getJSONObject("driver").getString("id");

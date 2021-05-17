@@ -2,6 +2,7 @@ package com.vibaps.merged.safetyreport.api.gl;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -97,7 +98,11 @@ public ResponseEntity<GeoTabReponse> getdatabaceid(@RequestBody TrailerParams re
 		return new ResponseEntity<GeoTabReponse>(responseBody, appMsg.getHttpStatus());
 }
 
-
+@PostMapping(value = "/glReport-install-query")
+public String glReportInstall(@RequestBody TrailerParams reportParams) {
+	
+	return commonGeotabService.glReportInstall(reportParams);
+}
 
 
 }

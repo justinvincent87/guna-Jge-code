@@ -2,7 +2,9 @@ package com.vibaps.merged.safetyreport.services.trailer;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -11,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,7 @@ import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.h2.util.DateTimeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -239,6 +243,7 @@ for(int i=0;i<jsonarray.length();i++)
 		String trailerId = trailerParams.getTrailerId();
 		String[] trailerArray = trailerId.split(",");
 		String[] deviceArray = deviceId.split(",");
+		String timeZone=getZoneId(trailerParams);
 		
 		
 		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
@@ -246,12 +251,41 @@ for(int i=0;i<jsonarray.length();i++)
 	
 		if(!Objects.isNull(trailerParams.getPage()) && !Objects.isNull(trailerParams.getSize())) 
 			{
-				return builder.deviceIds(Arrays.asList(deviceArray)).trailerIds(Arrays.asList(trailerArray)).activeFrom(trailerParams.getActiveFrom()).activeTo(trailerParams.getActiveTo()).page(trailerParams.getPage()).size(trailerParams.getSize()).build();
+				return builder.deviceIds(Arrays.asList(deviceArray)).trailerIds(Arrays.asList(trailerArray)).activeFrom(utcDateParse(timeZone,trailerParams.getActiveFrom())).activeTo(utcDateParse(timeZone,trailerParams.getActiveTo())).page(trailerParams.getPage()).size(trailerParams.getSize()).build();
 
 			}	
 		
-return builder.deviceIds(Arrays.asList(deviceArray)).trailerIds(Arrays.asList(trailerArray)).activeFrom(trailerParams.getActiveFrom()).activeTo(trailerParams.getActiveTo()).build();
+return builder.deviceIds(Arrays.asList(deviceArray)).trailerIds(Arrays.asList(trailerArray)).activeFrom(utcDateParse(timeZone,trailerParams.getActiveFrom())).activeTo(utcDateParse(timeZone,trailerParams.getActiveTo())).build();
 
+	}
+	
+	private String utcDateParse(String timeZone,String dateValue)
+	{
+		  SimpleDateFormat dateTimeInGMT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			//Setting the time zone
+			dateTimeInGMT.setTimeZone(TimeZone.getTimeZone(timeZone));
+			ZoneId zoneId = ZoneId.of("UTC");
+			LocalDateTime now = LocalDateTime.now(zoneId);
+		    		
+			ZoneId zone = ZoneId.of(timeZone);
+			ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
+			
+			System.out.println(dateValue);
+			Date date = null;
+			try {
+				date = dateTimeInGMT.parse(dateValue);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}  
+			
+			OffsetDateTime offsetDateTime = date.toInstant()
+			  .atOffset(zoneOffSet);
+			
+			System.out.println(offsetDateTime.toString());
+		
+		return offsetDateTime.toString();
+		
 	}
 	
 	private String getDeviceRequestPayload(TrailerParams trailerParams)
@@ -558,6 +592,18 @@ return builder.url(trailerParams.getUrl()).groups(trailerParams.getGeotabGroups(
 		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
 		return convertParsedReponse(parsedResponse);
 	}
+	
+	public String getUserTimeZone(TrailerParams trailerParams) {
+		return getTodayDate(getZoneId(trailerParams));
+	}
+	
+	   private String getTodayDate(String timeZone)
+	   {
+		   SimpleDateFormat dateTimeInGMT = new SimpleDateFormat("yyyy-MM-dd");
+			dateTimeInGMT.setTimeZone(TimeZone.getTimeZone(timeZone));
+			
+			return dateTimeInGMT.format(new Date());
+	   }
 	
 	public TrailerResponse convertParsedReponse(JsonObject parsedResponse) {
 		

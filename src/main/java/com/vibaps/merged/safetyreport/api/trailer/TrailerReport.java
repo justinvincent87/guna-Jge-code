@@ -82,6 +82,21 @@ public String showTrailer(@RequestBody TrailerParams trailerParams) throws JsonM
 
 
 
+@PostMapping(value = "/get-Time-Zone",produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<GeoTabReponse> getUserTimeZone(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+{
+	GeoTabException ex=new GeoTabException(AppMsg.SUCCESS);
+	 appMsg = ex.getAppMsg();
+	 responseBody = GeoTabReponse.builder()
+	.isSuccess(true)
+	.isError(false)
+	.data(trailerService.getUserTimeZone(trailerParams))
+	.build();
+	
+		return new ResponseEntity<GeoTabReponse>(responseBody, appMsg.getHttpStatus());
+
+}
+
 @PostMapping(value = "/getDevice",produces = MediaType.APPLICATION_JSON_VALUE)
 public ResponseEntity<GeoTabReponse> getDevice(@RequestBody TrailerParams trailerParams)
 {
@@ -146,6 +161,8 @@ public ResponseEntity<GeoTabReponse> getTrailer(@RequestBody TrailerParams trail
 
 
 }
+
+
 
 @PostMapping(value = "/show-report-page",produces = MediaType.APPLICATION_JSON_VALUE)
 public ResponseEntity<GeoTabReponse> showReportPageWise(@RequestBody TrailerParams trailerParams)

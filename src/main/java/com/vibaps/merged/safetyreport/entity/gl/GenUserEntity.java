@@ -24,8 +24,11 @@ public class GenUserEntity {
 	@GeneratedValue(generator = "id")
 	@GenericGenerator(name = "id", strategy = "increment")
 	@Column(name = "id", unique = true, nullable = false)
-	private Integer id;
+	private Long id;
 	
 	@Column(name = "companyid")
 	private String companyid;
+	
+	@Column(name = "db")
+	private String db;
 }

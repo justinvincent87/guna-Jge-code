@@ -122,7 +122,6 @@ public class DvirMaintanenceServices {
 
 		}
 		
-		System.out.println(allReminderResponce.length);
 		
 		if(getAllFault.length > 0)
 		{
@@ -137,16 +136,15 @@ public class DvirMaintanenceServices {
 			   
 		}
 		
-		System.out.println(getAllFault.length);
 
 	
 		//return eventOccurrenceList;
 		Map<String,List<DvirDefactsResponse>> dvirDefactsList=parsedDvirDefacts(dvirResponce.getBody(),trailerParams,comDatabaseId,zoneId);
         
-		return new DvirDefactsResponse(parcedFullResponce(eventOccurrenceList,faultData,dvirDefactsList),true);
+		return new DvirDefactsResponse(parsedFullResponce(eventOccurrenceList,faultData,dvirDefactsList),true);
 	}
 	
-	private List  parcedFullResponce(Map<String,List<EventOccurrence>> eventOccurrenceList,Map<String,List<FaultData>> faultData,Map<String,List<DvirDefactsResponse>> dvirDefactsList)
+	private List  parsedFullResponce(Map<String,List<EventOccurrence>> eventOccurrenceList,Map<String,List<FaultData>> faultData,Map<String,List<DvirDefactsResponse>> dvirDefactsList)
 	{
 		Map<String,List<?>> responseMap=new HashMap<String,List<?>>();
 		List finalResponse=new ArrayList(); 
@@ -696,7 +694,6 @@ public class DvirMaintanenceServices {
 				.isRepaired(false)
 				.isCertified(false)
 				.trailerSearch(null)
-				.resultsLimit(AppConstants.RESULTS_LIMIT)
 				.build();
 	
 	}

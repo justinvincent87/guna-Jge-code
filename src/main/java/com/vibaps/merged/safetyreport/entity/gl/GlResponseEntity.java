@@ -9,13 +9,14 @@ import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
+
 @Entity
-@Setter
+@Data
 @NoArgsConstructor
 @Table(name = "gl_responce")
 public class GlResponseEntity {

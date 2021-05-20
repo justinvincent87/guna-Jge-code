@@ -48,6 +48,7 @@ import org.hibernate.Transaction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
@@ -64,6 +65,7 @@ import com.lytx.dto.GetVehiclesResponse;
 import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
 import com.vibaps.merged.safetyreport.common.AppConstants;
+import com.vibaps.merged.safetyreport.common.AppDefault;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.gl.Behave;
@@ -112,6 +114,9 @@ public class GlReportService {
 
 	@Autowired
 	private CommonGeotabDAO commonGeotabDAO;
+	
+    @Autowired
+    private Environment env;
 	
 	@Autowired
 	private GlSelectedvaluesEntityRepository glSelectedvaluesEntityRepository;
@@ -1721,15 +1726,17 @@ public class GlReportService {
 
 		List<String> displayColumns = loadReporColumntHeaders(geouname, geodatabase);
 
-		File	source	= new File(AppConstants.getNormalExcelTemplate(entityType));
-		File	dest	= new File(AppConstants.EXCEL_BASE_PATH+geodatabase+"_as.xlsx");
+		//File	source	= new File(AppConstants.getNormalExcelTemplate(entityType));
+		File	source	= new File(env.getProperty("excel.normal.vechile"));
+
+		File	dest	= new File(env.getProperty("excel.base.path")+geodatabase+"_as.xlsx");
 		try {
 			copyFileUsingStream(source, dest);
 		} catch (IOException e3) {
 			e3.printStackTrace();
 		}
 		Workbook	workbook	= WorkbookFactory
-		        .create(new File(AppConstants.EXCEL_BASE_PATH+geodatabase+"_as.xlsx"));
+		        .create(new File(env.getProperty("excel.base.path")+geodatabase+"_as.xlsx"));
 		Sheet		sheet		= workbook.getSheetAt(0);
 		DateFormat	df			= new SimpleDateFormat("dd/MM/yy HH:mm:ss");
 		Calendar	calobj		= Calendar.getInstance();
@@ -1738,19 +1745,19 @@ public class GlReportService {
 			String	val		= "";
 			switch (j3) {
 			case 0:
-				name = "CompanyName";
+				name = AppDefault.CompanyName.name();
 				val = geodatabase;
 				break;
 			case 1:
-				name = "RunDate";
+				name = AppDefault.RunDate.name();
 				val = df.format(calobj.getTime());
 				break;
 			case 2:
-				name = "FromDate";
+				name = AppDefault.FromDate.name();
 				val = sdate;
 				break;
 			case 3:
-				name = "ToDate";
+				name = AppDefault.ToDate.name();
 				val = edate;
 				break;
 			}
@@ -1768,7 +1775,7 @@ public class GlReportService {
 		for (int h = 0; h < displayColumns.size(); h++) {
 			Cell cell2 = row2.createCell(h);
 			if (h == 0) {
-				cell2.setCellValue("Weight");
+				cell2.setCellValue(AppDefault.Weight.name());
 			} else if (h == 1 || h == 2) {
 				cell2.setCellValue("");
 			} else {
@@ -1791,7 +1798,7 @@ public class GlReportService {
 //				}
 				
 				//edited line
-				cell3.setCellValue("VehicleName");
+				cell3.setCellValue(AppDefault.VehicleName.name());
 			
 			}
 			else
@@ -1867,7 +1874,7 @@ public class GlReportService {
 		 */
 
 		try (FileOutputStream outputStream = new FileOutputStream(
-		        AppConstants.EXCEL_BASE_PATH+filename+".xlsx")) {
+				env.getProperty("excel.base.path")+filename+".xlsx")) {
 			XSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
 			workbook.write(outputStream);
 		}
@@ -1968,8 +1975,8 @@ public class GlReportService {
 	
 	public String fileCopy()
 	{
-		File	source	= new File(AppConstants.getNormalExcelTemplate("Device"));
-		File	dest	= new File(AppConstants.EXCEL_BASE_PATH+"Test"+"_as.xlsx");
+		File	source	= new File(env.getProperty("excel.normal.vechile"));
+		File	dest	= new File(env.getProperty("excel.base.path")+"Test"+"_as.xlsx");
 		try {
 			copyFileUsingStream(source, dest);
 		} catch (IOException e3) {

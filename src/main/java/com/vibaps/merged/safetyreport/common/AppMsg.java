@@ -17,6 +17,8 @@ public enum AppMsg {
 	private String		code;
 	private String		message;
 	private HttpStatus	httpStatus;
+	
+	
 
 	private AppMsg(String code, String message) {
 		this.code		= code;

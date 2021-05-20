@@ -260,7 +260,6 @@ public class DvirDefactsServices {
 				.isDefective(true)
 				.isRepaired(false)
 				.isCertified(false)
-				.resultsLimit(AppConstants.RESULTS_LIMIT)
 				.build();
 	
 	}

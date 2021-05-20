@@ -27,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -75,16 +76,18 @@ public class TrailerService {
 	private CommonGeotabRepository commonGeotabRepository;
 	@Autowired
 	private ComDatabaseRepository comDatabaseRepository;
-	
 	@Autowired
 	private CommonGeotabDAO commonGeotabDAO;
+    @Autowired
+    private Environment env;
+	
 	
     private TrailerResponse trailerResponce;
     
     private Map<String, String> addressMap=new HashMap<String, String>();
     private Long countDevice,countTrailer;
 
-	
+	private static final DateTimeFormatter DF_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	
 	@Autowired
 	private GeoTabApiService geoTabApiService;
@@ -100,7 +103,7 @@ public class TrailerService {
 				log.debug("Get report data payload: {}", payload);
 			}
 	
-			String uri = AppConstants.DATA_MONSTER_BASE_URL+AppConstants.DATA_MONSTER_TRAILER_SEARCH_URL;
+			String uri = env.getProperty("datamonster.base.url")+AppConstants.DATA_MONSTER_TRAILER_SEARCH_URL;
 			
 			if (log.isDebugEnabled()) {
 				log.debug("Get report data uri: {}", uri);
@@ -169,7 +172,7 @@ for(int i=0;i<jsonarray.length();i++)
 				log.debug("Get report data payload: {}", payload);
 			}
 	
-			String uri = AppConstants.DATA_MONSTER_BASE_URL+AppConstants.DATA_MONSTER_TRAILER_SEARCH_COUNT_URL;
+			String uri = env.getProperty("datamonster.base.url")+AppConstants.DATA_MONSTER_TRAILER_SEARCH_COUNT_URL;
 			
 			if (log.isDebugEnabled()) {
 				log.debug("Get report data uri: {}", uri);
@@ -199,7 +202,7 @@ for(int i=0;i<jsonarray.length();i++)
 				log.debug("Get report data payload: {}", payload);
 			}
 	
-			String uri = AppConstants.DATA_MONSTER_BASE_URL+AppConstants.DATA_MONSTER_DEVICE_SEARCH_URL;
+			String uri = env.getProperty("datamonster.base.url")+AppConstants.DATA_MONSTER_DEVICE_SEARCH_URL;
 			
 			if (log.isDebugEnabled()) {
 				log.debug("Get report data uri: {}", uri);
@@ -220,7 +223,7 @@ for(int i=0;i<jsonarray.length();i++)
 				log.debug("Get report data payload: {}", payload);
 			}
 	
-			String uri = AppConstants.DATA_MONSTER_BASE_URL+AppConstants.DATA_MONSTER_TRAILERLIST_SEARCH_URL;
+			String uri = env.getProperty("datamonster.base.url")+AppConstants.DATA_MONSTER_TRAILERLIST_SEARCH_URL;
 			
 			if (log.isDebugEnabled()) {
 				log.debug("Get report data uri: {}", uri);
@@ -261,30 +264,9 @@ return builder.deviceIds(Arrays.asList(deviceArray)).trailerIds(Arrays.asList(tr
 	
 	private String utcDateParse(String timeZone,String dateValue)
 	{
-		  SimpleDateFormat dateTimeInGMT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-			//Setting the time zone
-			dateTimeInGMT.setTimeZone(TimeZone.getTimeZone(timeZone));
-			ZoneId zoneId = ZoneId.of("UTC");
-			LocalDateTime now = LocalDateTime.now(zoneId);
-		    		
-			ZoneId zone = ZoneId.of(timeZone);
-			ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
-			
-			System.out.println(dateValue);
-			Date date = null;
-			try {
-				date = dateTimeInGMT.parse(dateValue);
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}  
-			
-			OffsetDateTime offsetDateTime = date.toInstant()
-			  .atOffset(zoneOffSet);
-			
-			System.out.println(offsetDateTime.toString());
-		
-		return offsetDateTime.toString();
+		return LocalDateTime.parse(dateValue, DF_PATTERN)
+				.atZone(ZoneId.of(timeZone))
+				.toOffsetDateTime().toString();
 		
 	}
 	
@@ -677,7 +659,7 @@ return builder.url(trailerParams.getUrl()).groups(trailerParams.getGeotabGroups(
 				.build();
 		case 4 : return builder.params().typeName(trailerParams.getTypeName())
 				.search().groups(geoTabApiService.getGroupList(trailerParams))
-				.fromDate(trailerParams.getFromDate()+builder.FROM_TS_SUFFIX).resultsLimit(AppConstants.RESULTS_LIMIT)
+				.fromDate(trailerParams.getFromDate()+builder.FROM_TS_SUFFIX)
 				.build();
 		case 5 : return builder.params().typeName(trailerParams.getTypeName())
 				.search().groups(geoTabApiService.getGroupList(trailerParams))

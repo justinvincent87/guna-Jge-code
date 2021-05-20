@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.core.env.Environment;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -60,6 +61,7 @@ import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
 import com.vibaps.merged.safetyreport.builder.Uri;
 import com.vibaps.merged.safetyreport.common.AppConstants;
+import com.vibaps.merged.safetyreport.common.AppDefault;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dao.gl.CommonGeotabDAO;
 import com.vibaps.merged.safetyreport.dto.gl.Behave;
@@ -90,6 +92,8 @@ public class RestTrendingReportDAO {
 	private GeoTabApiService geoTabApiService;
 	@Autowired
 	private LytxProxyService lytxProxyService;
+    @Autowired
+    private Environment env;
 	
 	private Map<Long, String> lytxVehicleList;
 	private Map<String, List<Trip>> vehicleTrips;
@@ -1379,13 +1383,14 @@ System.out.println(lytxExceptionSummariesJson);
 
 		List<String> displayColumns = loadTrendingReporColumntHeaders(geouname, geodatabase);
 
-		File source = new File(AppConstants.getTrendingExcelTemplate(entityType));
-		File	dest	= new File(AppConstants.EXCEL_BASE_PATH+geodatabase+"_as.xlsx");
+		//File source = new File(AppConstants.getTrendingExcelTemplate(entityType));
+		File source = new File(env.getProperty("excel.trending.vechile"));
+		File	dest	= new File(env.getProperty("excel.base.path")+geodatabase+"_as.xlsx");
 		
 			glReportService.copyFileUsingStream(source, dest);
 		
 		Workbook workbook = WorkbookFactory
-				.create(new File(AppConstants.EXCEL_BASE_PATH+geodatabase+"_as.xlsx"));
+				.create(new File(env.getProperty("excel.base.path")+geodatabase+"_as.xlsx"));
 		Sheet sheet = workbook.getSheetAt(0);
 		DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
 		Calendar calobj = Calendar.getInstance();
@@ -1394,19 +1399,19 @@ System.out.println(lytxExceptionSummariesJson);
 			String val = "";
 			switch (j3) {
 			case 0:
-				name = "CompanyName";
+				name = AppDefault.CompanyName.name();
 				val = geodatabase;
 				break;
 			case 1:
-				name = "RunDate";
+				name = AppDefault.RunDate.name();
 				val = df.format(calobj.getTime());
 				break;
 			case 2:
-				name = "FromDate";
+				name = AppDefault.FromDate.name();
 				val = sdate;
 				break;
 			case 3:
-				name = "ToDate";
+				name = AppDefault.ToDate.name();
 				val = edate;
 				break;
 			}
@@ -1421,13 +1426,13 @@ System.out.println(lytxExceptionSummariesJson);
 
 			if (j3 == 0) {
 				cell = row.createCell(3);
-				cell.setCellValue("Trending Report");
+				cell.setCellValue(AppDefault.TrendingReport.name());
 
 				cell = row.createCell(4);
 				if (entityType.equals("Device")) {
-					cell.setCellValue("Vehicle");
+					cell.setCellValue(AppDefault.Vehicle.name());
 				} else {
-					cell.setCellValue("Driver");
+					cell.setCellValue(AppDefault.Driver.name());
 				}
 			}
 		}
@@ -1436,7 +1441,7 @@ System.out.println(lytxExceptionSummariesJson);
 		for (int h = 0; h < displayColumns.size(); h++) {
 			Cell cell2 = row2.createCell(h);
 			if (h == 0) {
-				cell2.setCellValue("Weight");
+				cell2.setCellValue(AppDefault.Weight.name());
 			} else if (h == 1 || h == 2 || h == 3 || h == 4 || h == 5) {
 				cell2.setCellValue("");
 			} else {
@@ -1458,7 +1463,7 @@ System.out.println(lytxExceptionSummariesJson);
 //					entityType="Vehicle";
 //				}
 				//edited line
-				cell3.setCellValue("VehicleName");
+				cell3.setCellValue(AppDefault.VehicleName.name());
 			
 			}
 			else
@@ -1550,7 +1555,7 @@ System.out.println(lytxExceptionSummariesJson);
 		dateCellStyle.setDataFormat(displayDateFormat);
 
 		try (FileOutputStream outputStream = new FileOutputStream(
-				 AppConstants.EXCEL_BASE_PATH+filename+".xlsx")) 
+				env.getProperty("excel.base.path")+filename+".xlsx")) 
 		{
 			XSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
 			workbook.write(outputStream);

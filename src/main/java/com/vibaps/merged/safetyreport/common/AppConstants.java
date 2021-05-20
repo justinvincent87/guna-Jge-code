@@ -3,7 +3,6 @@ package com.vibaps.merged.safetyreport.common;
 public final class AppConstants {
 
 	public static final String RESPONSE_SUCCESS = "OK";
-	public static final String DATA_MONSTER_BASE_URL="https://vibaps.com:8787/data-monster/";
 	//public static final String DATA_MONSTER_BASE_URL="http://localhost:8787/data-monster/";
 	public static final String DATA_MONSTER_TRAILER_SEARCH_URL="trailer/search";
 	public static final String DATA_MONSTER_TRAILER_SEARCH_COUNT_URL="trailer/count";
@@ -14,7 +13,7 @@ public final class AppConstants {
 	public static final String	SLASH				= "/";
 	public static final String	PROTOCOL_SECURE		= "https";
 	public static final String	PROTOCOL_NON_SECURE	= "http";
-	public static final String  RESULTS_LIMIT="500";
+	//public static final String  RESULTS_LIMIT="500";
 	public static final String PATH_VERSION = "/apiv1";
 
 	public static final String	METHOD_EXECUTE_MULTI_CALL	= "ExecuteMultiCall";
@@ -39,14 +38,7 @@ public final class AppConstants {
 	        "IFERROR((N#*N$6)/($C#/100),0)", "AVERAGE(OFFSET($O#,0,0,1,$Y$5))" };
 	
 	
-//	public static final String[] NORMAL_REPORT_FORMULAS= { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)", "Data!E@", "Data!F@",
-//	        "Data!G@", "Data!H@", "Data!I@", "Data!J@", "Data!K@", "Data!L@", "Data!M@", "Data!N@",
-//	        "IFERROR((E#*E$6)/($C#/100),0)", "IFERROR((F#*F$6)/($C#/100),0)", "IFERROR((G#*G$6)/($C#/100),0)",
-//	        "IFERROR((H#*H$6)/($C#/100),0)", "IFERROR((I#*I$6)/($C#/100),0)", "IFERROR((J#*J$6)/($C#/100),0)",
-//	        "IFERROR((K#*K$6)/($C#/100),0)", "IFERROR((L#*L$6)/($C#/100),0)", "IFERROR((M#*M$6)/($C#/100),0)",
-//	        "IFERROR((N#*N$6)/($C#/100),0)", "AVERAGE(OFFSET($O#,0,0,1,$Y$5))" };
-	
-	
+
 
 	
 	public static final String[] TRENDING_REPORT_FORMULAS = { "Data!A@", "Data!B@", "Data!C@", "IF(C#>$C$6,TRUE,FALSE)",
@@ -59,34 +51,5 @@ public final class AppConstants {
 			"AVERAGE(OFFSET($Q#,0,0,1,$AA$5))" };
 	
 
-	public static final String EXCEL_BASE_PATH="/usr/local/apache-tomcat-8.5.51/webapps/glReportUI/report/excel/";
-
-	public static String getNormalExcelTemplate(String entityType)
-	{
-//		if(entityType.equals("Device"))
-//		{
-//			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Vehicle.xlsx";
-//
-//		}
-		
-		return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Vehicle.xlsx";
-		
-		//return "/home/atiadmin/GL_Driver_Safety_Report_Template_Normal_Driver.xlsx";
-
-	}
 	
-	public static String getTrendingExcelTemplate(String entityType)
-	{
-//		if(entityType.equals("Device"))
-//		{
-//			return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Vehicle.xlsx";
-//
-//		}
-		
-		//return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Driver.xlsx";
-
-		return "/home/atiadmin/GL_Driver_Safety_Report_Template_Trending_Vehicle.xlsx";
-
-	}
-
 }

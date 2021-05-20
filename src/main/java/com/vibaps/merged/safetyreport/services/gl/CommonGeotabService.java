@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -522,7 +525,7 @@ public class CommonGeotabService {
 		return response;
 	}
 	
-	public String glReportInstall(TrailerParams reportParams) {
+	public String glReportInstall(TrailerParams reportParams) throws JsonMappingException, JsonProcessingException, JSONException {
 		String payload =  getRule(reportParams);
 		if (log.isDebugEnabled()) {
 			log.debug("Get report data payload: {}", payload);
@@ -543,67 +546,61 @@ public class CommonGeotabService {
 		return parsedGlreport(response,reportParams);
 	}
 	
-	private String parsedGlreport(ResponseEntity<String> response,TrailerParams reportParams)
+	private void insertLytxUser(TrailerParams reportParams)
 	{
-		  JSONObject obj=new JSONObject(response.getBody());
-		  IdNameSerialization[] responseEntity=null;
-		  List<String> queryList=new ArrayList<String>();
-		  
-		 ObjectMapper mapper=new ObjectMapper();
-		try
-		{
-		   responseEntity =mapper.readValue(obj.getJSONArray("result").toString(), IdNameSerialization[].class);
-		}catch(Exception e)
-		{
-			System.out.println(e);
-		}
 		
-		//insert gen_user
-		GenUserEntity genUserEntity=new GenUserEntity();
-		genUserEntity.setCompanyid(reportParams.getGeotabUserName());
-		genUserEntity.setDb(reportParams.getGeotabDatabase());
-		GenUserEntity userId=genUserRepository.save(genUserEntity);
-		
-		
-		
-		//insert ly_User Table
-		
-		LyUserEntity lyuserEntity=new LyUserEntity();
-		lyuserEntity.setDbName(reportParams.getGeotabDatabase());
-		lyuserEntity.setLytxUsername(reportParams.getLytxuserName());
-		lyuserEntity.setLytxPassword(reportParams.getLytxpassword());
-		lyUserRepository.save(lyuserEntity);
-		
-		
+				LyUserEntity lyuserEntity=new LyUserEntity();
+				lyuserEntity.setDbName(reportParams.getGeotabDatabase());
+				lyuserEntity.setLytxUsername(reportParams.getLytxuserName());
+				lyuserEntity.setLytxPassword(reportParams.getLytxpassword());
+				lyUserRepository.save(lyuserEntity);
+				
+				
+	}
+	
+	private void insertRuleList(TrailerParams reportParams,ResponseEntity<String> response) throws JsonMappingException, JsonProcessingException, JSONException
+	{
 		//insert gen_ruleList Table
-		List<GlRulelistEntityI> lytxRulevalue=glRulelistEntityRepository.getLytxRuleForInsert();
-		
-		List<GlRulelistEntityI> lytxRulevalueList=new ArrayList<GlRulelistEntityI>();
-		
-		
-		for(IdNameSerialization data:responseEntity)
-		{
-			GlRulelistEntityI rulelistEntity=new GlRulelistEntityI();
-			rulelistEntity.setRulecompany("G");
-			rulelistEntity.setRulename(data.getName());
-			rulelistEntity.setRulevalue(data.getId());
-			rulelistEntity.setDb(reportParams.getGeotabDatabase());
-			lytxRulevalueList.add(rulelistEntity);
-		}
-		
-		for(GlRulelistEntityI data:lytxRulevalue)
-		{
-			GlRulelistEntityI rulelistEntity=new GlRulelistEntityI();
-			rulelistEntity.setRulecompany("L");
-			rulelistEntity.setRulename(data.getRulename());
-			rulelistEntity.setRulevalue(data.getRulevalue());
-			rulelistEntity.setDb(reportParams.getGeotabDatabase());
+		  IdNameSerialization[] responseEntity=null;
+
+		 JSONObject obj=new JSONObject(response.getBody());
+		 ObjectMapper mapper=new ObjectMapper();
 			
-			lytxRulevalueList.add(rulelistEntity);
-		}
-		
-		glRulelistEntityRepository.saveAll(lytxRulevalueList);
-		
+			   responseEntity =mapper.readValue(obj.getJSONArray("result").toString(), IdNameSerialization[].class);
+			
+		 
+				List<GlRulelistEntityI> lytxRulevalue=glRulelistEntityRepository.getLytxRuleForInsert();
+				
+				List<GlRulelistEntityI> lytxRulevalueList=new ArrayList<GlRulelistEntityI>();
+				
+				
+				
+				for(IdNameSerialization data:responseEntity)
+				{
+					GlRulelistEntityI rulelistEntity=new GlRulelistEntityI();
+					rulelistEntity.setRulecompany("G");
+					rulelistEntity.setRulename(data.getName());
+					rulelistEntity.setRulevalue(data.getId());
+					rulelistEntity.setDb(reportParams.getGeotabDatabase());
+					lytxRulevalueList.add(rulelistEntity);
+				}
+				
+				for(GlRulelistEntityI data:lytxRulevalue)
+				{
+					GlRulelistEntityI rulelistEntity=new GlRulelistEntityI();
+					rulelistEntity.setRulecompany("L");
+					rulelistEntity.setRulename(data.getRulename());
+					rulelistEntity.setRulevalue(data.getRulevalue());
+					rulelistEntity.setDb(reportParams.getGeotabDatabase());
+					
+					lytxRulevalueList.add(rulelistEntity);
+				}
+				
+				glRulelistEntityRepository.saveAll(lytxRulevalueList);
+	}
+	
+	private void insertSelectedRule(TrailerParams reportParams,Long userId)
+	{
 		//inset to selectedRuleList
 		List<GlRulelistEntityI> getAllrulelist=glRulelistEntityRepository.getAllRuleForInsert(reportParams.getGeotabDatabase());
 		List<GlSelectedvaluesEntity> allruleListEntity=new ArrayList<GlSelectedvaluesEntity>();
@@ -611,29 +608,58 @@ public class CommonGeotabService {
 		{
 			GlSelectedvaluesEntity selectedRuleEntity=new GlSelectedvaluesEntity();
 			
-			selectedRuleEntity.setGen_user_id(userId.getId());
+			selectedRuleEntity.setGen_user_id(userId);
 			selectedRuleEntity.setGen_rulelist_id(data.getId());
 			selectedRuleEntity.setStatus(0);
 			selectedRuleEntity.setWeight(0);
 			allruleListEntity.add(selectedRuleEntity);
 		}
 		
-		glSelectedvaluesEntityRepository.saveAll(allruleListEntity);
-		
-		
+		glSelectedvaluesEntityRepository.saveAll(allruleListEntity);	
+	}
+	
+	private void insertMinimiles(Long userId)
+	{
 		//insert minimiles
-		GlMinmiles glMinimilesvalue=new GlMinmiles();
-		glMinimilesvalue.setGenUserId(userId.getId());
-		glMinimilesvalue.setMinmiles(100F);
-		glMinmilesRepository.save(glMinimilesvalue);
-		
-		//insert GlResponce
-		
+				GlMinmiles glMinimilesvalue=new GlMinmiles();
+				glMinimilesvalue.setGenUserId(userId);
+				glMinimilesvalue.setMinmiles(100F);
+				glMinmilesRepository.save(glMinimilesvalue);
+	}
+	
+	private void insertGlResponse(Long userId)
+	{
 		GlResponseEntity glresponseEntity=new GlResponseEntity();
-		glresponseEntity.setGenUserId(userId.getId());
+		glresponseEntity.setGenUserId(userId);
 		glresponseEntity.setResponceJson("{}");
 		
 		glResponseRepository.save(glresponseEntity);
+	}
+	
+	private String parsedGlreport(ResponseEntity<String> response,TrailerParams reportParams) throws JsonMappingException, JsonProcessingException, JSONException
+	{
+		 		  
+		//insert gen_user
+		GenUserEntity genUserEntity=new GenUserEntity();
+		genUserEntity.setCompanyid(reportParams.getGeotabUserName());
+		genUserEntity.setDb(reportParams.getGeotabDatabase());
+		GenUserEntity userId=genUserRepository.save(genUserEntity);
+		
+		//insert ly_User Table
+		insertLytxUser(reportParams);
+		
+		//insert gen_ruleList Table
+		insertRuleList(reportParams, response);
+		
+		//inset to selectedRuleList
+		insertSelectedRule(reportParams, userId.getId());
+		
+		//insert minimiles
+		insertMinimiles(userId.getId());
+		
+		//insert GlResponce
+		insertGlResponse(userId.getId());
+		
 		
 		return ("Saved");
 		

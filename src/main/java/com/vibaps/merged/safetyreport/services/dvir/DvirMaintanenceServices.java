@@ -3,12 +3,15 @@ package com.vibaps.merged.safetyreport.services.dvir;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -51,6 +54,7 @@ import com.vibaps.merged.safetyreport.repo.gl.GenDriverUsersRepo;
 import com.vibaps.merged.safetyreport.repo.gl.GenTrailerRepository;
 import com.vibaps.merged.safetyreport.services.gl.GeoTabApiService;
 import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
+import com.vibaps.merged.safetyreport.util.DateTimeUtil;
 import com.vibaps.merged.safetyreport.util.ResponseUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -273,6 +277,7 @@ public class DvirMaintanenceServices {
 		String[] deviceArray = deviceId.split(",");
 		
 		Map<String,List<FaultData>> responseMap=new HashMap<String,List<FaultData>>();
+		Map<String,List<FaultData>> finalResponseMap=new HashMap<String,List<FaultData>>();
 		for(FaultData data:faultData)
 		{
 			if(Arrays.stream(deviceArray).anyMatch(data.getDeviceId()::equals))
@@ -280,7 +285,7 @@ public class DvirMaintanenceServices {
 			FaultData entity=new FaultData();
 			entity=data;
 			entity.setDeviceName(getdeviceName(comDatabaseId,data.getDeviceId(),trailerParams));
-			entity.setDateTime(trailerService.getZoneTime(zoonId,data.getDateTime()));
+			entity.setDateTime(trailerService.getZoneTimeForFault(zoonId,data.getDateTime()));
 			entity.setController(controll.get(data.getController()));
 			entity.setDiagnostic(diagnostic.get(data.getDiagnostic()));
 			entity.setFailureMode(failureMode.get(data.getFailureMode()));
@@ -307,7 +312,65 @@ public class DvirMaintanenceServices {
 			}
 		}
 		
-		return responseMap;
+		for (Entry<String, List<FaultData>> entry : responseMap.entrySet()) {
+			
+			Map<String,List<FaultData>> coutParsed=new HashMap<String, List<FaultData>>();
+			Map<String,FaultData> countValue= new TreeMap<String,FaultData>();
+			Integer count =1;
+			Date startDate=null;
+			Date startDateparse=null;
+			Date endDate=null;
+			
+			String k = entry.getKey();
+		    List<FaultData> v = entry.getValue();
+	    	List<FaultData> faultDataList=new ArrayList<FaultData>();
+
+		    
+		    for (FaultData data:v) 
+		    {
+		    	
+		    	if(!countValue.containsKey(data.getDiagnostic()))
+		    	{
+		    		startDateparse=DateTimeUtil.parseUtilDate(data.getDateTime());
+		    		FaultData values=new FaultData(data.getDeviceId(),data.getDiagnostic(),data.getDeviceName(),DateTimeUtil.dateToString(startDateparse),DateTimeUtil.dateToString(startDateparse),count,data.getController());
+		    		
+		    		countValue.put(data.getDiagnostic(),values);
+		    	}
+		    	else
+		    	{
+		    		FaultData updatevalues=countValue.get(data.getDiagnostic());
+		    		count=updatevalues.getCount()+1;
+		    		
+		    		startDateparse=DateTimeUtil.parseUtilDate(data.getDateTime());
+		    		
+		    		startDate=DateTimeUtil.parseUtilDate(updatevalues.getStartDate()).before(startDateparse)
+		    				?DateTimeUtil.parseUtilDate(updatevalues.getStartDate()):startDateparse;
+		    		endDate=DateTimeUtil.parseUtilDate(updatevalues.getEndDate()).after(startDateparse)
+		    				?DateTimeUtil.parseUtilDate(updatevalues.getEndDate()):startDateparse;		    		
+		    		
+		    		FaultData values=new FaultData(data.getDeviceId(),data.getDiagnostic(),data.getDeviceName(),DateTimeUtil.dateToString(startDate),DateTimeUtil.dateToString(endDate),count,data.getController());
+		    		
+		    		countValue.put(data.getDiagnostic(),values);
+		    	}
+		    	
+		    	
+		    	
+			}
+		    
+		    List<FaultData> mapParsedfaultDate=new ArrayList<FaultData>();
+		    for(Entry<String,FaultData> flParse:countValue.entrySet())
+		    {
+		    	mapParsedfaultDate.add(countValue.get(flParse.getKey()));
+		    	
+		    }
+		    
+		    
+		    
+		    
+		    finalResponseMap.put(k, mapParsedfaultDate);
+		}
+		
+		return finalResponseMap;
 	}
 
 	public Map<String,String> getController(TrailerParams trailerParams)
@@ -644,14 +707,21 @@ public class DvirMaintanenceServices {
 		
 		
 		
-		 
+		    List<GenDefects> defectName=new ArrayList<GenDefects>();
+			if(!innerJsonObj.isNull(("defects")))
+			{
 			JSONArray remark=innerJsonObj.getJSONArray("defects");
 		 
-			List<GenDefects> defectName=new ArrayList<GenDefects>();
+			
 			
 			for(int f=0;f<remark.length();f++)
 			{
 				defectName.add(genDefectsRepo.findBydefectIdAndrefComDatabaseId(remark.getJSONObject(f).getString("id"), comDatabaseId));
+			}
+			}
+			else
+			{
+				defectName.add(null);
 			}
 		
 		
@@ -690,9 +760,9 @@ public class DvirMaintanenceServices {
 				.search()
 				.fromDate(trailerParams.getFromDate()+builder.FROM_TS_SUFFIX)
 				.toDate(trailerParams.getToDate()+builder.TO_TS_SUFFIX)
-				.isDefective(true)
-				.isRepaired(false)
-				.isCertified(false)
+//				.isDefective(true)
+//				.isRepaired(false)
+//				.isCertified(false)
 				.trailerSearch(null)
 				.build();
 	

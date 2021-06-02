@@ -1,5 +1,6 @@
 package com.vibaps.merged.safetyreport.dto.dvir;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,15 @@ public class FaultData {
 	@Transient
 	private Map<String,List<FaultData>> result;
 	
+	@Transient
+	private String startDate;
+	
+	@Transient
+	private String endDate;
+	
+	@Transient
+	private Integer count;
+	
 	
 	
 	
@@ -68,6 +78,19 @@ public class FaultData {
 		super();
 		this.result = result;
 	}
+
+	public FaultData(String deviceId, String diagnostic, String deviceName, String startDate, String endDate,
+			Integer count,String controller) {
+		this.deviceId = deviceId;
+		this.diagnostic = diagnostic;
+		this.deviceName = deviceName;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.count = count;
+		this.controller=controller;
+	}
+
+	
 	
 	
 }

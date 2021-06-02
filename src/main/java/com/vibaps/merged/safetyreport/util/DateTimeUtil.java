@@ -14,6 +14,7 @@ public final class DateTimeUtil {
 
 	private static final String				JAVA			= "java";
 	private static final SimpleDateFormat	DF_YYYY_MM_DD	= new SimpleDateFormat("yyyy-MM-dd");
+	
 
 	private DateTimeUtil() throws IllegalAccessException {
 		throw new IllegalAccessException("Illegal access to DateTimeUtil");
@@ -81,6 +82,7 @@ public final class DateTimeUtil {
 	 * @return
 	 */
 	public static Date parseUtilDate(String date) {
+		
 
 		if (Objects.isNull(date)) {
 			return null;
@@ -91,6 +93,20 @@ public final class DateTimeUtil {
 		} catch (ParseException e) {
 			throw new GeoTabException("Error while parse string to date", e);
 		}
+	}
+	
+	public static String dateToString(Date date)
+	{
+		if (Objects.isNull(date)) {
+			return null;
+		}
+		
+		try {
+		    return DF_YYYY_MM_DD.format(date);  
+		} catch (Exception e) {
+			throw new GeoTabException("Error while parse string to date", e);
+		}
+	    
 	}
 	public static Date getDateFromMilliSeconds(String ms) {
 		Date stdate = new Date(Long.parseLong(ms.substring(33, ms.indexOf(','))));

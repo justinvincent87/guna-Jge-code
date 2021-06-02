@@ -478,6 +478,22 @@ return builder.url(trailerParams.getUrl()).groups(trailerParams.getGeotabGroups(
 	     return  parsed.format(formatter1);
 	}
 	
+	@Cacheable(value = "getZoneTimeForFault")
+	public String getZoneTimeForFault(String timeZoneId,String utcTime)
+	{
+		
+	    DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+	    DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+	    
+	     ZonedDateTime parsed = ZonedDateTime.parse(utcTime, formatter.withZone(ZoneId.of(timeZoneId)));
+	     if(parsed.getYear()>Calendar.getInstance().get(Calendar.YEAR))
+	     {
+	    	 return "-";
+	     }
+	     return  parsed.format(formatter1);
+	}
+	
 	@Cacheable(value = "getZoneTime")
 	public String getZoneDateTime(String timeZoneId,String utcTime)
 	{

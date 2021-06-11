@@ -27,6 +27,7 @@ public class ReportParams{
 	private String			geotabGroups;
 	private String			geotabUserName;
 	private String			geotabDatabase;
+	private String			geotabPassword;
 	private String			url;
 	private String			filename;
 	private String			templect;

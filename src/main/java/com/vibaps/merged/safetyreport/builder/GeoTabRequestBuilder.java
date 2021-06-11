@@ -229,6 +229,14 @@ public class GeoTabRequestBuilder implements Serializable {
 		@JsonInclude(NON_NULL)
 		private Boolean	movingAddresses;
 		
+		@JsonInclude(NON_NULL)
+		private String						database;
+		@JsonInclude(NON_NULL)
+		private String						userName;
+		@JsonInclude(NON_NULL)
+		private String						password;
+		
+		
 
 		/**
 		 * Create instance with parent instance
@@ -296,6 +304,21 @@ public class GeoTabRequestBuilder implements Serializable {
 		}
 		public Params movingAddresses(boolean movingAddresses) {
 			this.movingAddresses = movingAddresses;
+			return this;
+		}
+		
+		public Params database(String database) {
+			this.database = database;
+			return this;
+		}
+		
+		public Params userName(String userName) {
+			this.userName = userName;
+			return this;
+		}
+		
+		public Params password(String password) {
+			this.password = password;
 			return this;
 		}
 

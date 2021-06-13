@@ -14,7 +14,6 @@ public interface GenDefectsRepo extends JpaRepository<GenDefects, Long>{
     GenDefects findBydefectIdAndrefComDatabaseId(String defectId,Long refComDatabaseId);
 	
 	@Query("select count(d.id) from GenDefects d where d.defectId=:defectId and d.refComDatabaseId=:refComDatabaseId")
-	@Cacheable(value = "defectCountDB")
 	Long countdefectIdAndrefComDatabaseId(String defectId,Long refComDatabaseId);
 
 }

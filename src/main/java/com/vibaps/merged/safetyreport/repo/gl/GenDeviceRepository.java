@@ -18,6 +18,5 @@ public interface GenDeviceRepository extends JpaRepository<GenDevice,Long>{
     GenDevice findBydeviceIdAndrefComDatabaseId(String deviceId,Long refComDatabaseId);
 	
 	@Query("select count(d.id) from GenDevice d where d.deviceId=:deviceId and d.refComDatabaseId=:refComDatabaseId")
-	@Cacheable(value = "deviceCountDB")
 	Long countdeviceIdAndrefComDatabaseId(String deviceId,Long refComDatabaseId);
 }

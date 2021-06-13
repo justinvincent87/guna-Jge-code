@@ -16,7 +16,6 @@ public interface GenDriverUsersRepo extends JpaRepository<GenDriverUsers, Long>{
     GenDriverUsers findByuserIdAndrefComDatabaseId(String driverId,Long refComDatabaseId);
 	
 	@Query("select count(d.id) from GenDriverUsers d where d.driverId=:driverId and d.refComDatabaseId=:refComDatabaseId")
-	@Cacheable(value = "driverCountDB")
 	Long countdriverIdAndrefComDatabaseId(String driverId,Long refComDatabaseId);
 
 }

@@ -15,7 +15,6 @@ public interface GenTrailerRepository extends JpaRepository<GenTrailer,Long>{
 	GenTrailer findBytrailerIdAndrefComDatabaseId(String trailerId,Long refComDatabaseId);
 	
 	@Query("select count(d.id) from GenTrailer d where d.trailerId=:trailerId and d.refComDatabaseId=:refComDatabaseId")
-	@Cacheable(value = "trailerCountDB", unless = "#gt1=='trailerCountDB'")
 	Long counttrailerIdAndrefComDatabaseId(String trailerId,Long refComDatabaseId);
 
 }

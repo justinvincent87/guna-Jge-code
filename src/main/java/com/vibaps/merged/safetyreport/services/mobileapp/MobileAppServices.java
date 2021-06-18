@@ -200,8 +200,16 @@ public class MobileAppServices {
 		JSONObject innerresult= result.getJSONArray(i).getJSONObject(0);
 
 		
+		try
+		{
+		
 		GeotabDeviceStatusInfoResponse responsevalue=mapper.readValue(innerresult.toString(),GeotabDeviceStatusInfoResponse.class);
 		responseList.add(responsevalue);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			// TODO: handle exception
+		}
 		}
 		
 		return new GeotabDeviceStatusInfoResponse(responseList);

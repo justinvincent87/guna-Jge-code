@@ -403,13 +403,19 @@ public class GeoTabRequestBuilder implements Serializable {
 		@JsonInclude(NON_NULL)
 		private String trailerSearch;
 		
-		
-		
-		
-		
+		@JsonInclude(NON_NULL)
+		private DiagnosticSearch diagnosticSearch;
 		
 		@JsonInclude(NON_NULL)
 		private List<Group>	groups;
+		
+		
+		public DiagnosticSearch diagnosticSearch() {
+			if (Objects.isNull(diagnosticSearch)) {
+				diagnosticSearch = new DiagnosticSearch(this);
+			}
+			return diagnosticSearch;
+		}
 		
 		public Search(Params parent) {
 			this.parent = parent;
@@ -490,7 +496,30 @@ public class GeoTabRequestBuilder implements Serializable {
 			return this;
 		}
 	}
+	public static class DiagnosticSearch
+	{
+		@JsonIgnore
+		private Search parent;
+		@JsonInclude(NON_NULL)
+		private String id;
+		
+		public DiagnosticSearch(Search parent) {
+			this.parent = parent;
+		}
 	
+		public DiagnosticSearch id(String id) {
+			this.id = id;
+			return this;
+		}
+		
+		public Search and() {
+			return this.parent;
+		}
+
+		public String build() {
+			return this.parent.build();
+		}
+	}
 	public static class DeviceSearch {
 		
 		@JsonIgnore

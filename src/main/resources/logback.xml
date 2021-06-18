@@ -62,6 +62,8 @@
 		<STARTTLS>true</STARTTLS>
 
 		<to>${smtp.to.1}</to>
+		<!-- <to>${smtp.to.2}</to>
+		<to>${smtp.to.3}</to> -->
 
 		<subject>Geotab-API error notification</subject>
 		<layout class="ch.qos.logback.classic.html.HTMLLayout">

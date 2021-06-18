@@ -18,8 +18,8 @@ import lombok.NoArgsConstructor;
 public class GeotabDeviceStatusInfoResponse {
 private Double latitude;
 private Double longitude;
-private String driver;
 private String deviceId;
+private String driver;
 
 @Transient
 private List<GeotabDeviceStatusInfoResponse> result;

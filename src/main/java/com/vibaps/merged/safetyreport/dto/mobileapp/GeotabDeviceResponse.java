@@ -16,6 +16,7 @@ public class GeotabDeviceResponse
 {	
 private String id;
 private String name;
+private String serialNumber;
 
 @Transient
 private GeotabDeviceResponse[] result;

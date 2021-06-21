@@ -1,11 +1,15 @@
 package com.vibaps.merged.safetyreport.services.mobileapp;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
+import org.apache.catalina.mapper.Mapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,10 +31,14 @@ import com.vibaps.merged.safetyreport.common.AppMsg;
 import com.vibaps.merged.safetyreport.dto.dvir.FaultData;
 import com.vibaps.merged.safetyreport.dto.gl.GeoTabReponse;
 import com.vibaps.merged.safetyreport.dto.mobileapp.GeotabDeviceResponse;
+import com.vibaps.merged.safetyreport.dto.mobileapp.GeotabDeviceStatusInfoBaseResponse;
 import com.vibaps.merged.safetyreport.dto.mobileapp.GeotabDeviceStatusInfoResponse;
 import com.vibaps.merged.safetyreport.dto.mobileapp.GeotabLoginResponse;
+import com.vibaps.merged.safetyreport.dto.mobileapp.GeotabUserResponce;
+import com.vibaps.merged.safetyreport.dto.trailer.DeviceResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.services.gl.GeoTabApiService;
+import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
 import com.vibaps.merged.safetyreport.util.DateTimeUtil;
 import com.vibaps.merged.safetyreport.util.ResponseUtil;
 
@@ -44,6 +52,8 @@ public class MobileAppServices {
 	private GeoTabApiService geoTabApiService;
 	@Autowired
 	private RestTemplate restTemplate;
+	@Autowired
+	private TrailerService trailerService; 
 	
 	private GeoTabReponse responseBody;
 	private AppMsg appMsg;
@@ -194,9 +204,15 @@ public class MobileAppServices {
 		JSONObject obj=new JSONObject(response.getBody());
 		JSONArray result=obj.getJSONArray("result");
 		
+		
+		
+	String zoneId=trailerService.getZoneId(trailerParams);
+		
 		for(int i=0;i<result.length();i++)
 		{
 		ObjectMapper mapper = new ObjectMapper();
+		mapper.setTimeZone(TimeZone.getTimeZone(zoneId));
+		
 		JSONObject innerresult= result.getJSONArray(i).getJSONObject(0);
 
 		
@@ -212,9 +228,71 @@ public class MobileAppServices {
 		}
 		}
 		
-		return new GeotabDeviceStatusInfoResponse(responseList);
+		List<GeotabDeviceStatusInfoResponse> finalresponseList=new ArrayList<GeotabDeviceStatusInfoResponse>();
+
+		for(GeotabDeviceStatusInfoResponse data:responseList)
+		{
+			String driverName="-";
+			
+			if(!data.getDriver().equalsIgnoreCase("UnknownDriverId"))
+			{
+			GeotabUserResponce driverIdval=getUserdata(trailerParams, data.getDriver())[0];
+			driverName=driverIdval.getFirstName()+" "+driverIdval.getLastName();
+			}
+			
+			
+			data.setDeviceAddress(trailerService.getAddress(data.getLatitude(), data.getLongitude(), trailerParams).getFormattedAddress());
+			data.setDriverName(driverName);			
+			finalresponseList.add(data);
+		}
+		
+		return new GeotabDeviceStatusInfoResponse(finalresponseList);
 	}
 		
+	public GeotabDeviceStatusInfoBaseResponse getDeviceStatusBaseInfo(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException, JSONException {
+		String payload=getDeviceStatusInfoRequest(trailerParams);
+		
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+		List<GeotabDeviceStatusInfoBaseResponse> responseList=new ArrayList<GeotabDeviceStatusInfoBaseResponse>();
+		
+		JSONObject obj=new JSONObject(response.getBody());
+		JSONArray result=obj.getJSONArray("result");
+
+		for(int i=0;i<result.length();i++)
+		{
+		ObjectMapper mapper = new ObjectMapper();
+		
+		JSONObject innerresult= result.getJSONArray(i).getJSONObject(0);
+
+		
+		try
+		{
+		
+			GeotabDeviceStatusInfoBaseResponse responsevalue=mapper.readValue(innerresult.toString(),GeotabDeviceStatusInfoBaseResponse.class);
+		responseList.add(responsevalue);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			// TODO: handle exception
+		}
+		}
+		
+		
+		return new GeotabDeviceStatusInfoBaseResponse(responseList);
+	}
+	
 	private String getDeviceStatusInfoRequest(TrailerParams trailerParams)  
 	{
 		
@@ -251,6 +329,47 @@ public class MobileAppServices {
 						.id(deviceId);
 	}
 	
+	
+	public GeotabUserResponce[] getUserdata(TrailerParams trailerParams,String driverId) throws JsonMappingException, JsonProcessingException
+	{
+		String payload =  getUserRequest(trailerParams,driverId);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		
+		JSONObject obj=new JSONObject(response.getBody());
+		JSONArray result=obj.getJSONArray("result");
+		
+		ObjectMapper mapper=new ObjectMapper();
+		
+		GeotabUserResponce[] responce=mapper.readValue(result.toString(), GeotabUserResponce[].class);
+		
+		return responce;
+	}
+	
+	private String getUserRequest(TrailerParams trailerParams,String driverId) 
+	{
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		return builder.params().typeName("User")
+				.search().id(driverId)
+				.build();
+	}
 
 
 }

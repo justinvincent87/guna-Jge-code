@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.vibaps.merged.safetyreport.dto.mobileapp.GeotabDeviceResponse;
+import com.vibaps.merged.safetyreport.dto.mobileapp.GeotabDeviceStatusInfoBaseResponse;
 import com.vibaps.merged.safetyreport.dto.mobileapp.GeotabDeviceStatusInfoResponse;
 import com.vibaps.merged.safetyreport.dto.mobileapp.GeotabLoginResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
@@ -49,5 +50,12 @@ public class MobileAppAPI {
 	public GeotabDeviceStatusInfoResponse getDeviceStatusInfo(@RequestBody TrailerParams reportParams) throws SQLException, JsonMappingException, JsonProcessingException{
 		
 		return mobileAppServices.getDeviceStatusInfo(reportParams);
+	}
+	
+	@PostMapping(value = "/get-device-status-base-info",produces=MediaType.APPLICATION_JSON_VALUE)
+	public GeotabDeviceStatusInfoBaseResponse getDeviceStatusBaseInfo(@RequestBody TrailerParams reportParams) throws SQLException, JsonMappingException, JsonProcessingException{
+		
+		return mobileAppServices.getDeviceStatusBaseInfo(reportParams);
+	
 	}
 }

@@ -16,24 +16,18 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GeotabDeviceStatusInfoResponse {
+public class GeotabDeviceStatusInfoBaseResponse {
 private Double latitude;
 private Double longitude;
 private String deviceId;
-private String driver;
-private Integer speed;
-private Date dateTime;
 
-@Transient
-private String deviceAddress;
-@Transient
-private String driverName;
+
 
 
 @Transient
-private List<GeotabDeviceStatusInfoResponse> result;
+private List<GeotabDeviceStatusInfoBaseResponse> result;
 
-public GeotabDeviceStatusInfoResponse(List<GeotabDeviceStatusInfoResponse> result) {
+public GeotabDeviceStatusInfoBaseResponse(List<GeotabDeviceStatusInfoBaseResponse> result) {
 	super();
 	this.result = result;
 }
@@ -42,12 +36,6 @@ public GeotabDeviceStatusInfoResponse(List<GeotabDeviceStatusInfoResponse> resul
 @JsonDeserialize(using = IdDeserializer.class)
 public void setDevice(String deviceId) {
 	this.deviceId = deviceId;
-}
-
-@JsonSetter("driver")
-@JsonDeserialize(using = IdDeserializer.class)
-public void setDriver(String driver) {
-	this.driver = driver;
 }
 
 }

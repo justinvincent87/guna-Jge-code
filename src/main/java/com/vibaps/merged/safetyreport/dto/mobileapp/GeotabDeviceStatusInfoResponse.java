@@ -8,6 +8,7 @@ import javax.persistence.Transient;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.vibaps.merged.safetyreport.jackson.DriverIdDeserializer;
 import com.vibaps.merged.safetyreport.jackson.IdDeserializer;
 
 import lombok.Data;
@@ -22,7 +23,13 @@ private Double longitude;
 private String deviceId;
 private String driver;
 private Integer speed;
-private Date dateTime;
+private String dateTime;
+
+@Transient
+private Integer enginHours;
+
+@Transient
+private Double odaMeter;
 
 @Transient
 private String deviceAddress;
@@ -45,7 +52,7 @@ public void setDevice(String deviceId) {
 }
 
 @JsonSetter("driver")
-@JsonDeserialize(using = IdDeserializer.class)
+@JsonDeserialize(using = DriverIdDeserializer.class)
 public void setDriver(String driver) {
 	this.driver = driver;
 }

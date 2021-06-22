@@ -1,7 +1,9 @@
 package com.vibaps.merged.safetyreport.api.mobileapp;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +49,7 @@ public class MobileAppAPI {
 	}
 	
 	@PostMapping(value = "/get-device-status-info",produces=MediaType.APPLICATION_JSON_VALUE)
-	public GeotabDeviceStatusInfoResponse getDeviceStatusInfo(@RequestBody TrailerParams reportParams) throws SQLException, JsonMappingException, JsonProcessingException{
+	public GeotabDeviceStatusInfoResponse getDeviceStatusInfo(@RequestBody TrailerParams reportParams) throws SQLException, JsonMappingException, JsonProcessingException, JSONException, ParseException{
 		
 		return mobileAppServices.getDeviceStatusInfo(reportParams);
 	}

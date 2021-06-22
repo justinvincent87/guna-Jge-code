@@ -1,6 +1,8 @@
 package com.vibaps.merged.safetyreport.services.mobileapp;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -171,6 +173,110 @@ public class MobileAppServices {
 		return response;
 	}
 	
+	public Integer getEnginData(TrailerParams trailerParams) 
+	{
+		String payload =  enginDataParam(trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+		
+		return parsedEnginHours(response);
+	}
+	
+	private Integer parsedEnginHours(ResponseEntity<String> response)
+	{
+		JSONObject obj=new JSONObject(response.getBody());
+		JSONArray ary=obj.getJSONArray("result");
+		
+		Integer hours=0;
+		if(ary.getJSONObject(0).get("data") != null)
+		{
+		    double engineHourString = Double.valueOf(ary.getJSONObject(0).get("data").toString());
+		    hours = (int) Math.round(engineHourString/3600);
+		}
+		
+		return hours;
+		
+	}
+	
+	
+	
+	private String enginDataParam(TrailerParams trailerParams)
+	{
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		return builder.params()
+				.typeName("StatusData")
+				.search()
+					.deviceSearch().id(trailerParams.getDeviceId()).and()
+					.diagnosticSearch().id("DiagnosticEngineHoursAdjustmentId").and()
+					.fromDate(trailerParams.getFromDate())
+					.toDate(trailerParams.getToDate())
+				.build();
+	}
+	public Double getOdaMeterData(TrailerParams trailerParams) 
+	{
+		String payload =  odameeterDataParam(trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+		
+		return parsedOdameter(response);
+	}
+	
+	private Double parsedOdameter(ResponseEntity<String> response)
+	{
+		JSONObject obj=new JSONObject(response.getBody());
+		JSONArray ary=obj.getJSONArray("result");
+		
+		Double odameter=0.00;
+		if(ary.getJSONObject(0).get("data") != null)
+		{
+		     odameter = Double.valueOf(ary.getJSONObject(0).get("data").toString());
+		    
+		}
+		
+		return odameter;
+		
+	}
+	
+	private String odameeterDataParam(TrailerParams trailerParams)
+	{
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		return builder.params()
+				.typeName("StatusData")
+				.search()
+					.deviceSearch().id(trailerParams.getDeviceId()).and()
+					.diagnosticSearch().id("DiagnosticOdometerAdjustmentId").and()
+					.fromDate(trailerParams.getFromDate())
+					.toDate(trailerParams.getToDate())
+				.build();
+	}
 	private String systemSettingsParam(TrailerParams trailerParams)
 	{
 		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
@@ -183,7 +289,7 @@ public class MobileAppServices {
 
 
 
-	public GeotabDeviceStatusInfoResponse getDeviceStatusInfo(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException, JSONException {
+	public GeotabDeviceStatusInfoResponse getDeviceStatusInfo(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException, JSONException, ParseException {
 		String payload=getDeviceStatusInfoRequest(trailerParams);
 		
 		if (log.isDebugEnabled()) {
@@ -211,7 +317,7 @@ public class MobileAppServices {
 		for(int i=0;i<result.length();i++)
 		{
 		ObjectMapper mapper = new ObjectMapper();
-		mapper.setTimeZone(TimeZone.getTimeZone(zoneId));
+//		mapper.setTimeZone(TimeZone.getTimeZone(zoneId));
 		
 		JSONObject innerresult= result.getJSONArray(i).getJSONObject(0);
 
@@ -234,13 +340,24 @@ public class MobileAppServices {
 		{
 			String driverName="-";
 			
-			if(!data.getDriver().equalsIgnoreCase("UnknownDriverId"))
+			if(!data.getDriver().equalsIgnoreCase("-"))
 			{
 			GeotabUserResponce driverIdval=getUserdata(trailerParams, data.getDriver())[0];
 			driverName=driverIdval.getFirstName()+" "+driverIdval.getLastName();
 			}
 			
+			trailerParams.setFromDate(data.getDateTime());
+			trailerParams.setToDate(data.getDateTime());
 			
+			Integer enginHours=getEnginData(trailerParams);
+			Double odaMeter=getOdaMeterData(trailerParams);
+			
+			DecimalFormat df=new DecimalFormat("0.00");
+			String formate = df.format(odaMeter); 
+			Double finalValue = (Double)df.parse(formate) ;
+			
+			data.setEnginHours(enginHours);
+			data.setOdaMeter(finalValue);
 			data.setDeviceAddress(trailerService.getAddress(data.getLatitude(), data.getLongitude(), trailerParams).getFormattedAddress());
 			data.setDriverName(driverName);			
 			finalresponseList.add(data);
@@ -248,6 +365,7 @@ public class MobileAppServices {
 		
 		return new GeotabDeviceStatusInfoResponse(finalresponseList);
 	}
+	
 		
 	public GeotabDeviceStatusInfoBaseResponse getDeviceStatusBaseInfo(TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException, JSONException {
 		String payload=getDeviceStatusInfoRequest(trailerParams);

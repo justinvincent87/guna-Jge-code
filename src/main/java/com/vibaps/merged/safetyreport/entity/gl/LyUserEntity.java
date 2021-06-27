@@ -36,5 +36,8 @@ public class LyUserEntity {
 	@Column(name = "ly_password")
 	private String	lytxPassword;
 	
+	@Column(name = "ly_endpoint")
+	private String	lyEndpoint;
+	
 	
 }

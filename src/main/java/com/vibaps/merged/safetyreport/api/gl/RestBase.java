@@ -101,7 +101,6 @@ public class RestBase {
       GetGroupsResponse vr=new GetGroupsResponse();
       GetGroupsByIdRequest getgroup=new GetGroupsByIdRequest();
       getgroup.setSessionId(sees);
-      getgroup.setIncludeSubgroups(true);
       
       vr=er.getGroupsById(getgroup);
       return vr;

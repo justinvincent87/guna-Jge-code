@@ -3,7 +3,9 @@ package com.vibaps.merged.safetyreport.util;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -112,5 +114,27 @@ public final class DateTimeUtil {
 		Date stdate = new Date(Long.parseLong(ms.substring(33, ms.indexOf(','))));
 
 		return stdate;
+	}
+	
+	public static Long getNumberofDays(String startDate,String endDate)
+	{
+		LocalDate dateBefore = LocalDate.parse(startDate);
+		LocalDate dateAfter = LocalDate.parse(endDate);
+			
+		return ChronoUnit.DAYS.between(dateBefore, dateAfter);
+	}
+	
+	public static LocalDate findPrevDay(String dateValue)
+	{
+		LocalDate localdate = LocalDate.parse(dateValue);
+
+	    return localdate.minusDays(1);
+	}
+	
+	public static  LocalDate findPrevStartDay(String dateValue,Integer diff)
+	{
+		LocalDate localdate = LocalDate.parse(dateValue);
+
+	    return localdate.minusDays(diff);
 	}
 }

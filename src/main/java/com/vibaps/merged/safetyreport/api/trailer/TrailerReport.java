@@ -96,6 +96,22 @@ public ResponseEntity<GeoTabReponse> getUserTimeZone(@RequestBody TrailerParams 
 
 }
 
+
+@PostMapping(value = "/get-Emp-Code",produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<GeoTabReponse> getEmpCode(@RequestBody TrailerParams trailerParams) throws JsonMappingException, JsonProcessingException
+{
+	
+
+	 responseBody = GeoTabReponse.builder()
+	.isSuccess(true)
+	.isError(false)
+	.data(trailerService.getEmpId(trailerParams))
+	.build();
+	
+		return new ResponseEntity<GeoTabReponse>(responseBody,HttpStatus.OK);
+
+}
+
 @PostMapping(value = "/getDevice",produces = MediaType.APPLICATION_JSON_VALUE)
 public ResponseEntity<GeoTabReponse> getDevice(@RequestBody TrailerParams trailerParams)
 {

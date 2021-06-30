@@ -42,5 +42,6 @@ public class ReportParams{
 	private String fromDate;
 	private String lytxuserName;
 	private String lytxpassword;
+	private String geotabEmployeeNo;
 	
 }

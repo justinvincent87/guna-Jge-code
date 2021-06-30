@@ -552,6 +552,44 @@ return builder.url(trailerParams.getUrl()).groups(trailerParams.getGeotabGroups(
 		return zoneId;
 	}
 	
+	public String getEmpId(TrailerParams trailerParams)
+	{
+		String payload =  getReportRequest(trailerParams,6);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		
+		
+		
+		return  parseEmpId(parsedResponse);
+	}
+	public String parseEmpId(JsonObject parsedResponse) 
+	{
+
+		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
+	    JsonArray names = data .get("result").getAsJsonArray();
+	    
+	    
+	    String zoneId=names.get(0).getAsJsonObject().get("employeeNo").getAsString();
+	    
+	  
+	    System.out.println(zoneId);
+		return zoneId;
+	}
+	
 
 	
 	public Long insertDeviceandTrailer(TrailerParams trailerParams) {

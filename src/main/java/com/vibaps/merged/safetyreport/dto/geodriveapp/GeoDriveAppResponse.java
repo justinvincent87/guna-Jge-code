@@ -12,6 +12,8 @@ public class GeoDriveAppResponse {
 	private String name;
 	private Long score;
 	private Integer rank;
+	private Integer persentage;
+	private Character status;
 
 	private List<GeoDriveAppResponse> result;
 

@@ -2,6 +2,7 @@ package com.vibaps.merged.safetyreport.dto.trailer;
 
 import java.util.List;
 
+import com.vibaps.merged.safetyreport.dto.geodriveapp.GeoDriveDateResponse;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 
 import lombok.Getter;
@@ -29,5 +30,6 @@ public class TrailerParams extends ReportParams {
 	private Integer size;
 	
 	private List<TrailerResponse> trailerParsedInput; 
+    private List<GeoDriveDateResponse> dateRange;
 
 }

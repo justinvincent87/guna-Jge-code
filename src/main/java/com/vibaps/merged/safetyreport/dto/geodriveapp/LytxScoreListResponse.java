@@ -18,20 +18,50 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LytxScoreListResponse{
 	
+	@JsonInclude(Include.NON_NULL)
 	private String employeeNum;
+	
 	private Float totalScore;
-	private Float totalScoreTrend;
 	private String firstName;
 	private String lastName;
 	
+	@Transient 
+	private Integer rank;
+	@Transient 
+	private String range;
+	@Transient 
+	private String stareDate;
+	@Transient 
+	private String endDate;
 	@Transient
 	private List<LytxScoreListResponse> result;
-
+	@Transient
+	private Boolean status;
+	@Transient 
+	private List<List<LytxScoreListResponse>> data;
+	@Transient
+	private List<GeoDriveDateResponse> dateRange;
+	
+	
 	public LytxScoreListResponse(List<LytxScoreListResponse> result) {
 		super();
 		this.result = result;
 	}
+
+	public LytxScoreListResponse(String range, List<LytxScoreListResponse> result) {
+		super();
+		this.range = range;
+		this.result = result;
+	}
+
+	public LytxScoreListResponse(List<List<LytxScoreListResponse>> data, Boolean status,List<GeoDriveDateResponse> dateRange) {
+		super();
+		this.data = data;
+		this.status = status;
+		this.dateRange=dateRange;
+	}
 	
+
 	
 }
 

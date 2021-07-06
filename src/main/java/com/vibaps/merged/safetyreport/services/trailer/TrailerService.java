@@ -294,9 +294,6 @@ return builder.url(trailerParams.getUrl()).groups(trailerParams.getGeotabGroups(
 
 			futureList.add(future);
 			
-			
-			
-			
 		});
 		
 		CompletableFuture<?> combined = CompletableFuture.allOf(futureList.toArray(new CompletableFuture<?>[0]));

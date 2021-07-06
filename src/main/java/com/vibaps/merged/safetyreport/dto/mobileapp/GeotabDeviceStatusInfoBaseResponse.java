@@ -20,6 +20,7 @@ public class GeotabDeviceStatusInfoBaseResponse {
 private Double latitude;
 private Double longitude;
 private String deviceId;
+private Date dateTime;
 
 
 

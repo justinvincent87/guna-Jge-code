@@ -391,7 +391,6 @@ public class MobileAppServices {
 		for(int i=0;i<result.length();i++)
 		{
 		ObjectMapper mapper = new ObjectMapper();
-		
 		JSONObject innerresult= result.getJSONArray(i).getJSONObject(0);
 
 		

@@ -3,7 +3,9 @@ package com.vibaps.merged.safetyreport.api.geodriveapp;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -33,7 +35,7 @@ public class GeotabDriveAppAPI {
 	private GeotabDriveAppService geotabDriveAppService;
 
 	@PostMapping(value = "/show-geotab-drive-score",produces=MediaType.APPLICATION_JSON_VALUE)
-	public LytxScoreListResponse showScore(@RequestBody TrailerParams reportParams) throws SQLException, RemoteException, ParseException, JsonMappingException, JsonProcessingException{
+	public LytxScoreListResponse showScore(@RequestBody TrailerParams reportParams) throws SQLException, RemoteException, ParseException, JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException{
 		
 		return geotabDriveAppService.showScore(reportParams);
 	}

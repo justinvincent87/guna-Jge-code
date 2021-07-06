@@ -3,6 +3,8 @@ package com.vibaps.merged.safetyreport.service.geodriveapp;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,6 +15,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_MessageClasses_Api.EventBehavior;
@@ -41,6 +45,7 @@ import com.lytx.services.ISubmissionServiceV5Proxy;
 import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.GeoDriveAppResponse;
+import com.vibaps.merged.safetyreport.dto.geodriveapp.GeoDriveDateResponse;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.LytxGroupResponse;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.LytxScoreListResponse;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.LytxTokenResponse;
@@ -74,31 +79,198 @@ public class GeotabDriveAppService {
 	
 	
 
-	public LytxScoreListResponse showScore(TrailerParams reportParams) throws RemoteException, ParseException, JsonMappingException, JsonProcessingException {
+	public LytxScoreListResponse showScore(TrailerParams reportParams) throws RemoteException, ParseException, JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
 		// TODO Auto-generated method stub
 		
 		String authUrl=authUrlBuild(reportParams);
 		ResponseEntity<LytxTokenResponse> response=getBearerResponseCall(authUrl);
 		ResponseEntity<String> groupResponse=getGroupBearerResponseCall(response);
-	
+		List<LytxScoreListResponse> parsedResponse=new ArrayList<LytxScoreListResponse>();
+		List<LytxScoreListResponse> finalResponse=new ArrayList<LytxScoreListResponse>();
+		List<List<LytxScoreListResponse>> responseList=new ArrayList<List<LytxScoreListResponse>>();
+		
 		JSONObject groupObj=new JSONObject(groupResponse.getBody());
-		
 		JSONArray groupArry=groupObj.getJSONArray("groups");
-		
-		
 		String groupId=groupArry.getJSONObject(0).getString("id");
 		
+		reportParams.setDateRange(getDateRangeList());
 		
-		ResponseEntity<String> data=getUserScoreResponse(response, groupId, reportParams);
 		
-		List<LytxScoreListResponse> parsedResponse=scoreParsedResponse(data,reportParams);
+		List<CompletableFuture<List<LytxScoreListResponse>>>  listcompletableFuture=new ArrayList<CompletableFuture<List<LytxScoreListResponse>>>();
 		
-		return new LytxScoreListResponse(parsedResponse);
+		reportParams.getDateRange().parallelStream().forEach(t->{
+			
+
+			CompletableFuture<List<LytxScoreListResponse>> completableFuture = CompletableFuture.supplyAsync(() -> scoreParsedResponse(response,groupId,reportParams,t));
+	
+	listcompletableFuture.add(completableFuture);		
+	
+		});
+		
+		CompletableFuture<?> combined = CompletableFuture.allOf(listcompletableFuture.toArray(new CompletableFuture<?>[0]));
+
+		try
+		{
+			
+			//combined.get();
+			listcompletableFuture.parallelStream().forEach(r->{
+				try {
+					List<LytxScoreListResponse> sresponse =  r.get();
+					if(Objects.nonNull(sresponse))
+					{
+						List<LytxScoreListResponse> listOfScoreResponse=parserFinalResponse(sresponse,reportParams);
+						if(listOfScoreResponse.size()>0)
+						{
+						responseList.add(listOfScoreResponse);
+						}
+					}
+					else
+					{
+						log.debug("Null Value :: {}",response.toString());
+					}
+				} catch (InterruptedException e) {
+					
+					log.error("Error 1 :: {}",e);
+				} catch (ExecutionException e) {
+					log.error("Error 2 :: {}",e);
+				}
+			});
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		List<GeoDriveDateResponse> dateRange=getDateRangeList();
+		
+		return new LytxScoreListResponse(responseList,true,dateRange);
 		
 	}
 	
-	private List<LytxScoreListResponse> scoreParsedResponse(ResponseEntity<String> data, TrailerParams reportParams) {
+
+
+
+
+
+
+	private List<LytxScoreListResponse> parserFinalResponse(
+			List<LytxScoreListResponse> datavalue,TrailerParams reportParams) {
 		// TODO Auto-generated method stub
+		Integer rank=0;
+
+		List<LytxScoreListResponse> finalResponse=new ArrayList<LytxScoreListResponse>();
+				try
+					{
+						
+					
+						
+					
+						Comparator<LytxScoreListResponse> comparator = Comparator.comparing(LytxScoreListResponse::getTotalScore); 
+						Collections.sort(datavalue, comparator.reversed());
+						
+						for(LytxScoreListResponse value:datavalue)
+						{
+							Float temp = null;
+							
+								if(!value.getTotalScore().equals(temp))
+								{
+									rank=rank+1;
+									value.setRank(rank);
+								}
+								else
+								{
+									value.setRank(rank);
+								}
+								
+								
+								 if(reportParams.getGeotabEmployeeNo().equals(value.getEmployeeNum())) 
+								 {
+								finalResponse.add(value);
+								 }
+								temp=value.getTotalScore();
+						}
+					
+						
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+				
+			
+				
+				
+			
+		return finalResponse;
+	}
+
+
+
+
+
+
+
+	private List<GeoDriveDateResponse> getDateRangeList()
+	{
+		List<GeoDriveDateResponse> responseList=new ArrayList<GeoDriveDateResponse>();
+		for(int i=1;i<5;i++)
+		 {
+			
+			 responseList.add(dateCalculation(i));
+		 }
+
+		
+		return responseList;
+	}
+	
+	private GeoDriveDateResponse dateCalculation(int data)
+	{
+		 GeoDriveDateResponse response=new GeoDriveDateResponse();
+		 ZonedDateTime input = ZonedDateTime.now();
+		 ZonedDateTime startOfLastWeek=null;
+		 ZonedDateTime endOfLastWeek=null;
+		 
+		switch (data) {
+		case 1:
+			startOfLastWeek = input.minusWeeks(1).with(DayOfWeek.SUNDAY);
+			//endOfLastWeek = startOfLastWeek.plusDays(6);
+			response.setRange("This Week");
+			response.setStartDate(startOfLastWeek.toLocalDate().toString());		 
+			response.setEndDate(input.toLocalDate().toString());
+			break;
+		case 2:
+			startOfLastWeek = input.minusWeeks(2).with(DayOfWeek.SUNDAY);
+			endOfLastWeek = startOfLastWeek.plusDays(6);
+			response.setRange("Last Week");
+			response.setStartDate(startOfLastWeek.toLocalDate().toString());		 
+			response.setEndDate(endOfLastWeek.toLocalDate().toString());
+			break;
+		case 3:
+			startOfLastWeek = input.withDayOfMonth(1);
+			response.setRange("This Month");
+			response.setStartDate(startOfLastWeek.toLocalDate().toString());		 
+			response.setEndDate(input.toLocalDate().toString());
+			break;	
+			
+		case 4:
+	
+			startOfLastWeek = input.minusMonths(1).withDayOfMonth(1);
+			endOfLastWeek = input.withDayOfMonth(1).minusDays(1);
+			response.setRange("Last Month");
+			response.setStartDate(startOfLastWeek.toLocalDate().toString());		 
+			response.setEndDate(endOfLastWeek.toLocalDate().toString());
+			break;	
+
+		default:
+			break;
+		}
+		
+		 return response;
+	}
+	
+	private List<LytxScoreListResponse> scoreParsedResponse(ResponseEntity<LytxTokenResponse> response,String groupId,TrailerParams reportParams,GeoDriveDateResponse range) {
+		// TODO Auto-generated method stub
+		ResponseEntity<String> data=getUserScoreResponse(response, groupId, reportParams,range);
+
 		List<LytxScoreListResponse> responses=new ArrayList<LytxScoreListResponse>();
 		JSONObject scoreObj=new JSONObject(data.getBody());
 		JSONArray scoreArry=scoreObj.getJSONArray("impacts");
@@ -106,24 +278,33 @@ public class GeotabDriveAppService {
 		for(int i=0;i<scoreArry.length();i++)
 		{
 			JSONObject obj=scoreArry.getJSONObject(i);
-			if(reportParams.getGeotabEmployeeNo().equals(obj.getString("employeeNum")))
-			{
+			
 			LytxScoreListResponse enty=new LytxScoreListResponse();
 			enty.setEmployeeNum(obj.getString("employeeNum"));
 			enty.setFirstName(obj.getString("firstName"));
 			enty.setLastName(obj.getString("lastName"));
 			enty.setTotalScore(obj.getFloat("totalScore"));
-			enty.setTotalScoreTrend(obj.getFloat("totalScoreTrend"));
+			enty.setRange(range.getRange());
+			enty.setStareDate(range.getStartDate());
+			enty.setEndDate(range.getEndDate());
+			
 			responses.add(enty);
-			}
+			
 		}
 		
 		return responses;
 	}
 
-	private ResponseEntity<String> getUserScoreResponse(ResponseEntity<LytxTokenResponse> response,String groupId,TrailerParams trailerParams) {
-		String url=scoreUrlBuild(trailerParams, groupId);
+	private ResponseEntity<String> getUserScoreResponse(ResponseEntity<LytxTokenResponse> response,String groupId,TrailerParams trailerParams,GeoDriveDateResponse range) {
+		String url=scoreUrlBuild(trailerParams, groupId,range);
 		
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", url);
+		}
+		
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", response.getBody().getAccessToken());
+		}
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -138,6 +319,7 @@ public class GeotabDriveAppService {
 	
 	private ResponseEntity<String> getGroupBearerResponseCall(ResponseEntity<LytxTokenResponse> response) {
 		String url=response.getBody().getAction()+"/api/v1/core/groups?live=true";
+		
 		
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
@@ -154,9 +336,9 @@ public class GeotabDriveAppService {
 		return env.getProperty("lytx.url.auth")+"sessionId="+reportParams.getGeotabSessionId()+"&username="+reportParams.getGeotabUserName()+"&databaseName="+reportParams.getGeotabDatabase()+"&geoTabBaseUrl="+reportParams.getUrl();
 	}
 	
-	private String scoreUrlBuild(TrailerParams reportParams,String groupId)
+	private String scoreUrlBuild(TrailerParams reportParams,String groupId,GeoDriveDateResponse range)
 	{
-		return env.getProperty("lytx.url.scorecard")+"groupIds="+groupId+"&startDate="+reportParams.getStartDate()+"&endDate="+reportParams.getEndDate();
+		return env.getProperty("lytx.url.scorecard")+"groupIds="+groupId+"&startDate="+range.getStartDate()+"&endDate="+range.getEndDate();
 	}
 	
 	private ResponseEntity<LytxTokenResponse> getBearerResponseCall(String url)

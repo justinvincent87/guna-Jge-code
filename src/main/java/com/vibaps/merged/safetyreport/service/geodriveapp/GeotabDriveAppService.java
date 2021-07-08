@@ -36,12 +36,15 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
 import com.lytx.dto.EventsInfoV5;
 import com.lytx.dto.GetUsersRequest;
 import com.lytx.dto.GetUsersResponse;
 import com.lytx.dto.LoginResponse;
 import com.lytx.dto.UserInfo;
 import com.lytx.services.ISubmissionServiceV5Proxy;
+import com.vibaps.merged.safetyreport.builder.GeoTabRequestBuilder;
+import com.vibaps.merged.safetyreport.builder.Uri;
 import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.GeoDriveAppResponse;
@@ -56,8 +59,10 @@ import com.vibaps.merged.safetyreport.entity.gl.LyUserEntity;
 import com.vibaps.merged.safetyreport.repo.gl.CommonGeotabRepository;
 import com.vibaps.merged.safetyreport.repo.gl.LyUserRepository;
 import com.vibaps.merged.safetyreport.services.gl.CommonGeotabService;
+import com.vibaps.merged.safetyreport.services.gl.GeoTabApiService;
 import com.vibaps.merged.safetyreport.services.gl.LytxProxyService;
 import com.vibaps.merged.safetyreport.util.DateTimeUtil;
+import com.vibaps.merged.safetyreport.util.ResponseUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -76,13 +81,21 @@ public class GeotabDriveAppService {
 	
 	@Autowired
     private Environment env;
+	@Autowired
+	private GeoTabApiService geoTabApiService;
+	@Autowired
+	private RestTemplate restTemplate;
 	
 	
 
 	public LytxScoreListResponse showScore(TrailerParams reportParams) throws RemoteException, ParseException, JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
 		// TODO Auto-generated method stub
 		
+		
+		reportParams.setGeotabSessionId(getAdminLoginSessionId(reportParams));
 		String authUrl=authUrlBuild(reportParams);
+		
+		
 		ResponseEntity<LytxTokenResponse> response=getBearerResponseCall(authUrl);
 		ResponseEntity<String> groupResponse=getGroupBearerResponseCall(response);
 		List<LytxScoreListResponse> parsedResponse=new ArrayList<LytxScoreListResponse>();
@@ -147,11 +160,46 @@ public class GeotabDriveAppService {
 		
 	}
 	
+	public String getAdminLoginSessionId(TrailerParams trailerParams) 
+	{
+		// TODO Auto-generated method stub
+		
+		
+		String payload =  getLoginPayload(trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		JSONObject obj=new JSONObject(response.getBody());
+		JSONObject resultobj=obj.getJSONObject("result");
+		JSONObject creObj=resultobj.getJSONObject("credentials");
+		
+		return creObj.getString("sessionId");
+	}
 
 
 
 
 
+	private String getLoginPayload(TrailerParams trailerParams) {
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method("Authenticate");
+		//geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		return builder.params().userName(env.getProperty("geotab.admin.username"))
+				.password(env.getProperty("geotab.admin.password"))
+				.database(trailerParams.getGeotabDatabase()).build();
+	}
 
 	private List<LytxScoreListResponse> parserFinalResponse(
 			List<LytxScoreListResponse> datavalue,TrailerParams reportParams) {
@@ -333,7 +381,7 @@ public class GeotabDriveAppService {
 	}
 	private String authUrlBuild(TrailerParams reportParams)
 	{
-		return env.getProperty("lytx.url.auth")+"sessionId="+reportParams.getGeotabSessionId()+"&username="+reportParams.getGeotabUserName()+"&databaseName="+reportParams.getGeotabDatabase()+"&geoTabBaseUrl="+reportParams.getUrl();
+		return env.getProperty("lytx.url.auth")+"sessionId="+reportParams.getGeotabSessionId()+"&username="+env.getProperty("geotab.admin.username")+"&databaseName="+reportParams.getGeotabDatabase()+"&geoTabBaseUrl="+reportParams.getUrl();
 	}
 	
 	private String scoreUrlBuild(TrailerParams reportParams,String groupId,GeoDriveDateResponse range)
@@ -343,6 +391,9 @@ public class GeotabDriveAppService {
 	
 	private ResponseEntity<LytxTokenResponse> getBearerResponseCall(String url)
 	{
+		
+		
+		
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -455,6 +506,7 @@ public class GeotabDriveAppService {
         
 		return new GeoDriveAppResponse(finalresponse);
 	}
+	
 	
 
 	

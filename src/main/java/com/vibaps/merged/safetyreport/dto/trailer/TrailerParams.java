@@ -30,6 +30,5 @@ public class TrailerParams extends ReportParams {
 	private Integer size;
 	
 	private List<TrailerResponse> trailerParsedInput; 
-    private List<GeoDriveDateResponse> dateRange;
 
 }

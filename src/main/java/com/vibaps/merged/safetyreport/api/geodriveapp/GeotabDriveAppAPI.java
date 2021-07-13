@@ -19,12 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.GeoDriveAppResponse;
+import com.vibaps.merged.safetyreport.dto.geodriveapp.GeotabDriverCallResponse;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.LytxGroupResponse;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.LytxScoreListResponse;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.LytxTokenResponse;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
 import com.vibaps.merged.safetyreport.entity.gl.LyUserEntity;
-import com.vibaps.merged.safetyreport.service.geodriveapp.GeotabDriveAppService;
+import com.vibaps.merged.safetyreport.services.geotabdriveapp.GeotabDriveAppServices;
 
 @CrossOrigin(origins = { "*" }, allowedHeaders = { "*" })
 @RestController
@@ -32,10 +33,10 @@ import com.vibaps.merged.safetyreport.service.geodriveapp.GeotabDriveAppService;
 public class GeotabDriveAppAPI {
 	
 	@Autowired
-	private GeotabDriveAppService geotabDriveAppService;
+	private GeotabDriveAppServices geotabDriveAppService;
 
 	@PostMapping(value = "/show-geotab-drive-score",produces=MediaType.APPLICATION_JSON_VALUE)
-	public LytxScoreListResponse showScore(@RequestBody TrailerParams reportParams) throws SQLException, RemoteException, ParseException, JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException{
+	public List<List<GeotabDriverCallResponse>> showScore(@RequestBody TrailerParams reportParams) throws SQLException, RemoteException, ParseException, JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException{
 		
 		return geotabDriveAppService.showScore(reportParams);
 	}

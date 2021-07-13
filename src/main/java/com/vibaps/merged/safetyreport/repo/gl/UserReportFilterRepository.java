@@ -65,6 +65,9 @@ public interface UserReportFilterRepository extends JpaRepository<UserReportFilt
 
 	@Query(value = "select concat(b.rulecompany,'-',b.rulename) as val,a.weight,b.rulevalue from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and b.db=:db and a.status= 1 and a.gen_user_id=c.id and a.gen_rulelist_id=b.id order by val", nativeQuery = true)
 	List<Object[]> getallBehaveFromDB(@Param("userid") String userid, @Param("db") String db);
+	
+	@Query(value = "select a.rulevalue,a.weight,a.rulename from gl_rulelist a,gl_selectedvalues b,gen_user c where c.companyid=:userid and c.db=:db and b.gen_user_id=c.id and a.db=:db and a.id=b.gen_rulelist_id and a.rulecompany='L'", nativeQuery = true)
+	List<Object[]> getLytxbehave(@Param("userid") String userid, @Param("db") String db);
 
 	@Query(value = "select count(b.id) from gl_selectedvalues a,gl_rulelist b,gen_user c where c.companyid=:userid and c.db=:db and b.db=:db and a.status= 1 and a.gen_user_id=c.id and b.rulecompany='G' and a.gen_rulelist_id=b.id", nativeQuery = true)
 	int geoCount(@Param("userid") String userid, @Param("db") String db);

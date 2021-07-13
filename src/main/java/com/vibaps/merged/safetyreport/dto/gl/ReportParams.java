@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.vibaps.merged.safetyreport.dto.geodriveapp.GeoDriveDateResponse;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -43,5 +45,8 @@ public class ReportParams{
 	private String lytxuserName;
 	private String lytxpassword;
 	private String geotabEmployeeNo;
+	
+    private List<GeoDriveDateResponse> dateRange;
+
 	
 }

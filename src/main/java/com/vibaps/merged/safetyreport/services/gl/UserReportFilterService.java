@@ -51,6 +51,24 @@ public class UserReportFilterService {
 			.collect(Collectors.toList());
 	}
 	
+	public List<Behave> getSelectedLytxRuleNames(String username, String database) {
+		
+		List<Object[]> data = filterRepo.getLytxbehave(username, database);
+		
+		if(CollectionUtils.isEmpty(data)) {
+			if(log.isDebugEnabled()) {
+				log.debug("Behave doesn't exist for username: {} and database:{}", username, database);
+			}
+			return Collections.emptyList();
+		}
+		
+		log.info("Behave matched count: {}", data.size());
+		
+		return data.stream()
+				.map(record -> new Behave((String) record[0], (Integer) record[1],(String) record[2]))
+			.collect(Collectors.toList());
+	}
+	
 	/**
 	 * Update user report filter options which they selected from GUI
 	 * 

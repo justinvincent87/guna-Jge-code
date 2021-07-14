@@ -61,7 +61,7 @@
 		<from>${smtp.user}</from>
 		<STARTTLS>true</STARTTLS>
 
-		<to>${smtp.to.1}</to>
+		<!-- <to>${smtp.to.1}</to> -->
 		<!-- <to>${smtp.to.2}</to>
 		<to>${smtp.to.3}</to> -->
 

@@ -1,5 +1,9 @@
 package com.vibaps.merged.safetyreport.dto.geodriveapp;
 
+import java.util.List;
+
+import javax.persistence.Transient;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -27,7 +31,16 @@ public class GeotabDriverCallResponse {
 	private String endDate;
 	@JsonInclude(Include.NON_NULL)
 	private String range;
+	@JsonInclude(Include.NON_NULL)
+	private Integer distance;
+	
+	@JsonInclude(Include.NON_NULL)
+	private Float weightData;
+	
+	@Transient
+	private List<GeotabBehavierResponse> behavelist;
 	
 	
 
 }
+

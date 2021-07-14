@@ -39,6 +39,7 @@ import com.vibaps.merged.safetyreport.builder.Uri;
 import com.vibaps.merged.safetyreport.common.AppConstants;
 import com.vibaps.merged.safetyreport.common.EntityType;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.GeoDriveDateResponse;
+import com.vibaps.merged.safetyreport.dto.geodriveapp.GeotabBehavierResponse;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.GeotabDriverCallResponse;
 import com.vibaps.merged.safetyreport.dto.geodriveapp.LytxScoreListResponse;
 import com.vibaps.merged.safetyreport.dto.gl.Behave;
@@ -90,43 +91,56 @@ public class GeotabDriveAppServices {
 				lytxBehave.add(data.getRuleName());
 			}
 		
-			reportParams.setDateRange(getDateRangeList());
+			//reportParams.setDateRange(getDateRangeList());
 	
-			List<CompletableFuture<List<GeotabDriverCallResponse>>>  listcompletableFuture=new ArrayList<CompletableFuture<List<GeotabDriverCallResponse>>>();
+			//List<CompletableFuture<List<GeotabDriverCallResponse>>>  listcompletableFuture=new ArrayList<CompletableFuture<List<GeotabDriverCallResponse>>>();
 			
-			reportParams.getDateRange().parallelStream().forEach(t->{
-				
-
-				CompletableFuture<List<GeotabDriverCallResponse>> completableFuture = CompletableFuture.supplyAsync(() -> 
-				
-				{
-					try {
-						return parserdLytxandGeotabResponse(reportParams,enty.getLyEndpoint(), sessionId, userMap, lytxBehave,t);
-					} catch (RemoteException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					return null;
-				});
-		
-		listcompletableFuture.add(completableFuture);		
-		
-			});
+			List<GeoDriveDateResponse> items=getDateRangeList();
+			
+			List<CompletableFuture<List<GeotabDriverCallResponse>>> listcompletableFuture = items.stream()
+	                .map(item -> CompletableFuture.supplyAsync(() -> 
+	                {
+						try {
+							return parserdLytxandGeotabResponse(reportParams,enty.getLyEndpoint(), sessionId, userMap, lytxBehave,item);
+						} catch (RemoteException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (ParseException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						return null;
+					}))
+	                .collect(Collectors.toList());
+			
+			
+			/*
+			 * reportParams.getDateRange().parallelStream().forEach(t->{
+			 * 
+			 * 
+			 * CompletableFuture<List<GeotabDriverCallResponse>> completableFuture =
+			 * CompletableFuture.supplyAsync(() -> { try { return
+			 * parserdLytxandGeotabResponse(reportParams,enty.getLyEndpoint(), sessionId,
+			 * userMap, lytxBehave,t); } catch (Exception e) { // TODO Auto-generated catch
+			 * block e.printStackTrace(); } return null; });
+			 * 
+			 * listcompletableFuture.add(completableFuture);
+			 * 
+			 * });
+			 */
 		
 			
-			CompletableFuture<?> combined = CompletableFuture.allOf(listcompletableFuture.toArray(new CompletableFuture<?>[0]));	
+		//	CompletableFuture<?> combined = CompletableFuture.allOf(listcompletableFuture.toArray(new CompletableFuture<?>[0]));	
 			
 			
 			List<List<GeotabDriverCallResponse>> listResponse=new ArrayList<List<GeotabDriverCallResponse>>();
 			
 			
+			
+			
 			try
 			{
 				
-				//combined.get();
 				listcompletableFuture.parallelStream().forEach(r->{
 					try {
 						List<GeotabDriverCallResponse> sresponse =  r.get();
@@ -192,6 +206,15 @@ public class GeotabDriveAppServices {
 				GeotabDriverCallResponse enty=mergeResponse.get(empNumber);
 				Integer eventcount=enty.getEventCount();
 				enty.setEventCount(eventcount+getLytxResponse.get(empNumber).getEventCount());
+				
+				List<GeotabBehavierResponse> oldlist=enty.getBehavelist();
+				List<GeotabBehavierResponse> lyList=getLytxResponse.get(empNumber).getBehavelist();
+				List<GeotabBehavierResponse> newList = new ArrayList<GeotabBehavierResponse>();
+				newList.addAll(oldlist);
+				newList.addAll(lyList);
+
+				enty.setBehavelist(newList);
+				
 				mergeResponse.put(empNumber, enty);
 			}
 		}
@@ -266,23 +289,30 @@ public class GeotabDriveAppServices {
 			
 		
 		for (EventsInfoV5 event : eventReponse.getEvents()) {
-			
-			boolean status = false;
+			List<GeotabBehavierResponse> behaveList=new ArrayList<GeotabBehavierResponse>();
+
 			
 			for (EventBehavior behavior : event.getBehaviors()) {
 				String exceptionName	= behavior.getBehavior().toString();
 				
 				if(selectedLytxRuleNames.contains(exceptionName))
 				{
-					status=true;
+
+					GeotabBehavierResponse behave=new GeotabBehavierResponse();
+					behave.setBehavierId(exceptionName);
+					behave.setCount(1);
+					behave.setEventDate(event.getCreationDate().toString());
+					
+					behaveList.add(behave);
 				}
 					
 				
 			}
+		
 			
-			if(event.getDriverId() !=0 && status==true)
+			if(event.getDriverId() !=0)
 			{
-				String vehicleName			= userMap.get(event.getDriverId()).getEmployeeNo();
+				String vehicleName			= userMap.get(event.getDriverId()).getFirstName()+" "+userMap.get(event.getDriverId()).getLastName();
 
 				GeotabDriverCallResponse lytxExceptionEvents	= lytxVehicleEventsRecord.get(vehicleName);
 	
@@ -291,12 +321,10 @@ public class GeotabDriveAppServices {
 				GeotabDriverCallResponse enty=new GeotabDriverCallResponse();
 				enty.setEmployeeNo(vehicleName);
 				//enty.setBehavierId(innserArray.getJSONObject(0).getJSONObject("exceptionRule").getString("id"));
-				enty.setEventCount(event.getScore().intValue());
-				enty.setFirstName(userMap.get(event.getDriverId()).getFirstName());
-				enty.setLastName(userMap.get(event.getDriverId()).getLastName());
 				enty.setStartDate(range.getStartDate());
 				enty.setEndDate(range.getEndDate());
 				enty.setRange(range.getRange());
+				enty.setBehavelist(behaveList);
 				
 				
 				lytxVehicleEventsRecord.put(vehicleName, enty);
@@ -306,6 +334,11 @@ public class GeotabDriveAppServices {
 				GeotabDriverCallResponse enty=lytxVehicleEventsRecord.get(vehicleName);
 				Integer eventcount=enty.getEventCount();
 				enty.setEventCount(eventcount+event.getScore().intValue());
+				
+				List<GeotabBehavierResponse> behaveListOld=enty.getBehavelist();
+
+				behaveListOld.addAll(behaveList);
+				enty.setBehavelist(behaveListOld);
 				
 				
 				lytxVehicleEventsRecord.put(vehicleName,enty);
@@ -399,41 +432,58 @@ public class GeotabDriveAppServices {
 		for(int i=0;i<objArray.length();i++)
 		{
 			JSONObject innerObj=objArray.getJSONObject(i);
-			
+			//String empNumber=innerObj.getJSONObject("item").getString("name");
+			String empNumber=innerObj.getJSONObject("item").getString("firstName")+" "+innerObj.getJSONObject("item").getString("lastName");
 			
 			JSONArray innserArray=innerObj.getJSONArray("exceptionSummaries");
 			
 			try
 			{
-			if(innserArray.length()>0 && innserArray.getJSONObject(0).getInt("eventCount") != 0)
+			if(innserArray.length()>0)
 			{
-				
-				String empNumber=innerObj.getJSONObject("item").getString("name");
-				
-				if(Objects.isNull(parsedresponse.get(empNumber)))
+				List<GeotabBehavierResponse> behaveList=new ArrayList<GeotabBehavierResponse>();
+				for(int s=0;s<innserArray.length();s++)
 				{
+				
+				if(Objects.isNull(parsedresponse.get(empNumber)) && innserArray.getJSONObject(s).getInt("eventCount") !=0)
+				{
+					GeotabBehavierResponse behave=new GeotabBehavierResponse();
+					behave.setBehavierId(innserArray.getJSONObject(s).getJSONObject("exceptionRule").getString("id"));
+					behave.setCount(innserArray.getJSONObject(s).getInt("eventCount"));
+					behave.setEventDate(innserArray.getJSONObject(s).getString("duration"));
+					
+					behaveList.add(behave);
 					
 					GeotabDriverCallResponse enty=new GeotabDriverCallResponse();
 					enty.setEmployeeNo(empNumber);
-					//enty.setBehavierId(innserArray.getJSONObject(0).getJSONObject("exceptionRule").getString("id"));
-					enty.setEventCount(innserArray.getJSONObject(0).getInt("eventCount"));
-					enty.setFirstName(innerObj.getJSONObject("item").getString("firstName"));
-					enty.setLastName(innerObj.getJSONObject("item").getString("lastName"));
+					//enty.setBehavierId(innserArray.getJSONObject(s).getJSONObject("exceptionRule").getString("id"));
+					//enty.setEventCount(innserArray.getJSONObject(s).getInt("eventCount"));
 					enty.setStartDate(range.getStartDate());
 					enty.setEndDate(range.getEndDate());
 					enty.setRange(range.getRange());
-					
+					enty.setBehavelist(behaveList);					
 					parsedresponse.put(empNumber, enty);
 				}
 				else
 				{
 					GeotabDriverCallResponse enty=parsedresponse.get(empNumber);
-					Integer eventcount=enty.getEventCount();
-					enty.setEventCount(eventcount+innserArray.getJSONObject(0).getInt("eventCount"));
+					//Integer eventcount=enty.getEventCount();
+					//enty.setEventCount(eventcount+innserArray.getJSONObject(s).getInt("eventCount"));
+					
+					List<GeotabBehavierResponse> behaveListval=enty.getBehavelist();
+					GeotabBehavierResponse behave=new GeotabBehavierResponse();
+					behave.setBehavierId(innserArray.getJSONObject(s).getJSONObject("exceptionRule").getString("id"));
+					behave.setCount(innserArray.getJSONObject(s).getInt("eventCount"));
+					behave.setEventDate(innserArray.getJSONObject(s).getString("duration"));
+					
+					behaveListval.add(behave);
+					enty.setBehavelist(behaveListval);					
+
+					
 					parsedresponse.put(empNumber, enty);
 
 				}
-				
+				}
 				
 			}
 			

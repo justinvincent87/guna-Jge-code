@@ -16,5 +16,6 @@ public class GeotabBehavierResponse {
 	private String behavierId;
 	private Integer count;
 	private String eventDate;
+	private String behavierName;
 }
 

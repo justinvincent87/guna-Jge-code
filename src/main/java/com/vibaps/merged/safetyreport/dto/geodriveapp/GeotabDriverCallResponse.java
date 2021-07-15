@@ -36,6 +36,10 @@ public class GeotabDriverCallResponse {
 	
 	@JsonInclude(Include.NON_NULL)
 	private Float weightData;
+	@JsonInclude(Include.NON_NULL)
+	private Integer Rank;
+	@JsonInclude(Include.NON_NULL)
+	private String behavierName;
 	
 	@Transient
 	private List<GeotabBehavierResponse> behavelist;

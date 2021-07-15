@@ -580,7 +580,7 @@ return builder.url(trailerParams.getUrl()).groups(trailerParams.getGeotabGroups(
 	    JsonArray names = data .get("result").getAsJsonArray();
 	    
 	    
-	    String zoneId=names.get(0).getAsJsonObject().get("employeeNo").getAsString();
+	    String zoneId=names.get(0).getAsJsonObject().get("firstName").getAsString()+" "+names.get(0).getAsJsonObject().get("lastName").getAsString();
 	    
 	  
 	    System.out.println(zoneId);

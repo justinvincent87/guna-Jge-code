@@ -7,13 +7,16 @@ import java.time.DayOfWeek;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -23,11 +26,14 @@ import org.datacontract.schemas._2004._07.DriveCam_HindSight_Messaging_Messages_
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lytx.dto.EventsInfoV5;
 import com.lytx.dto.GetUsersRequest;
@@ -46,6 +52,7 @@ import com.vibaps.merged.safetyreport.dto.geodriveapp.LytxScoreListResponse;
 import com.vibaps.merged.safetyreport.dto.gl.Behave;
 import com.vibaps.merged.safetyreport.dto.gl.ReportParams;
 import com.vibaps.merged.safetyreport.dto.trailer.TrailerParams;
+import com.vibaps.merged.safetyreport.dto.trailer.TrailerResponse;
 import com.vibaps.merged.safetyreport.entity.gl.GlRulelistEntity;
 import com.vibaps.merged.safetyreport.entity.gl.LyUserEntity;
 import com.vibaps.merged.safetyreport.entity.gl.ReportRow;
@@ -53,6 +60,7 @@ import com.vibaps.merged.safetyreport.repo.gl.CommonGeotabRepository;
 import com.vibaps.merged.safetyreport.services.gl.GeoTabApiService;
 import com.vibaps.merged.safetyreport.services.gl.LytxProxyService;
 import com.vibaps.merged.safetyreport.services.gl.UserReportFilterService;
+import com.vibaps.merged.safetyreport.services.trailer.TrailerService;
 import com.vibaps.merged.safetyreport.util.DateTimeUtil;
 import com.vibaps.merged.safetyreport.util.ResponseUtil;
 
@@ -71,16 +79,25 @@ public class GeotabDriveAppServices {
 	 private UserReportFilterService userReportFilterService;
 	 @Autowired
 	 private LytxProxyService lytxProxyService;
+	 @Autowired
+	 private TrailerService trailerService;
+	 @Autowired
+	    private Environment env;
 	 
 	 @Autowired
 	 private RestTemplate restTemplate;
 
-	public List<List<GeotabDriverCallResponse>> showScore(ReportParams reportParams) throws RemoteException, ParseException {
-
+	public GeotabDriverCallResponse showScore(ReportParams reportParams) throws RemoteException, ParseException {
 		
+		 
 		  List<GeoDriveDateResponse> dateRange=getDateRangeList(); 
 		  LyUserEntity enty=commonGeotabRepository.getLytxCredentials(reportParams.getGeotabDatabase()); 
 		  String sessionId=LytexLogin(enty.getLytxUsername(),enty.getLytxPassword(),enty.getLyEndpoint());
+		  String getZoneId = getZoneId(reportParams);
+		  
+			reportParams.setGeotabSessionId(getAdminLoginSessionId(reportParams));
+
+		  reportParams.setGeotabUserName(env.getProperty("geotab.admin.username"));
 		 
 		  Map<Long,GeotabDriverCallResponse> userMap=getUserMap(enty.getLyEndpoint(), sessionId);
 		  
@@ -110,7 +127,7 @@ public class GeotabDriveAppServices {
 			dateRangeList.parallelStream().forEach(d->{
 				List<GeotabDriverCallResponse> response = null;
 				try {
-					response = parserdLytxandGeotabResponse(reportParams,enty.getLyEndpoint(),sessionId, userMap,lytxBehave, d,weightMap);
+					response = parserdLytxandGeotabResponse(reportParams,enty.getLyEndpoint(),sessionId, userMap,lytxBehave, d,weightMap,getZoneId);
 					  listcompletableFuture.add(response);
 
 				} catch (RemoteException e) {
@@ -148,7 +165,94 @@ public class GeotabDriveAppServices {
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-		return weightageCalculation(listResponse,weightMap,reportParams.getGeotabEmployeeNo());
+		return new GeotabDriverCallResponse(weightageCalculation(listResponse,weightMap,reportParams.getGeotabEmployeeNo()));
+	}
+	public String getAdminLoginSessionId(ReportParams trailerParams) 
+	{
+		// TODO Auto-generated method stub
+		
+		
+		String payload =  getLoginPayload(trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		JSONObject obj=new JSONObject(response.getBody());
+		JSONObject resultobj=obj.getJSONObject("result");
+		JSONObject creObj=resultobj.getJSONObject("credentials");
+		
+		return creObj.getString("sessionId");
+	}
+	
+	private String getLoginPayload(ReportParams trailerParams) {
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method("Authenticate");
+		//geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		return builder.params().userName(env.getProperty("geotab.admin.username"))
+				.password(env.getProperty("geotab.admin.password"))
+				.database(trailerParams.getGeotabDatabase()).build();
+	}
+	
+	public String getZoneId(ReportParams trailerParams)
+	{
+		String payload =  getReportRequest(trailerParams);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data payload: {}", payload);
+		}
+
+		String uri = Uri.get().secure().add(trailerParams.getUrl()).add(AppConstants.PATH_VERSION).build();
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data uri: {}", uri);
+		}
+
+		ResponseEntity<String> response = restTemplate.postForEntity(uri, payload, String.class);
+		if (log.isDebugEnabled()) {
+			log.debug("Get report data response code: {}", response.getStatusCodeValue());
+		}
+
+		//return response;
+		JsonObject parsedResponse = ResponseUtil.parseResponse(response);
+		
+		
+		
+		return  parsezoneId(parsedResponse);
+	}
+	
+	public String getReportRequest(ReportParams trailerParams)
+	{
+		GeoTabRequestBuilder builder = GeoTabRequestBuilder.getInstance();
+		builder.method(AppConstants.METHOD_GET);
+		// bind credentials
+		geoTabApiService.buildCredentials(builder, trailerParams);
+		
+		return builder.params().typeName("User")
+				.search().name(trailerParams.getGeotabUserName())
+				.build();
+	}
+
+	public String parsezoneId(JsonObject parsedResponse) 
+	{
+		
+		List<TrailerResponse> responcelist=new ArrayList<>();
+		
+		JsonObject data = new Gson().fromJson(parsedResponse, JsonObject.class);
+	    JsonArray names = data .get("result").getAsJsonArray();
+	    
+	    String zoneId=names.get(0).getAsJsonObject().get("timeZoneId").getAsString();
+	   
+	    System.out.println(zoneId);
+		return zoneId;
 	}
 	
 	private List<List<GeotabDriverCallResponse>> weightageCalculation(List<List<GeotabDriverCallResponse>> response,Map<String,Behave> weightMap,String geoEmpName)
@@ -251,7 +355,7 @@ public class GeotabDriveAppServices {
 	}
 	
 	private List<GeotabDriverCallResponse> parserdLytxandGeotabResponse(
-			ReportParams reportParams,String endpoint,String sessionId,Map<Long,GeotabDriverCallResponse> userMap,List<String> selectedLytxRuleNames,GeoDriveDateResponse range,Map<String,Behave> weightMap) throws RemoteException, ParseException {
+			ReportParams reportParams,String endpoint,String sessionId,Map<Long,GeotabDriverCallResponse> userMap,List<String> selectedLytxRuleNames,GeoDriveDateResponse range,Map<String,Behave> weightMap,String zoneId) throws RemoteException, ParseException {
 		// TODO Auto-generated method stub
 		
 		System.out.println(range.getStartDate());
@@ -260,7 +364,7 @@ public class GeotabDriveAppServices {
 		
 		
 		Map<String,GeotabDriverCallResponse> geotabResponse=getVehicleExceptionSummary(reportParams,range,weightMap);
-		Map<String,GeotabDriverCallResponse> getLytxResponse=getLytxExceptionData(reportParams, endpoint, sessionId, userMap,selectedLytxRuleNames,range,weightMap);
+		Map<String,GeotabDriverCallResponse> getLytxResponse=getLytxExceptionData(reportParams, endpoint, sessionId, userMap,selectedLytxRuleNames,range,weightMap,zoneId);
 		
 		
 		List<GeotabDriverCallResponse> mergeList=new ArrayList<GeotabDriverCallResponse>();
@@ -339,7 +443,7 @@ public class GeotabDriveAppServices {
 		  return userMap;
 	}
 	
-	public Map<String,GeotabDriverCallResponse> getLytxExceptionData(ReportParams reportParams,String endpoint,String sessionId,Map<Long,GeotabDriverCallResponse> userMap,List<String> selectedLytxRuleNames,GeoDriveDateResponse range,Map<String,Behave> weightMap) throws ParseException, RemoteException {
+	public Map<String,GeotabDriverCallResponse> getLytxExceptionData(ReportParams reportParams,String endpoint,String sessionId,Map<Long,GeotabDriverCallResponse> userMap,List<String> selectedLytxRuleNames,GeoDriveDateResponse range,Map<String,Behave> weightMap,String zoneId) throws ParseException, RemoteException {
 		Integer	behaviorCount;
 		//Boolean status=false;
 		
@@ -347,13 +451,15 @@ public class GeotabDriveAppServices {
 		 * String behaviors=env.getProperty("lytx.behaviors.filter"); String[]
 		 * behaviorsList=behaviors.split(",");
 		 */
+		//TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 	
 		Map<String,GeotabDriverCallResponse>	lytxVehicleEventsRecord	= new HashMap<String, GeotabDriverCallResponse>();
 		Map<String,List<GeotabBehavierResponse>> behavierMap=new HashMap<String, List<GeotabBehavierResponse>>();
 		
-
+		//reportParams.setEndDate(range.getEndDate());
 		String startDateStr = range.getStartDate() + AppConstants.START_UTC;
 		String endDateStr = range.getEndDate() + AppConstants.END_UTC;
+		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 		Date newStartDate = sdf.parse(startDateStr);
@@ -367,11 +473,11 @@ public class GeotabDriveAppServices {
 
 			System.out.println("check---" + s++);
 			
-			reportParams.setStartDate(sdate);
+			//reportParams.setStartDate(sdate);
 
 			reportParams.setLytexSessionid(sessionId);
 			reportParams.setEndPoint(endpoint);
-			GetEventsResponse eventReponse= lytxProxyService.getLytxExceptionSummary(reportParams);
+			GetEventsResponse eventReponse= lytxProxyService.getLytxExceptionSummaryForDriverScore(reportParams,sdate,range.getEndDate());
 			
 		
 		for (EventsInfoV5 event : eventReponse.getEvents()) {
@@ -391,13 +497,11 @@ public class GeotabDriveAppServices {
 					
 					if(selectedLytxRuleNames.contains(exceptionName))
 					{
-						
-						
-
 						GeotabBehavierResponse behave=new GeotabBehavierResponse();
 						behave.setBehavierId(exceptionName);
 						behave.setCount(1);
-						behave.setEventDate(event.getCreationDate().getTime().toString());
+						
+						behave.setEventDate(zoneConverion(event.getLastUpdated(),zoneId));
 						behave.setBehavierName(weightMap.get(exceptionName).getRuleName());
 						
 						behaveList.add(behave);
@@ -508,7 +612,14 @@ public class GeotabDriveAppServices {
 		
 }
 
+private String zoneConverion(java.util.Calendar dateval,String zoneId)
+{
+	
+	//TimeZone.setDefault(TimeZone.getTimeZone(zoneId));
 
+     dateval.setTimeZone(TimeZone.getTimeZone(zoneId));
+     return DateTimeUtil.dateWithTimeParse(dateval.getTime());
+}
 
 	
 	public Map<String,GeotabDriverCallResponse>  getVehicleExceptionSummary(ReportParams reportParams,GeoDriveDateResponse range,Map<String,Behave> weightMap) {
@@ -613,6 +724,8 @@ public class GeotabDriveAppServices {
 		
 		return parsedresponse;
 	}
+	
+
 
 	private String getReportRequest(ReportParams reportParams,GeoDriveDateResponse range) {
 

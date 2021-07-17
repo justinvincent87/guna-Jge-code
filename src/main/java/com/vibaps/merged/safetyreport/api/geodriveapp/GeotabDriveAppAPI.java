@@ -36,7 +36,7 @@ public class GeotabDriveAppAPI {
 	private GeotabDriveAppServices geotabDriveAppService;
 
 	@PostMapping(value = "/show-geotab-drive-score",produces=MediaType.APPLICATION_JSON_VALUE)
-	public List<List<GeotabDriverCallResponse>> showScore(@RequestBody TrailerParams reportParams) throws SQLException, RemoteException, ParseException, JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException{
+	public GeotabDriverCallResponse showScore(@RequestBody TrailerParams reportParams) throws SQLException, RemoteException, ParseException, JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException{
 		
 		return geotabDriveAppService.showScore(reportParams);
 	}

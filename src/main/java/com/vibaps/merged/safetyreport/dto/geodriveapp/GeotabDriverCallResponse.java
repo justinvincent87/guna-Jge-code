@@ -42,6 +42,13 @@ public class GeotabDriverCallResponse {
 	
 	@Transient
 	private List<GeotabBehavierResponse> behavelist;
+	@Transient
+	private List<List<GeotabDriverCallResponse>> data;
+	
+	public GeotabDriverCallResponse(List<List<GeotabDriverCallResponse>> data) {
+		super();
+		this.data = data;
+	}
 	
 	
 

@@ -389,6 +389,27 @@ public class LytxProxyService {
 			throw new GeoTabException(AppMsg.ER002);
 		}
 	}
+	
+	public GetEventsResponse getLytxExceptionSummaryForDriverScore(ReportParams reportParams,String startDate,String endDate) {
+
+		log.info("Start - Date :: {}",parseUtilDate(reportParams.getStartDate()));
+		log.info("End - Date :: {}",parseUtilDate(reportParams.getEndDate()));
+		
+		GetEventsByLastUpdateDateRequest getEventsRequest = new GetEventsByLastUpdateDateRequest();
+		getEventsRequest.setSessionId(reportParams.getLytexSessionid());
+		getEventsRequest.setStartDate(parseUtilDate(startDate));
+		getEventsRequest.setEndDate(parseUtilDate(endDate));
+		if (StringUtils.isNotBlank(reportParams.getGroupId())) {
+			getEventsRequest.setGroupId(Long.valueOf(reportParams.getGroupId()));
+		}
+
+		try {
+			return getProxy(reportParams).getEventsByLastUpdateDate(getEventsRequest);
+		} catch (RemoteException e) {
+			log.error("Error while fetching lytx exception summary", e);
+			throw new GeoTabException(AppMsg.ER002);
+		}
+	}
 
 	/**
 	 * Get all vehicles map from lytx

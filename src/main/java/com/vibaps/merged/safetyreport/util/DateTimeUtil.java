@@ -16,7 +16,7 @@ public final class DateTimeUtil {
 
 	private static final String				JAVA			= "java";
 	private static final SimpleDateFormat	DF_YYYY_MM_DD	= new SimpleDateFormat("yyyy-MM-dd");
-	
+	private static final SimpleDateFormat   DF_dd_mm_yyyy_hhmmss = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");  
 
 	private DateTimeUtil() throws IllegalAccessException {
 		throw new IllegalAccessException("Illegal access to DateTimeUtil");
@@ -136,5 +136,10 @@ public final class DateTimeUtil {
 		LocalDate localdate = LocalDate.parse(dateValue);
 
 	    return localdate.minusDays(diff);
+	}
+	
+	public static String dateWithTimeParse(Date date)
+	{
+	    return DF_dd_mm_yyyy_hhmmss.format(date);  
 	}
 }

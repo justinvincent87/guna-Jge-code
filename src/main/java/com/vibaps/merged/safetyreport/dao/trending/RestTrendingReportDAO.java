@@ -282,12 +282,7 @@ public class RestTrendingReportDAO {
 
 					EXCEPTIONS_START_COLUMN = 6;
 							
-					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-					Date newStartDate = sdf.parse(startDateStr);
 					
-					Date ssdate = sdf.parse(startDateStr);
-					Date eedate = sdf.parse(endDateStr);
 					
 					
                  //   lytxVehicleEventsRecord =lytxProxyService.getLytxExceptionData(reportParams); 

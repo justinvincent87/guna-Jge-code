@@ -8,6 +8,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -460,14 +461,13 @@ public class GeotabDriveAppServices {
 		String startDateStr = range.getStartDate() + AppConstants.START_UTC;
 		String endDateStr = range.getEndDate() + AppConstants.END_UTC;
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-		Date newStartDate = sdf.parse(startDateStr);
 		
-		Date ssdate = sdf.parse(startDateStr);
-		Date eedate = sdf.parse(endDateStr);
+		Date newStartDate = DateTimeUtil.parseUtilDate(startDateStr);
+		
+		Date ssdate = DateTimeUtil.parseUtilDate(startDateStr);
+		Date eedate = DateTimeUtil.parseUtilDate(endDateStr);
 		int s=0;
-		String sdate=startDateStr;
+		
 		
 		do {
 
@@ -477,7 +477,7 @@ public class GeotabDriveAppServices {
 
 			reportParams.setLytexSessionid(sessionId);
 			reportParams.setEndPoint(endpoint);
-			GetEventsResponse eventReponse= lytxProxyService.getLytxExceptionSummaryForDriverScore(reportParams,sdate,range.getEndDate());
+			GetEventsResponse eventReponse= lytxProxyService.getLytxExceptionSummaryForDriverScore(reportParams,newStartDate,eedate);
 			
 		
 		for (EventsInfoV5 event : eventReponse.getEvents()) {
@@ -559,29 +559,13 @@ public class GeotabDriveAppServices {
 		log.info("Parse Lytx Event - {}","Stop");
 		
 		if (eventReponse.getQueryCutoff() != null) {
-			String cutoffData = eventReponse.getQueryCutoff().toString();
-			System.out.println(cutoffData);
+			System.out.println(eventReponse.getQueryCutoff().getTime());
 
-			if (cutoffData != null) {
+			if (!Objects.isNull(eventReponse.getQueryCutoff().getTime())) {
 
-				newStartDate = DateTimeUtil.getDateFromMilliSeconds(cutoffData);
+				newStartDate = eventReponse.getQueryCutoff().getTime();
 
-				String year = (newStartDate.getYear() + 1900) + "";
-				String month = (newStartDate.getMonth() + 1) + "";
-				String date = newStartDate.getDate() + "";
-
-				if (month.length() == 1) {
-					month = "0" + month;
-				}
-				if (date.length() == 1) {
-					date = "0" + date;
-				}
-				String strNewDate = year + "-" + month + "-" + date;
-
-				if (strNewDate.equals(sdate)) {
-					break;
-				}
-				sdate = strNewDate;
+			
 
 			} else {
 				break;
@@ -603,7 +587,32 @@ public class GeotabDriveAppServices {
 		for(String data:responseKey)
 		{
 			GeotabDriverCallResponse withBehavierValue=lytxVehicleEventsRecord.get(data);
-			withBehavierValue.setBehavelist(behavierMap.get(data));
+			Map<String,GeotabBehavierResponse> newBehaveResponse=new HashMap<String, GeotabBehavierResponse>();
+			
+			if(!Objects.isNull(behavierMap.get(data)))
+			{
+				for(GeotabBehavierResponse dataValue:behavierMap.get(data))
+				{
+					if(Objects.isNull(newBehaveResponse.get(dataValue.getBehavierId())))
+					{
+						newBehaveResponse.put(dataValue.getBehavierId(), dataValue);
+					}
+					else
+					{
+						GeotabBehavierResponse val=newBehaveResponse.get(dataValue.getBehavierId());
+						Integer valInteger=val.getCount()+dataValue.getCount();
+						val.setCount(valInteger);
+						newBehaveResponse.put(dataValue.getBehavierId(), val);
+
+					}
+					
+				}
+				List<GeotabBehavierResponse> list = newBehaveResponse.values().stream()
+						.collect(Collectors.toList()); 
+				
+				withBehavierValue.setBehavelist(list);
+
+			}
 			finalResponse.put(data, withBehavierValue);
 		}
 		
@@ -674,7 +683,8 @@ private String zoneConverion(java.util.Calendar dateval,String zoneId)
 					GeotabBehavierResponse behave=new GeotabBehavierResponse();
 					behave.setBehavierId(innserArray.getJSONObject(s).getJSONObject("exceptionRule").getString("id"));
 					behave.setCount(innserArray.getJSONObject(s).getInt("eventCount"));
-					behave.setEventDate(innserArray.getJSONObject(s).getString("duration"));
+					//behave.setEventDate(innserArray.getJSONObject(s).getString("duration"));
+					behave.setEventDate(" ");
 					behave.setBehavierName(weightMap.get(innserArray.getJSONObject(s).getJSONObject("exceptionRule").getString("id")).getRuleName());
 					
 					behaveList.add(behave);
@@ -702,7 +712,8 @@ private String zoneConverion(java.util.Calendar dateval,String zoneId)
 					GeotabBehavierResponse behave=new GeotabBehavierResponse();
 					behave.setBehavierId(innserArray.getJSONObject(s).getJSONObject("exceptionRule").getString("id"));
 					behave.setCount(innserArray.getJSONObject(s).getInt("eventCount"));
-					behave.setEventDate(innserArray.getJSONObject(s).getString("duration"));
+//					behave.setEventDate(innserArray.getJSONObject(s).getString("duration"));
+					behave.setEventDate(" ");
 					behave.setBehavierName(weightMap.get(innserArray.getJSONObject(s).getJSONObject("exceptionRule").getString("id")).getRuleName());
 					
 					behaveListval.add(behave);

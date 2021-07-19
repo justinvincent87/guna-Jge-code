@@ -83,12 +83,12 @@ public class LytxProxyService {
 		
 		String startDateStr = reportParams.getStartDate() + AppConstants.START_UTC;
 		String endDateStr = reportParams.getEndDate() + AppConstants.END_UTC;
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		//SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-		Date newStartDate = sdf.parse(startDateStr);
+		Date newStartDate = DateTimeUtil.parseUtilDate(startDateStr);
 		
-		Date ssdate = sdf.parse(startDateStr);
-		Date eedate = sdf.parse(endDateStr);
+		Date ssdate = DateTimeUtil.parseUtilDate(startDateStr);
+		Date eedate = DateTimeUtil.parseUtilDate(endDateStr);
 		int s=0;
 		String sdate=startDateStr;
 		
@@ -101,7 +101,7 @@ public class LytxProxyService {
 			
 						
 			
-			GetEventsResponse					eventReponse= getLytxExceptionSummary(reportParams);
+			GetEventsResponse eventReponse= getLytxExceptionSummaryForDriverScore(reportParams,newStartDate,eedate);
 			
 			log.info("Get Lytx Event- {}","Stop");
 //			JSONObject lytxEventsJO = new JSONObject(eventReponse);
@@ -116,7 +116,6 @@ public class LytxProxyService {
 		
 		
 
-		log.info("Parse Lytx Event - {}","Start");
 		
 		for (EventsInfoV5 event : eventReponse.getEvents()) {
 			
@@ -151,37 +150,21 @@ public class LytxProxyService {
 		
 		log.info("Parse Lytx Event - {}","Stop");
 		
-		if (eventReponse.getQueryCutoff() != null) {
-			String cutoffData = eventReponse.getQueryCutoff().toString();
-			System.out.println(cutoffData);
 
-			if (cutoffData != null) {
+			//System.out.println(eventReponse.getQueryCutoff().getTime());
 
-				newStartDate = DateTimeUtil.getDateFromMilliSeconds(cutoffData);
+			if (!Objects.isNull(eventReponse.getQueryCutoff())) 
+			{
+				System.out.println(eventReponse.getQueryCutoff().getTime());
 
-				String year = (newStartDate.getYear() + 1900) + "";
-				String month = (newStartDate.getMonth() + 1) + "";
-				String date = newStartDate.getDate() + "";
+				newStartDate = eventReponse.getQueryCutoff().getTime();
 
-				if (month.length() == 1) {
-					month = "0" + month;
-				}
-				if (date.length() == 1) {
-					date = "0" + date;
-				}
-				String strNewDate = year + "-" + month + "-" + date;
-
-				if (strNewDate.equals(sdate)) {
-					break;
-				}
-				sdate = strNewDate;
+			
 
 			} else {
 				break;
 			}
-		} else {
-			break;
-		}
+		
 		
 
 	
@@ -222,12 +205,12 @@ public class LytxProxyService {
 		//
 		String startDateStr = reportParams.getStartDate() + AppConstants.START_UTC;
 		String endDateStr = reportParams.getEndDate() + AppConstants.END_UTC;
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		//SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-		Date newStartDate = sdf.parse(startDateStr);
+		Date newStartDate = DateTimeUtil.parseUtilDate(startDateStr);
 		
-		Date ssdate = sdf.parse(startDateStr);
-		Date eedate = sdf.parse(endDateStr);
+		Date ssdate = DateTimeUtil.parseUtilDate(startDateStr);
+		Date eedate = DateTimeUtil.parseUtilDate(endDateStr);
 		int s=0;
 		String sdate=startDateStr;
 		do {
@@ -236,7 +219,7 @@ public class LytxProxyService {
 			
 			reportParams.setStartDate(sdate);
 				
-			GetEventsResponse					eventReponse			= getLytxExceptionSummary(reportParams);
+			GetEventsResponse eventReponse= getLytxExceptionSummaryForDriverScore(reportParams,newStartDate,eedate);
 
 				
 				JSONObject lytxEventsJO = new JSONObject(eventReponse);
@@ -286,30 +269,14 @@ public class LytxProxyService {
 					}
 				}
 				
-				if (lytxEventsJO.has("queryCutoff")) {
-					String cutoffData = lytxEventsJO.getString("queryCutoff");
-					System.out.println(cutoffData);
+				if (eventReponse.getQueryCutoff() != null) {
+					System.out.println(eventReponse.getQueryCutoff().getTime());
 
-					if (cutoffData != null) {
+					if (!Objects.isNull(eventReponse.getQueryCutoff().getTime())) {
 
-						newStartDate = DateTimeUtil.getDateFromMilliSeconds(cutoffData);
+						newStartDate = eventReponse.getQueryCutoff().getTime();
 
-						String year = (newStartDate.getYear() + 1900) + "";
-						String month = (newStartDate.getMonth() + 1) + "";
-						String date = newStartDate.getDate() + "";
-
-						if (month.length() == 1) {
-							month = "0" + month;
-						}
-						if (date.length() == 1) {
-							date = "0" + date;
-						}
-						String strNewDate = year + "-" + month + "-" + date;
-
-						if (strNewDate.equals(sdate)) {
-							break;
-						}
-						sdate = strNewDate;
+					
 
 					} else {
 						break;
@@ -317,7 +284,6 @@ public class LytxProxyService {
 				} else {
 					break;
 				}
-				
 
 			
 		} while (true);
@@ -390,15 +356,15 @@ public class LytxProxyService {
 		}
 	}
 	
-	public GetEventsResponse getLytxExceptionSummaryForDriverScore(ReportParams reportParams,String startDate,String endDate) {
+	public GetEventsResponse getLytxExceptionSummaryForDriverScore(ReportParams reportParams,Date startDate,Date endDate) {
 
 		log.info("Start - Date :: {}",parseUtilDate(reportParams.getStartDate()));
 		log.info("End - Date :: {}",parseUtilDate(reportParams.getEndDate()));
 		
 		GetEventsByLastUpdateDateRequest getEventsRequest = new GetEventsByLastUpdateDateRequest();
 		getEventsRequest.setSessionId(reportParams.getLytexSessionid());
-		getEventsRequest.setStartDate(parseUtilDate(startDate));
-		getEventsRequest.setEndDate(parseUtilDate(endDate));
+		getEventsRequest.setStartDate(startDate);
+		getEventsRequest.setEndDate(endDate);
 		if (StringUtils.isNotBlank(reportParams.getGroupId())) {
 			getEventsRequest.setGroupId(Long.valueOf(reportParams.getGroupId()));
 		}
